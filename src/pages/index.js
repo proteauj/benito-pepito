@@ -3,7 +3,7 @@ import { useState } from "react";
 
 const PRODUCTS = [
   { id: "p1", name: "Taco Benito", price: 7.5 },
-  { id: "p2", name: "Combo Pepito", price: 12.0 }
+  { id: "p2", name: "Combo Pepito", price: 15.0 }
 ];
 
 export default function Home() {

@@ -5,7 +5,7 @@ import { useI18n } from '@/i18n/I18nProvider';
 export default function SiteFooter() {
   const { t } = useI18n();
   return (
-    <footer className="mt-16 bg-white/80 border-t border-[#cfc9c0] text-[var(--foreground)]">
+    <footer className="pt-16 bg-white border-t border-[#cfc9c0] text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>

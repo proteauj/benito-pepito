@@ -125,8 +125,8 @@ export default function ProductsIndexPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-white/95 border border-[#cfc9c0] shadow px-10 py-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-[var(--leaf)] border-t-transparent mx-auto"></div>
+        <div className="bg-white/95 border border-[#cfc9c0] shadow px-16 py-12 text-center w-full max-w-md">
+          <div className="animate-spin rounded-full h-16 w-16 border-2 border-[var(--leaf)] border-t-transparent mx-auto"></div>
           <p className="mt-4 text-xl font-semibold text-[var(--leaf)]">{t('loading')}</p>
         </div>
       </div>

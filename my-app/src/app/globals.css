@@ -101,8 +101,7 @@ h1, h2, h3 {
   color: var(--leaf);
 }
 
-/* Base button sizing: applies to real buttons and anchor buttons */
-button,
+/* Base button sizing (explicit button classes only, not generic <button>) */
 .btn,
 a.btn,
 .btn-ghost,

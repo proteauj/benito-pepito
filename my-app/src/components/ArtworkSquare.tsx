@@ -1,0 +1,32 @@
+"use client";
+
+import SafeImage from "@/components/SafeImage";
+
+interface ArtworkSquareProps {
+  src: string;
+  alt: string;
+  href?: string;
+  priority?: boolean;
+}
+
+// Renders any image into a square with a wood-like background and a small inset
+// so tall/wide artworks are zoomed out to fit uniformly.
+export default function ArtworkSquare({ src, alt, priority = false }: ArtworkSquareProps) {
+  return (
+    <div className="relative aspect-square bg-[color:var(--wood,theme(colors.amber.800))] art-wood overflow-hidden">
+      {/* Frame border */}
+      <div className="absolute inset-0 box-border p-2 sm:p-3 md:p-4">
+        {/* Inner square where the artwork lives */}
+        <div className="relative w-full h-full bg-white shadow-sm">
+          <SafeImage
+            src={src}
+            alt={alt}
+            fill
+            priority={priority}
+            className="object-contain"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

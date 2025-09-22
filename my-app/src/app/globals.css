@@ -8,6 +8,7 @@
   --gold-dark: #c49a2e;
   --leaf: #0b8a5a; /* richer emerald */
   --leaf-dark: #066a46; /* deeper emerald */
+  --wood: #7a5a3a; /* wood tone fallback */
 }
 
 /* Local font: Mouly */
@@ -53,6 +54,22 @@ h1, h2, h3 {
   line-height: 1.15;
   font-weight: 800; /* stronger heading weight */
   font-family: 'Mouly', Arial, Helvetica, sans-serif;
+}
+
+/* Wood background utility for artwork frames */
+.art-wood {
+  /* Try local wood texture if present; falls back to subtle gradient */
+  background-image:
+    url('/textures/wood.svg'),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--wood) 96%, #000 0%),
+      color-mix(in oklab, var(--wood) 92%, #000 0%) 6px,
+      color-mix(in oklab, var(--wood) 90%, #000 0%) 12px,
+      color-mix(in oklab, var(--wood) 96%, #000 0%) 18px
+    );
+  background-size: cover;
+  background-blend-mode: multiply;
 }
 
 /* Leafy divider helper */

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import SafeImage from "@/components/SafeImage";
+import ArtworkSquare from "@/components/ArtworkSquare";
 
 interface Product {
   id: string;
@@ -218,9 +218,9 @@ export default function ProductsIndexPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {pageItems.map((p) => (
             <div key={p.id} className="group bg-white overflow-hidden border border-[#cfc9c0]">
-              <div className="relative aspect-[4/3]">
+              <div className="relative">
                 <Link href={`/product/${p.slug}`}>
-                  <SafeImage src={p.image} alt={p.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <ArtworkSquare src={p.image} alt={p.title} />
                 </Link>
                 {!p.inStock && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

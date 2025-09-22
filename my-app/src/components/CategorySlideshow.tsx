@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import SafeImage from '@/components/SafeImage';
+import ArtworkSquare from '@/components/ArtworkSquare';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 
@@ -64,13 +64,7 @@ export default function CategorySlideshow({ category, products }: CategorySlides
       <div className="relative bg-white border border-[#cfc9c0] overflow-hidden">
         <div className="relative h-80">
           <Link href={`/category/${category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`}>
-            <SafeImage
-              src={currentProduct.image}
-              alt={currentProduct.title}
-              fill
-              className="object-cover"
-              priority
-            />
+            <ArtworkSquare src={currentProduct.image} alt={currentProduct.title} priority />
           </Link>
           {!currentProduct.inStock && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

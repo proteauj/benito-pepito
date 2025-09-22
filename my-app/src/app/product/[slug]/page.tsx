@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import SafeImage from '@/components/SafeImage';
+import ArtworkSquare from '@/components/ArtworkSquare';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 
@@ -116,15 +115,13 @@ export default function ProductPage() {
       {/* Product Details */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
+          {/* Product Images */
+          }
           <div>
-            <div className="aspect-square bg-white overflow-hidden mb-4 relative border border-[#cfc9c0]">
-              <SafeImage
-                src={product?.images[selectedImageIndex]}
+            <div className="mb-4 relative">
+              <ArtworkSquare
+                src={product?.images[selectedImageIndex] as string}
                 alt={product?.title || 'Artwork'}
-                width={600}
-                height={600}
-                className="w-full h-full object-cover"
               />
               {!product.inStock && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -141,12 +138,9 @@ export default function ProductPage() {
                     selectedImageIndex === index ? 'border-[var(--gold)]' : 'border-[#cfc9c0]'
                   }`}
                 >
-                  <SafeImage
+                  <ArtworkSquare
                     src={image}
                     alt={`${product?.title || 'Artwork'} ${index + 1}`}
-                    width={150}
-                    height={150}
-                    className="w-full h-full object-cover"
                   />
                 </button>
               ))}

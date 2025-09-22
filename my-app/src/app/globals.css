@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+:root {
+  /* Stone-like light background and black text */
+  --background: #e9e5df; /* warm stone */
+  --foreground: #111111; /* mostly black text */
+  --gold: #D4AF37; /* metallic gold */
+  --gold-dark: #c49a2e;
+  --leaf: #059669; /* emerald-600 */
+  --leaf-dark: #047857; /* emerald-700 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  /* Subtle rock texture overlay */
+  background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=55');
+  background-size: cover;
+  background-attachment: fixed;
+  background-blend-mode: multiply;
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.975rem; /* lower body font for visual quietness */
+  line-height: 1.55; /* slightly reduced for gallery feel */
+}
+
+h1, h2, h3 {
+  letter-spacing: 0.02em; /* elegant tracking */
+  line-height: 1.15;
+  font-weight: 800; /* stronger heading weight */
+  font-family: var(--font-display), serif;
+}
+
+/* Leafy divider helper */
+.leafy-divider {
+  border-bottom: 1px solid color-mix(in oklab, var(--leaf) 30%, transparent);
+}
+
+.slideshow {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+.slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+.slide.active {
+  opacity: 1;
+}
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.slide .caption {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 5px;
+}
+.controls {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+}
+.control-btn {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.control-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.indicators {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+}
+.indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.indicator.active {
+  background-color: white;
+}
+.indicator:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}

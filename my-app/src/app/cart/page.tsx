@@ -5,11 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SafeImage from '@/components/SafeImage';
 import { useCart } from '@/contexts/CartContext';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export default function CartPage() {
   const { items, total, itemCount, updateQuantity, removeFromCart, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
 
   const lineItems = useMemo(() =>
     items.map((it) => ({
@@ -43,10 +45,10 @@ export default function CartPage() {
     return (
       <div className="min-h-screen stoneBg text-[var(--foreground)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
-          <p className="text-black/70 mb-8">Browse artworks and add them to your cart.</p>
+          <h1 className="text-3xl font-bold mb-4">{t('cart.emptyTitle')}</h1>
+          <p className="text-black/70 mb-8">{t('cart.emptySubtitle')}</p>
           <Link href="/" className="inline-block bg-[var(--gold)] text-black px-6 py-3 rounded-lg font-semibold hover:bg-[var(--gold-dark)]">
-            Continue Shopping
+            {t('cart.emptyCta')}
           </Link>
         </div>
       </div>
@@ -56,7 +58,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
+        <h1 className="text-3xl font-bold mb-6">{t('cart.title')}</h1>
 
         {error && (
           <div className="mb-4 p-3 rounded bg-red-100 text-red-800">{error}</div>
@@ -89,7 +91,7 @@ export default function CartPage() {
                     <button
                       className="text-red-600 hover:underline"
                       onClick={() => removeFromCart(item.id)}
-                    >Remove</button>
+                    >{t('actions.remove')}</button>
                   </div>
                 </div>
               </div>
@@ -98,13 +100,13 @@ export default function CartPage() {
 
           {/* Summary */}
           <div className="bg-white rounded-lg shadow p-6 h-fit">
-            <h3 className="text-xl font-semibold mb-4">Order Summary</h3>
+            <h3 className="text-xl font-semibold mb-4">{t('cart.orderSummary')}</h3>
             <div className="flex justify-between mb-2">
-              <span>Items</span>
+              <span>{t('cart.items')}</span>
               <span>{itemCount}</span>
             </div>
             <div className="flex justify-between mb-4">
-              <span>Total</span>
+              <span>{t('cart.total')}</span>
               <span className="text-2xl font-bold">${total.toFixed(2)}</span>
             </div>
             <button
@@ -112,13 +114,13 @@ export default function CartPage() {
               disabled={loading}
               className="w-full bg-[var(--gold)] text-black py-3 rounded-lg font-semibold hover:bg-[var(--gold-dark)] disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : 'Checkout with Stripe'}
+              {loading ? t('cart.processing') : t('cart.checkout')}
             </button>
             <button
               onClick={clearCart}
               className="w-full mt-3 border border-[#cfc9c0] text-black py-3 rounded-lg font-semibold hover:bg-white"
             >
-              Clear Cart
+              {t('cart.clear')}
             </button>
           </div>
         </div>

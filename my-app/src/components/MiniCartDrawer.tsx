@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export default function MiniCartDrawer() {
   const { isOpen, items, total, itemCount, updateQuantity, removeFromCart, closeCart } = useCart();
+  const { t } = useI18n();
 
   return (
     <div
@@ -27,7 +29,7 @@ export default function MiniCartDrawer() {
         aria-label="Mini Cart"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#2a2f2d]">
-          <h2 className="text-lg font-semibold">Your Selection ({itemCount})</h2>
+          <h2 className="text-lg font-semibold">{t('minicart.title')} ({itemCount})</h2>
           <button onClick={closeCart} className="text-[var(--foreground)]/70 hover:text-[var(--gold)]" aria-label="Close cart">
             ✕
           </button>
@@ -35,7 +37,7 @@ export default function MiniCartDrawer() {
 
         <div className="h-[calc(100%-160px)] overflow-y-auto px-5 py-4 space-y-4">
           {items.length === 0 ? (
-            <p className="text-[var(--foreground)]/70">Your cart is empty.</p>
+            <p className="text-[var(--foreground)]/70">{t('minicart.empty')}</p>
           ) : (
             items.map((item) => (
               <div key={item.id} className="flex bg-white border border-[#cfc9c0] p-3">
@@ -49,7 +51,7 @@ export default function MiniCartDrawer() {
                       <p className="text-xs text-[var(--foreground)]/60">{item.artist}</p>
                       <p className="text-xs text-[var(--foreground)]/60">{item.medium}, {item.year}</p>
                     </div>
-                    <button onClick={() => removeFromCart(item.id)} className="text-[var(--gold)] hover:underline text-sm">Remove</button>
+                    <button onClick={() => removeFromCart(item.id)} className="text-[var(--gold)] hover:underline text-sm">{t('actions.remove')}</button>
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <span className="font-semibold">${item.price}</span>
@@ -67,7 +69,7 @@ export default function MiniCartDrawer() {
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-[#2a2f2d] p-5 bg-[#e4dfd7] text-black">
           <div className="flex justify-between mb-3">
-            <span>Total</span>
+            <span>{t('cart.total')}</span>
             <span className="text-xl font-bold">${total.toFixed(2)}</span>
           </div>
           <Link
@@ -75,7 +77,7 @@ export default function MiniCartDrawer() {
             onClick={closeCart}
             className="block w-full text-center bg-[var(--gold)] text-black py-3 font-semibold hover:bg-white hover:text-[var(--leaf)]"
           >
-            Review Cart
+            {t('minicart.review')}
           </Link>
         </div>
       </aside>

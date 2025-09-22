@@ -1,33 +1,33 @@
 'use client';
 
 import SafeImage from '@/components/SafeImage';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export default function AboutPage() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="leafy-divider pb-3 mb-6">
-          <h1 className="text-4xl font-bold">About</h1>
+          <h1 className="text-4xl font-bold">{t('about.title')}</h1>
         </div>
 
         {/* Hero image */}
         <div className="relative aspect-[16/7] border border-[#cfc9c0] bg-white mb-8">
-          <SafeImage src="/artworks/about/hero.svg" alt="About Hero" fill className="object-cover" />
+          <SafeImage src="/artworks/about/hero.svg" alt={t('about.heroAlt')} fill className="object-cover" />
         </div>
 
         {/* Short description */}
         <p className="text-lg text-black/85 leading-relaxed max-w-3xl">
-          Benito Pepito is an artist-first gallery. We curate singular works across sculpture,
-          painting, and home & garden. We favor materials, process, and quiet presentation—
-          letting each piece breathe.
+          {t('about.description')}
         </p>
 
         {/* Media links row */}
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">Explore Categories</a>
-          <a href="/contact" className="border border-[#cfc9c0] text-black px-5 py-2 font-semibold hover:bg-white">Contact</a>
-          <a href="#" className="link-chip">Instagram</a>
-          <a href="#" className="link-chip">Press</a>
+          <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">{t('actions.exploreCategories')}</a>
+          <a href="/contact" className="btn-ghost">{t('actions.contact')}</a>
+          <a href="#" className="link-chip">{t('social.instagram')}</a>
+          <a href="#" className="link-chip">{t('social.press')}</a>
         </div>
       </div>
     </div>

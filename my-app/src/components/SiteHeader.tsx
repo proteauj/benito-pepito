@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
+import { useI18n } from '@/i18n/I18nProvider';
 
 export default function SiteHeader() {
   const { itemCount, toggleCart } = useCart();
+  const { t } = useI18n();
   return (
     <header className="bg-gradient-to-r from-[var(--leaf-dark)] to-[var(--leaf)] border-b border-[#cfc9c0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,11 +15,11 @@ export default function SiteHeader() {
             <Link href="/" className="text-2xl font-bold text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] px-2 py-1 transition-colors">Benito Pepito</Link>
           </div>
           <nav className="hidden md:flex space-x-2 h-16">
-            <Link href="/" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">Home</Link>
-            <Link href="/categories" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">Categories</Link>
-            <Link href="/products" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">All Works</Link>
-            <Link href="/about" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">About</Link>
-            <Link href="/contact" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">Contact</Link>
+            <Link href="/" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">{t('nav.home')}</Link>
+            <Link href="/categories" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">{t('nav.categories')}</Link>
+            <Link href="/products" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">{t('nav.allWorks')}</Link>
+            <Link href="/about" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">{t('nav.about')}</Link>
+            <Link href="/contact" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">{t('nav.contact')}</Link>
           </nav>
           <div className="flex items-center space-x-2 h-16">
             <Link href="/products" className="h-16 w-16 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center justify-center transition-colors" aria-label="Search">

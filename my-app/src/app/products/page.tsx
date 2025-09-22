@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ArtworkSquare from "@/components/ArtworkSquare";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface Product {
   id: string;
@@ -26,13 +27,14 @@ interface Product {
 type ProductsByCategory = Record<string, Product[]>;
 
 export default function ProductsIndexPage() {
+  const { t } = useI18n();
   const [data, setData] = useState<ProductsByCategory>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [q, setQ] = useState("");
   const [category, setCategory] = useState<"All" | Product["category"]>("All");
-  const [artist, setArtist] = useState("all");
+  // Removed artist filter
   const [sortBy, setSortBy] = useState("lastUpdated-desc");
   const [page, setPage] = useState(1);
   const pageSize = 9;
@@ -64,23 +66,20 @@ export default function ProductsIndexPage() {
     ...Array.from(new Set(flat.map((p) => p.category))) as Product["category"][],
   ], [flat]);
 
-  const artists = useMemo(() => {
-    return Array.from(new Set(flat.map((p) => p.artist))).sort();
-  }, [flat]);
+  // Removed artists list (no artist filter)
 
   const filteredSorted = useMemo(() => {
     let arr = [...flat];
     // category
     if (category !== "All") arr = arr.filter((p) => p.category === category);
-    // artist
-    if (artist !== "all") arr = arr.filter((p) => p.artist === artist);
+    // artist filtering removed
     // search
     const term = q.trim().toLowerCase();
     if (term) {
       arr = arr.filter(
         (p) =>
           p.title.toLowerCase().includes(term) ||
-          p.artist.toLowerCase().includes(term) ||
+          // removed artist from search
           p.medium.toLowerCase().includes(term)
       );
     }
@@ -108,14 +107,12 @@ export default function ProductsIndexPage() {
       case "year-asc":
         arr.sort((a, b) => a.year - b.year);
         break;
-      case "artist":
-        arr.sort((a, b) => a.artist.localeCompare(b.artist));
-        break;
+      // removed artist sort option
       default:
         break;
     }
     return arr;
-  }, [flat, category, artist, q, sortBy]);
+  }, [flat, category, q, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / pageSize));
   const pageItems = filteredSorted.slice((page - 1) * pageSize, page * pageSize);
@@ -123,14 +120,14 @@ export default function ProductsIndexPage() {
   useEffect(() => {
     // reset to first page when filters change
     setPage(1);
-  }, [q, category, artist, sortBy]);
+  }, [q, category, sortBy]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="mt-4 text-xl text-black/80">Loading artworks...</p>
+        <div className="bg-white/95 border border-[#cfc9c0] shadow px-10 py-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-[var(--leaf)] border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-xl font-semibold text-[var(--leaf)]">{t('loading')}</p>
         </div>
       </div>
     );
@@ -142,7 +139,7 @@ export default function ProductsIndexPage() {
         <div className="text-center">
           <p className="text-xl text-red-600">{error}</p>
           <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]">
-            Back to Home
+            {t('actions.backToHome')}
           </Link>
         </div>
       </div>
@@ -153,16 +150,16 @@ export default function ProductsIndexPage() {
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-end justify-between mb-8 leafy-divider pb-3">
-          <h1 className="text-4xl font-bold">All Artworks</h1>
-          <Link href="/categories" className="link-chip">Categories →</Link>
+          <h1 className="text-4xl font-bold">{t('headings.allArtworks')}</h1>
+          <Link href="/categories" className="link-chip">{t('nav.categories')}</Link>
         </div>
 
         {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search title, artist, medium"
+            placeholder={t('search.placeholder')}
             className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
           />
           <div className="relative">
@@ -172,41 +169,27 @@ export default function ProductsIndexPage() {
               className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
             >
               {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>{t(`category.${c}`)}</option>
               ))}
             </select>
             <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
             </svg>
           </div>
-          <div className="relative">
-            <select
-              value={artist}
-              onChange={(e) => setArtist(e.target.value)}
-              className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-            >
-              <option value="all">All artists</option>
-              {artists.map((a) => (
-                <option key={a} value={a}>{a}</option>
-              ))}
-            </select>
-            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
-            </svg>
-          </div>
+          {/* removed artist filter select */}
           <div className="relative">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
             >
-              <option value="lastUpdated-desc">Last Updated (Newest)</option>
-              <option value="lastUpdated-asc">Last Updated (Oldest)</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="year-desc">Newest</option>
-              <option value="year-asc">Oldest</option>
-              <option value="artist">Artist A→Z</option>
+              <option value="lastUpdated-desc">{t('sort.lastUpdatedDesc')}</option>
+              <option value="lastUpdated-asc">{t('sort.lastUpdatedAsc')}</option>
+              <option value="price-asc">{t('sort.priceAsc')}</option>
+              <option value="price-desc">{t('sort.priceDesc')}</option>
+              <option value="year-desc">{t('sort.yearDesc')}</option>
+              <option value="year-asc">{t('sort.yearAsc')}</option>
+              {/* removed artist sort option */}
             </select>
             <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
@@ -217,20 +200,17 @@ export default function ProductsIndexPage() {
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {pageItems.map((p) => (
-            <div key={p.id} className="group bg-white overflow-hidden border border-[#cfc9c0]">
+            <Link key={p.id} href={`/product/${p.slug}`} className="group bg-white overflow-hidden border border-[#cfc9c0] block">
               <div className="relative">
-                <Link href={`/product/${p.slug}`}>
-                  <ArtworkSquare src={p.image} alt={p.title} />
-                </Link>
+                <ArtworkSquare src={p.image} alt={p.title} />
                 {!p.inStock && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="bg-[var(--gold)] text-black px-4 py-2 rounded-full font-semibold">Sold</span>
+                    <span className="bg-[var(--gold)] text-black px-4 py-2 rounded-full font-semibold">{t('status.sold')}</span>
                   </div>
                 )}
               </div>
               <div className="p-5 text-black">
-                <h3 className="text-xl font-semibold">{p.artist}</h3>
-                <p className="text-sm text-black/70">{p.title} · {p.year}</p>
+                <h3 className="text-xl font-semibold">{p.title} · {p.year}</h3>
                 <p className="text-sm text-black/60 mb-3">{p.medium}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-baseline space-x-2">
@@ -239,10 +219,10 @@ export default function ProductsIndexPage() {
                       <span className="text-sm line-through text-black/40">${p.originalPrice}</span>
                     )}
                   </div>
-                  <Link href={`/product/${p.slug}`} className="px-3 py-2 bg-[var(--gold)] text-black text-sm font-semibold hover:bg-[var(--gold-dark)]">View</Link>
+                  <span className="px-3 py-2 bg-[var(--gold)] text-black text-sm font-semibold">{t('actions.view')}</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -253,15 +233,15 @@ export default function ProductsIndexPage() {
             disabled={page === 1}
             className="px-3 py-2 bg-[var(--gold)] text-black font-semibold disabled:bg-black/30"
           >
-            Prev
+            {t('actions.prev')}
           </button>
-          <span className="text-black">Page {page} of {totalPages}</span>
+          <span className="text-black">{t('pagination.page')} {page} {t('pagination.of')} {totalPages}</span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             className="px-3 py-2 bg-[var(--gold)] text-black font-semibold disabled:bg-black/30"
           >
-            Next
+            {t('actions.next')}
           </button>
         </div>
       </div>

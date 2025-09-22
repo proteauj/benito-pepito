@@ -1,39 +1,44 @@
+"use client";
+
+import { useI18n } from '@/i18n/I18nProvider';
+
 export default function SiteFooter() {
+  const { t } = useI18n();
   return (
     <footer className="mt-16 bg-white/80 border-t border-[#cfc9c0] text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-xl font-bold mb-3">Benito Pepito</h3>
-            <p className="text-black/70">Artist-first gallery and marketplace for sculpture, painting, and home & garden installations.</p>
+            <p className="text-black/70">{t('footer.blurb')}</p>
           </div>
           <div>
-            <h4 className="font-semibold mb-3">Explore</h4>
+            <h4 className="font-semibold mb-3">{t('footer.explore')}</h4>
             <ul className="space-y-2 text-black/70">
-              <li><a href="/categories" className="hover:text-[var(--gold)]">Categories</a></li>
-              <li><a href="/about" className="hover:text-[var(--gold)]">About</a></li>
-              <li><a href="/contact" className="hover:text-[var(--gold)]">Contact</a></li>
+              <li><a href="/categories" className="hover:text-[var(--gold)]">{t('nav.categories')}</a></li>
+              <li><a href="/about" className="hover:text-[var(--gold)]">{t('about.title')}</a></li>
+              <li><a href="/contact" className="hover:text-[var(--gold)]">{t('contact.title')}</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-3">Contact</h4>
+            <h4 className="font-semibold mb-3">{t('footer.contact')}</h4>
             <ul className="space-y-2 text-black/70">
               <li>info@benitopepito.art</li>
-              <li>123 Stone Avenue, Montreal, QC</li>
-              <li>Mon–Sat, 10:00–18:00</li>
+              <li>{t('footer.address')}</li>
+              <li>{t('footer.hours')}</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-3">Follow</h4>
+            <h4 className="font-semibold mb-3">{t('footer.follow')}</h4>
             <ul className="space-y-2 text-black/70">
-              <li><a href="#" className="hover:text-[var(--gold)]">Instagram</a></li>
-              <li><a href="#" className="hover:text-[var(--gold)]">TikTok</a></li>
-              <li><a href="#" className="hover:text-[var(--gold)]">Facebook</a></li>
+              <li><a href="#" className="hover:text-[var(--gold)]">{t('social.instagram')}</a></li>
+              <li><a href="#" className="hover:text-[var(--gold)]">{t('social.tiktok')}</a></li>
+              <li><a href="#" className="hover:text-[var(--gold)]">{t('social.facebook')}</a></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-[#cfc9c0] mt-8 pt-6 text-center text-black/60">
-          <p>© {new Date().getFullYear()} Benito Pepito. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Benito Pepito. {t('footer.rights')}</p>
         </div>
       </div>
     </footer>

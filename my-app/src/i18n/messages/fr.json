@@ -1,0 +1,108 @@
+{
+  "nav.home": "Accueil",
+  "nav.categories": "Catégories",
+  "nav.allWorks": "Toutes les œuvres",
+  "nav.about": "À propos",
+  "nav.contact": "Contact",
+
+  "breadcrumbs.home": "Accueil",
+
+  "headings.allArtworks": "Toutes les œuvres",
+  "category.viewAll": "Voir tout →",
+
+  "filters.onlyAvailable": "Seulement disponibles",
+  "search.placeholder": "Rechercher titre, médium",
+
+  "actions.view": "Voir",
+  "actions.add": "Ajouter",
+  "actions.prev": "Précédent",
+  "actions.next": "Suivant",
+
+  "status.sold": "Vendu",
+  "status.available": "Disponible",
+
+  "product.addToCart": "Ajouter au panier",
+  "product.sold": "Vendu",
+
+  "cta.exploreCollections": "Explorer les collections",
+
+  "errors.productNotFound": "Produit introuvable",
+  "errors.categoryNotFound": "Catégorie introuvable",
+  "actions.backToHome": "Retour à l'accueil",
+  "actions.back": "← Retour",
+
+  "loading": "Chargement",
+
+  "pagination.page": "Page",
+  "pagination.of": "sur",
+
+  "labels.reviews": "avis",
+
+  "actions.wishlist": "Ajouter aux favoris",
+  "actions.share": "Partager",
+
+  "sort.lastUpdatedDesc": "Dernière mise à jour (Plus récent)",
+  "sort.lastUpdatedAsc": "Dernière mise à jour (Plus ancien)",
+  "sort.priceAsc": "Prix : croissant",
+  "sort.priceDesc": "Prix : décroissant",
+  "sort.yearDesc": "Le plus récent",
+  "sort.yearAsc": "Le plus ancien",
+
+  "category.Sculpture": "Sculpture",
+  "category.Painting": "Peinture",
+  "category.Home & Garden": "Maison & Jardin",
+  "category.All": "Toutes",
+
+  "categoryDesc.Sculpture": "Des pièces uniques moulées et sculptées à la perfection.",
+  "categoryDesc.Painting": "Œuvres originales sur toile et papier à travers styles et mouvements.",
+  "categoryDesc.Home & Garden": "Verdure et installations vivantes pour transformer les espaces.",
+
+  "home.tagline": "Une sélection discrète d'œuvres en Sculpture, Peinture et Maison & Jardin.",
+
+  "about.title": "À propos",
+  "about.description": "Benito Pepito est une galerie centrée sur les artistes. Nous sélectionnons des œuvres singulières en sculpture, peinture et maison & jardin. Nous privilégions les matières, les procédés et une présentation épurée — pour laisser chaque pièce respirer.",
+  "contact.title": "Contact",
+  "actions.sendMessage": "Envoyer le message",
+  "actions.exploreCategories": "Explorer les catégories",
+  "actions.contact": "Contact",
+  "contact.description": "Nous serions ravis d’échanger avec vous. Pour toute demande d’acquisition, de consignation ou question générale, envoyez‑nous un message et notre équipe vous répondra.",
+  "contact.form.name": "Nom",
+  "contact.form.email": "Courriel",
+  "contact.form.message": "Message",
+  "contact.form.placeholderName": "Votre nom complet",
+  "contact.form.placeholderEmail": "vous@exemple.com",
+  "contact.form.placeholderMessage": "Parlez‑nous de l’œuvre ou du projet…",
+  "contact.direct": "Ou écrivez‑nous directement :",
+  "cart.emptyTitle": "Votre panier est vide",
+  "cart.emptySubtitle": "Parcourez les œuvres et ajoutez-les à votre panier.",
+  "cart.emptyCta": "Continuer vos achats",
+  "cart.title": "Votre panier",
+  "cart.orderSummary": "Récapitulatif",
+  "cart.items": "Articles",
+  "cart.total": "Total",
+  "cart.processing": "Traitement...",
+  "success.title": "Paiement réussi",
+  "success.message": "Merci ! Votre commande a été passée avec succès.",
+  "cancel.title": "Paiement annulé",
+  "cancel.message": "Votre paiement a été annulé. Vous pouvez continuer vos achats et réessayer.",
+  "minicart.title": "Votre sélection",
+  "minicart.empty": "Votre panier est vide.",
+  "minicart.review": "Voir le panier",
+  "contact.gallery": "Galerie",
+  "contact.press": "Presse",
+  "contact.sales": "Ventes",
+  "about.heroAlt": "Image À propos",
+  
+  "social.instagram": "Instagram",
+  "social.press": "Presse",
+  "social.tiktok": "TikTok",
+  "social.facebook": "Facebook",
+
+  "footer.blurb": "Galerie et marché centrés sur les artistes pour la sculpture, la peinture et les installations maison & jardin.",
+  "footer.explore": "Explorer",
+  "footer.contact": "Contact",
+  "footer.follow": "Suivre",
+  "footer.address": "123, avenue Stone, Montréal (QC)",
+  "footer.hours": "Lun–Sam, 10:00–18:00",
+  "footer.rights": "Tous droits réservés."
+}

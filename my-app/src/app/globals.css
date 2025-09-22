@@ -63,6 +63,17 @@ body {
   background-blend-mode: normal;
 }
 
+/* Mobile tuning: show more of the stone texture and avoid iOS fixed-attachment jank */
+@media (max-width: 768px) {
+  body,
+  .stoneBg {
+    /* For layered backgrounds, specify sizes per layer: gradient, image */
+    background-size: cover, contain; /* keep gradient covering, show whole image */
+    background-position: center top; /* anchor to top for a nicer composition */
+    background-attachment: scroll, scroll; /* disable fixed on mobile */
+  }
+}
+
 /* (Removed .stone-overlay DOM class; using body::before instead) */
 
 h1, h2, h3 {
@@ -70,6 +81,48 @@ h1, h2, h3 {
   line-height: 1.15;
   font-weight: 800; /* stronger heading weight */
   font-family: 'Mouly', Arial, Helvetica, sans-serif;
+}
+
+/* Ghost button with bigger gold border */
+.btn-ghost {
+  display: inline-flex; /* ensure anchors render box and allow centering */
+  text-decoration: none; /* remove underline on anchors */
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.3);
+  color: black;
+  border: 2px solid var(--gold);
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--leaf);
+}
+
+/* Base button sizing: applies to real buttons and anchor buttons */
+button,
+.btn,
+a.btn,
+.btn-ghost,
+.bg-\[var\(--gold\)\] {
+  min-width: 80px;
+  text-align: center;
+  max-height: 45px;
+}
+
+/* Ensure anchor gold buttons behave like boxes */
+.bg-\[var\(--gold\)\] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Standardize gold button hover */
+.bg-\[var\(--gold\)\]:hover {
+  background: var(--gold-dark) !important;
+  color: black !important;
 }
 
 /* Wood background utility for artwork frames */

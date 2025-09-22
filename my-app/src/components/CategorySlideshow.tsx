@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import ArtworkSquare from '@/components/ArtworkSquare';
+import { useI18n } from '@/i18n/I18nProvider';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 
@@ -30,6 +31,7 @@ interface CategorySlideshowProps {
 }
 
 export default function CategorySlideshow({ category, products }: CategorySlideshowProps) {
+  const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { addToCart } = useCart();
 
@@ -52,23 +54,23 @@ export default function CategorySlideshow({ category, products }: CategorySlides
   return (
     <div className="mb-12">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-black">{category}</h2>
+        <h2 className="text-3xl font-bold text-black">{t(`category.${category}`)}</h2>
         <Link 
           href={`/category/${category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`}
           className="link-chip"
         >
-          View All →
+          {t('category.viewAll')}
         </Link>
       </div>
       
       <div className="relative bg-white border border-[#cfc9c0] overflow-hidden">
         <div className="relative">
-          <Link href={`/category/${category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`}>
+          <Link href={`/product/${currentProduct.slug}`}>
             <ArtworkSquare src={currentProduct.image} alt={currentProduct.title} priority />
           </Link>
           {!currentProduct.inStock && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <span className="bg-[#D4AF37] text-black px-4 py-2 rounded-full font-semibold">Sold</span>
+              <span className="bg-[#D4AF37] text-black px-4 py-2 rounded-full font-semibold">{t('status.sold')}</span>
             </div>
           )}
           {/* Progress Indicators */}

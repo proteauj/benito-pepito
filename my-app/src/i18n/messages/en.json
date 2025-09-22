@@ -1,0 +1,113 @@
+{
+  "nav.home": "Home",
+  "nav.categories": "Categories",
+  "nav.allWorks": "All Works",
+  "nav.about": "About",
+  "nav.contact": "Contact",
+
+  "breadcrumbs.home": "Home",
+
+  "headings.allArtworks": "All Artworks",
+  "category.viewAll": "View All →",
+
+  "filters.onlyAvailable": "Only available",
+  "search.placeholder": "Search title, medium",
+
+  "actions.view": "View",
+  "actions.add": "Add",
+  "actions.prev": "Prev",
+  "actions.next": "Next",
+
+  "status.sold": "Sold",
+  "status.available": "Available",
+
+  "product.addToCart": "Add to Cart",
+  "product.sold": "Sold",
+
+  "cta.exploreCollections": "Explore Collections",
+
+  "errors.productNotFound": "Product not found",
+  "errors.categoryNotFound": "Category not found",
+  "actions.backToHome": "Back to Home",
+  "actions.back": "← Back",
+
+  "loading": "Loading",
+
+  "pagination.page": "Page",
+  "pagination.of": "of",
+
+  "labels.reviews": "reviews",
+
+  "actions.wishlist": "Add to Wishlist",
+  "actions.share": "Share",
+
+  "sort.lastUpdatedDesc": "Last Updated (Newest)",
+  "sort.lastUpdatedAsc": "Last Updated (Oldest)",
+  "sort.priceAsc": "Price: Low to High",
+  "sort.priceDesc": "Price: High to Low",
+  "sort.yearDesc": "Newest",
+  "sort.yearAsc": "Oldest",
+
+  "category.Sculpture": "Sculpture",
+  "category.Painting": "Painting",
+  "category.Home & Garden": "Home & Garden",
+  "category.All": "All",
+
+  "categoryDesc.Sculpture": "One-of-a-kind pieces molded and carved to perfection.",
+  "categoryDesc.Painting": "Original works on canvas and paper across movements and styles.",
+  "categoryDesc.Home & Garden": "Leafy greens and living installations to transform spaces.",
+
+  "home.tagline": "Quietly curated works across Sculpture, Painting, and Home & Garden.",
+
+  "about.title": "About",
+  "contact.title": "Contact",
+  "actions.sendMessage": "Send Message",
+  "contact.description": "We'd love to hear from you. For acquisition inquiries, consignments, or general questions, send us a message and our team will get back to you.",
+  "contact.form.name": "Name",
+  "contact.form.email": "Email",
+  "contact.form.message": "Message",
+  "contact.form.placeholderName": "Your full name",
+  "contact.form.placeholderEmail": "you@example.com",
+  "contact.form.placeholderMessage": "Tell us about the artwork or project...",
+  "contact.direct": "Or write us directly:",
+  "contact.gallery": "Gallery",
+  "contact.press": "Press",
+  "contact.sales": "Sales",
+  "about.heroAlt": "About Hero",
+  "about.description": "Benito Pepito is an artist-first gallery. We curate singular works across sculpture, painting, and home & garden. We favor materials, process, and quiet presentation—letting each piece breathe.",
+  "actions.exploreCategories": "Explore Categories",
+  "actions.contact": "Contact",
+  "social.instagram": "Instagram",
+  "social.press": "Press",
+  "social.tiktok": "TikTok",
+  "social.facebook": "Facebook",
+
+  "footer.blurb": "Artist-first gallery and marketplace for sculpture, painting, and home & garden installations.",
+  "footer.explore": "Explore",
+  "footer.contact": "Contact",
+  "footer.follow": "Follow",
+  "footer.address": "123 Stone Avenue, Montreal, QC",
+  "footer.hours": "Mon–Sat, 10:00–18:00",
+  "footer.rights": "All rights reserved.",
+
+  "minicart.title": "Your Selection",
+  "minicart.empty": "Your cart is empty.",
+  "minicart.review": "Review Cart",
+  "actions.remove": "Remove",
+
+  "cart.emptyTitle": "Your cart is empty",
+  "cart.emptySubtitle": "Browse artworks and add them to your cart.",
+  "cart.emptyCta": "Continue Shopping",
+  "cart.title": "Your Cart",
+  "cart.orderSummary": "Order Summary",
+  "cart.items": "Items",
+  "cart.total": "Total",
+  "cart.processing": "Processing...",
+  "cart.checkout": "Checkout with Stripe",
+  "cart.clear": "Clear Cart",
+
+  "success.title": "Payment Successful",
+  "success.message": "Thank you! Your order has been placed successfully.",
+  "cancel.title": "Payment Canceled",
+  "cancel.message": "Your payment was canceled. You can continue shopping and try again."
+}

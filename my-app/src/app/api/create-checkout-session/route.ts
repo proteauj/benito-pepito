@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2025-08-27.basil',
-});
+// Ensure this route uses the Node.js runtime (not Edge)
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
+    const secret = process.env.STRIPE_SECRET_KEY;
+    if (!secret) {
+      console.error('Missing STRIPE_SECRET_KEY');
+      return NextResponse.json({ error: 'Server misconfigured: missing Stripe key' }, { status: 500 });
+    }
+    const stripe = new Stripe(secret, { apiVersion: '2025-08-27.basil' });
     const { items } = await request.json();
     // items: [{ id, name, price, quantity }]
     if (!Array.isArray(items) || items.length === 0) {

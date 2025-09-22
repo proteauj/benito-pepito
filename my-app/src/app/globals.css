@@ -68,8 +68,9 @@ body {
   body,
   .stoneBg {
     /* For layered backgrounds, specify sizes per layer: gradient, image */
-    background-size: cover, contain; /* keep gradient covering, show whole image */
-    background-position: center top; /* anchor to top for a nicer composition */
+    background-size: cover, contain; /* gradient covers; image uses contain as tile unit */
+    background-position: center top, center top; /* align both layers */
+    background-repeat: no-repeat, repeat-y; /* tile stone image vertically to fill height */
     background-attachment: scroll, scroll; /* disable fixed on mobile */
   }
 }

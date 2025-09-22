@@ -8,7 +8,7 @@ export default function SiteHeader() {
   const { itemCount, toggleCart } = useCart();
   const { t } = useI18n();
   return (
-    <header className="bg-gradient-to-r from-[var(--leaf-dark)] to-[var(--leaf)] border-b border-[#cfc9c0]">
+    <header className="headerGradient border-b border-[#cfc9c0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">

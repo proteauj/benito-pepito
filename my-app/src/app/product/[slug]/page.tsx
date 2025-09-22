@@ -90,7 +90,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen stoneBg text-[var(--foreground)]">
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 leafy-divider pb-3 mb-4">
         <nav className="flex" aria-label="Breadcrumb">

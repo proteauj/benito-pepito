@@ -41,7 +41,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <div className="min-h-screen stoneBg text-[var(--foreground)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
           <p className="text-black/70 mb-8">Browse artworks and add them to your cart.</p>
@@ -54,7 +54,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
 

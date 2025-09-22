@@ -4,7 +4,7 @@ import SafeImage from '@/components/SafeImage';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="leafy-divider pb-3 mb-6">
           <h1 className="text-4xl font-bold">About</h1>

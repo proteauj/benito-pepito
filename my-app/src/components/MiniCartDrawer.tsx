@@ -20,15 +20,9 @@ export default function MiniCartDrawer() {
 
       {/* Drawer */}
       <aside
-        className={`absolute right-0 top-0 h-full w-full sm:w-[420px] bg-[var(--background)] text-[var(--foreground)] shadow-xl transform transition-transform ${
+        className={`absolute right-0 top-0 h-full w-full sm:w-[420px] stoneBg text-[var(--foreground)] shadow-xl transform transition-transform ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{
-          backgroundImage: "url('/textures/stone.svg')",
-          backgroundSize: 'cover',
-          backgroundAttachment: 'fixed',
-          backgroundBlendMode: 'multiply',
-        }}
         role="dialog"
         aria-label="Mini Cart"
       >

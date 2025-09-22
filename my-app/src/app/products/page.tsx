@@ -150,7 +150,7 @@ export default function ProductsIndexPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-end justify-between mb-8 leafy-divider pb-3">
           <h1 className="text-4xl font-bold">All Artworks</h1>

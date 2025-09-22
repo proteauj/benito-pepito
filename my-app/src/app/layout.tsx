@@ -38,10 +38,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} antialiased`}
       >
         <CartProvider>
-          <SiteHeader />
-          {children}
-          <SiteFooter />
-          <MiniCartDrawer />
+          {/* Ensure content is above the overlay */}
+          <div className="relative z-10">
+            <SiteHeader />
+            {children}
+            <SiteFooter />
+            <MiniCartDrawer />
+          </div>
         </CartProvider>
       </body>
     </html>

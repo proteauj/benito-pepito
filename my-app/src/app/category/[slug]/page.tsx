@@ -114,7 +114,7 @@ export default function CategoryPage() {
   }, [products, onlyAvailable, artistFilter, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen stoneBg text-[var(--foreground)]">
       {loading ? (
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">

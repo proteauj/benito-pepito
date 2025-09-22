@@ -37,8 +37,10 @@
 
 body {
   background: var(--background);
-  /* Subtle rock texture overlay */
-  background-image: url('/textures/stone.svg');
+  /* Stone + white overlay layered in the background itself */
+  background-image:
+    linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+    url('/stoneBg.jpeg');
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -48,6 +50,20 @@ body {
   font-size: 1.075rem; /* larger for Mouly readability */
   line-height: 1.6; /* a bit more leading for clarity */
 }
+
+/* Utility: Apply stone background anywhere */
+.stoneBg {
+  background: var(--background);
+  background-image:
+    linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+    url('/stoneBg.jpeg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-blend-mode: normal;
+}
+
+/* (Removed .stone-overlay DOM class; using body::before instead) */
 
 h1, h2, h3 {
   letter-spacing: 0.02em; /* elegant tracking */
@@ -98,8 +114,8 @@ h1, h2, h3 {
   font-weight: 600;
 }
 .link-chip:hover {
-  background: color-mix(in oklab, white 70%, var(--leaf) 30%);
-  color: var(--leaf);
+  background: var(--gold);
+  color: black;
 }
 
 .slideshow {

@@ -6,7 +6,7 @@ import { useCart } from '@/contexts/CartContext';
 export default function SiteHeader() {
   const { itemCount, toggleCart } = useCart();
   return (
-    <header className="bg-gradient-to-r from-[color-mix(in_oklab,var(--leaf)_35%,white)] to-[color-mix(in_oklab,var(--leaf-dark)_35%,white)] border-b border-[#cfc9c0]">
+    <header className="bg-gradient-to-r from-[var(--leaf-dark)] to-[var(--leaf)] border-b border-[#cfc9c0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">

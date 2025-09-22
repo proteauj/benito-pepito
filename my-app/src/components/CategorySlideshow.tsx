@@ -61,15 +61,17 @@ export default function CategorySlideshow({ category, products }: CategorySlides
         </Link>
       </div>
       
-      <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden border border-[#cfc9c0]">
+      <div className="relative bg-white border border-[#cfc9c0] overflow-hidden">
         <div className="relative h-80">
-          <SafeImage
-            src={currentProduct.image}
-            alt={currentProduct.title}
-            fill
-            className="object-cover"
-            priority
-          />
+          <Link href={`/category/${category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`}>
+            <SafeImage
+              src={currentProduct.image}
+              alt={currentProduct.title}
+              fill
+              className="object-cover"
+              priority
+            />
+          </Link>
           {!currentProduct.inStock && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
               <span className="bg-[#D4AF37] text-black px-4 py-2 rounded-full font-semibold">Sold</span>

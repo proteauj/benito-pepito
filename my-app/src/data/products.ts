@@ -14,6 +14,7 @@ export interface Product {
   artist: string;
   medium: string;
   year: number;
+  lastUpdated: string; // ISO date string
 }
 
 // NOTE: Image paths point to local placeholders under public/artworks/.
@@ -26,12 +27,8 @@ export const products: Product[] = [
     description: 'Basalt stones referencing Inukshuk forms; a meditation on balance and place.',
     price: 999,
     originalPrice: 1199,
-    image: '/artworks/sculpture/inukshuk-1.jpg',
-    images: [
-      '/artworks/sculpture/inukshuk-1.jpg',
-      '/artworks/sculpture/inukshuk-2.jpg',
-      '/artworks/sculpture/inukshuk-3.jpg',
-    ],
+    image: '/artworks/sculpture/placeholder.svg',
+    images: ['/artworks/sculpture/placeholder.svg'],
     category: 'Sculpture',
     inStock: true,
     rating: 4.8,
@@ -39,6 +36,7 @@ export const products: Product[] = [
     artist: 'A. Rivera',
     medium: 'Stone',
     year: 2023,
+    lastUpdated: '2025-09-15T10:00:00.000Z',
   },
   {
     id: 'sc2',
@@ -47,12 +45,8 @@ export const products: Product[] = [
     description: 'Lost-wax cast bronze figure capturing a moment of stillness and tension.',
     price: 4200,
     originalPrice: 4800,
-    image: '/artworks/sculpture/bronze-1.jpg',
-    images: [
-      '/artworks/sculpture/bronze-1.jpg',
-      '/artworks/sculpture/bronze-2.jpg',
-      '/artworks/sculpture/bronze-3.jpg',
-    ],
+    image: '/artworks/sculpture/placeholder.svg',
+    images: ['/artworks/sculpture/placeholder.svg'],
     category: 'Sculpture',
     inStock: false,
     rating: 4.3,
@@ -60,6 +54,7 @@ export const products: Product[] = [
     artist: 'S. Okoye',
     medium: 'Bronze',
     year: 2019,
+    lastUpdated: '2025-09-14T12:30:00.000Z',
   },
   {
     id: 'sc3',
@@ -67,12 +62,8 @@ export const products: Product[] = [
     title: 'Basalt Stack – Balance',
     description: 'Basalt stones arranged in a vertical stack; a study of gravity and form.',
     price: 1500,
-    image: '/artworks/sculpture/basalt-1.jpg',
-    images: [
-      '/artworks/sculpture/basalt-1.jpg',
-      '/artworks/sculpture/basalt-2.jpg',
-      '/artworks/sculpture/basalt-3.jpg',
-    ],
+    image: '/artworks/sculpture/placeholder.svg',
+    images: ['/artworks/sculpture/placeholder.svg'],
     category: 'Sculpture',
     inStock: true,
     rating: 4.8,
@@ -80,6 +71,7 @@ export const products: Product[] = [
     artist: 'V. Ionescu',
     medium: 'Stone',
     year: 2017,
+    lastUpdated: '2025-09-13T08:45:00.000Z',
   },
 
   {
@@ -89,12 +81,8 @@ export const products: Product[] = [
     description: 'An atmospheric night study in deep blues and graphite undertones.',
     price: 2990,
     originalPrice: 3990,
-    image: '/artworks/painting/nocturne-1.jpg',
-    images: [
-      '/artworks/painting/nocturne-1.jpg',
-      '/artworks/painting/nocturne-2.jpg',
-      '/artworks/painting/nocturne-3.jpg',
-    ],
+    image: '/artworks/painting/placeholder.svg',
+    images: ['/artworks/painting/placeholder.svg'],
     category: 'Painting',
     inStock: true,
     rating: 4.6,
@@ -102,6 +90,7 @@ export const products: Product[] = [
     artist: 'K. Zhang',
     medium: 'Oil on Canvas',
     year: 2022,
+    lastUpdated: '2025-09-12T09:15:00.000Z',
   },
   {
     id: 'pa2',
@@ -109,12 +98,8 @@ export const products: Product[] = [
     title: 'Mixed Media – City Fragments',
     description: 'Collaged textures and ink lines map an abstracted urban memory.',
     price: 3600,
-    image: '/artworks/painting/city-1.jpg',
-    images: [
-      '/artworks/painting/city-1.jpg',
-      '/artworks/painting/city-2.jpg',
-      '/artworks/painting/city-3.jpg',
-    ],
+    image: '/artworks/painting/placeholder.svg',
+    images: ['/artworks/painting/placeholder.svg'],
     category: 'Painting',
     inStock: false,
     rating: 4.7,
@@ -122,6 +107,7 @@ export const products: Product[] = [
     artist: 'L. Moreau',
     medium: 'Mixed Media',
     year: 2021,
+    lastUpdated: '2025-09-10T14:20:00.000Z',
   },
   {
     id: 'pa3',
@@ -129,12 +115,8 @@ export const products: Product[] = [
     title: 'Acrylic on Linen – Horizon',
     description: 'Bands of color suggesting a distant shoreline at dawn.',
     price: 2100,
-    image: '/artworks/painting/horizon-1.jpg',
-    images: [
-      '/artworks/painting/horizon-1.jpg',
-      '/artworks/painting/horizon-2.jpg',
-      '/artworks/painting/horizon-3.jpg',
-    ],
+    image: '/artworks/painting/placeholder.svg',
+    images: ['/artworks/painting/placeholder.svg'],
     category: 'Painting',
     inStock: true,
     rating: 4.5,
@@ -142,6 +124,7 @@ export const products: Product[] = [
     artist: 'M. Conte',
     medium: 'Acrylic on Linen',
     year: 2020,
+    lastUpdated: '2025-09-11T16:05:00.000Z',
   },
   {
     id: 'pa4',
@@ -149,12 +132,8 @@ export const products: Product[] = [
     title: 'Watercolor Study – Wild Meadow',
     description: 'Loose brushwork and layered washes evoke grasses in wind.',
     price: 790,
-    image: '/artworks/painting/meadow-1.jpg',
-    images: [
-      '/artworks/painting/meadow-1.jpg',
-      '/artworks/painting/meadow-2.jpg',
-      '/artworks/painting/meadow-3.jpg',
-    ],
+    image: '/artworks/painting/placeholder.svg',
+    images: ['/artworks/painting/placeholder.svg'],
     category: 'Painting',
     inStock: true,
     rating: 4.4,
@@ -162,6 +141,7 @@ export const products: Product[] = [
     artist: 'N. Arman',
     medium: 'Watercolor',
     year: 2024,
+    lastUpdated: '2025-09-09T11:50:00.000Z',
   },
   {
     id: 'pa5',
@@ -169,12 +149,8 @@ export const products: Product[] = [
     title: 'Ink on Paper – Gesture Series',
     description: 'Spontaneous marks exploring rhythm and movement.',
     price: 1590,
-    image: '/artworks/painting/gesture-1.jpg',
-    images: [
-      '/artworks/painting/gesture-1.jpg',
-      '/artworks/painting/gesture-2.jpg',
-      '/artworks/painting/gesture-3.jpg',
-    ],
+    image: '/artworks/painting/placeholder.svg',
+    images: ['/artworks/painting/placeholder.svg'],
     category: 'Painting',
     inStock: true,
     rating: 4.6,
@@ -182,6 +158,7 @@ export const products: Product[] = [
     artist: 'C. Adams',
     medium: 'Ink on Paper',
     year: 2021,
+    lastUpdated: '2025-09-08T13:40:00.000Z',
   },
 
   {
@@ -191,12 +168,8 @@ export const products: Product[] = [
     description: 'Stacked river stones forming a meditative garden cairn; exterior placement.',
     price: 1540,
     originalPrice: 1620,
-    image: '/artworks/home-garden/cairn-1.jpg',
-    images: [
-      '/artworks/home-garden/cairn-1.jpg',
-      '/artworks/home-garden/cairn-2.jpg',
-      '/artworks/home-garden/cairn-3.jpg',
-    ],
+    image: '/artworks/home-garden/placeholder.svg',
+    images: ['/artworks/home-garden/placeholder.svg'],
     category: 'Home & Garden',
     inStock: true,
     rating: 4.6,
@@ -204,6 +177,7 @@ export const products: Product[] = [
     artist: 'E. Santos',
     medium: 'Stone (Exterior)',
     year: 2018,
+    lastUpdated: '2025-09-07T10:10:00.000Z',
   },
   {
     id: 'hg2',
@@ -211,12 +185,8 @@ export const products: Product[] = [
     title: 'Living Wall Panel – Fern Study',
     description: 'Modular living wall with ferns and moss; irrigation-ready installation.',
     price: 2980,
-    image: '/artworks/home-garden/living-wall-1.jpg',
-    images: [
-      '/artworks/home-garden/living-wall-1.jpg',
-      '/artworks/home-garden/living-wall-2.jpg',
-      '/artworks/home-garden/living-wall-3.jpg',
-    ],
+    image: '/artworks/home-garden/placeholder.svg',
+    images: ['/artworks/home-garden/placeholder.svg'],
     category: 'Home & Garden',
     inStock: false,
     rating: 4.7,
@@ -224,6 +194,7 @@ export const products: Product[] = [
     artist: 'T. Nguyen',
     medium: 'Living Installation',
     year: 2022,
+    lastUpdated: '2025-09-06T09:05:00.000Z',
   },
   {
     id: 'hg3',
@@ -231,12 +202,8 @@ export const products: Product[] = [
     title: 'Stone Planter – Moss Basin',
     description: 'Hand-carved stone basin planted with mosses; designed to patinate outdoors.',
     price: 1420,
-    image: '/artworks/home-garden/moss-basin-1.jpg',
-    images: [
-      '/artworks/home-garden/moss-basin-1.jpg',
-      '/artworks/home-garden/moss-basin-2.jpg',
-      '/artworks/home-garden/moss-basin-3.jpg',
-    ],
+    image: '/artworks/home-garden/placeholder.svg',
+    images: ['/artworks/home-garden/placeholder.svg'],
     category: 'Home & Garden',
     inStock: true,
     rating: 4.5,
@@ -244,5 +211,6 @@ export const products: Product[] = [
     artist: 'R. Cohen',
     medium: 'Stone & Moss',
     year: 2020,
+    lastUpdated: '2025-09-05T15:25:00.000Z',
   },
 ];

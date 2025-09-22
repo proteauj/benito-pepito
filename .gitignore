@@ -1,0 +1,24 @@
+# Root gitignore for repository
+
+# Node
+node_modules/
+**/node_modules/
+
+# Next.js / build artifacts
+.next/
+**/.next/
+.turbo/
+**/.turbo/
+.vercel/
+**/.vercel/
+
+# Environments
+.env*
+*.env.bak
+*.env.backup
+.env.local
+.env.development.local
+.env.production.local
+
+# OS files
+**/.DS_Store

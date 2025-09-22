@@ -24,8 +24,7 @@ export default function MiniCartDrawer() {
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=55')",
+          backgroundImage: "url('/textures/stone.svg')",
           backgroundSize: 'cover',
           backgroundAttachment: 'fixed',
           backgroundBlendMode: 'multiply',
@@ -45,9 +44,9 @@ export default function MiniCartDrawer() {
             <p className="text-[var(--foreground)]/70">Your cart is empty.</p>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="flex bg-[#121513] rounded-lg border border-[#2a2f2d] p-3">
+              <div key={item.id} className="flex bg-white border border-[#cfc9c0] p-3">
                 <div className="relative w-20 h-20 mr-3">
-                  <Image src={item.image} alt={item.title} fill className="object-cover rounded" />
+                  <Image src={item.image} alt={item.title} fill className="object-cover" />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between">
@@ -72,7 +71,7 @@ export default function MiniCartDrawer() {
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 border-t border-[#2a2f2d] p-5 bg-[#1a1e1c]">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-[#2a2f2d] p-5 bg-white text-black">
           <div className="flex justify-between mb-3">
             <span>Total</span>
             <span className="text-xl font-bold">${total.toFixed(2)}</span>
@@ -80,7 +79,7 @@ export default function MiniCartDrawer() {
           <Link
             href="/cart"
             onClick={closeCart}
-            className="block w-full text-center bg-[var(--gold)] text-black py-3 rounded-lg font-semibold hover:bg-[var(--gold-dark)]"
+            className="block w-full text-center bg-[var(--gold)] text-black py-3 font-semibold hover:bg-white hover:text-[var(--leaf)]"
           >
             Review Cart
           </Link>

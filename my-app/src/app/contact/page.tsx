@@ -10,12 +10,12 @@ export default function ContactPage() {
           questions, send us a message and our team will get back to you.
         </p>
 
-        <form className="grid grid-cols-1 gap-6 bg-white border border-[#cfc9c0] rounded-xl p-6">
+        <form className="grid grid-cols-1 gap-6 bg-white border border-[#cfc9c0] p-6">
           <div>
             <label className="block text-sm font-medium text-black mb-1">Name</label>
             <input
               type="text"
-              className="w-full rounded-lg border border-[#cfc9c0] px-3 py-2 text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full border border-[#cfc9c0] px-3 py-2 text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
               placeholder="Your full name"
               required
             />
@@ -24,7 +24,7 @@ export default function ContactPage() {
             <label className="block text-sm font-medium text-black mb-1">Email</label>
             <input
               type="email"
-              className="w-full rounded-lg border border-[#cfc9c0] px-3 py-2 text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full border border-[#cfc9c0] px-3 py-2 text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
               placeholder="you@example.com"
               required
             />
@@ -33,7 +33,7 @@ export default function ContactPage() {
             <label className="block text-sm font-medium text-black mb-1">Message</label>
             <textarea
               rows={6}
-              className="w-full rounded-lg border border-[#cfc9c0] px-3 py-2 text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full border border-[#cfc9c0] px-3 py-2 text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
               placeholder="Tell us about the artwork or project..."
               required
             />
@@ -43,7 +43,7 @@ export default function ContactPage() {
             <p className="text-black/70">Or write us directly: <a href="mailto:info@benitopepito.art" className="underline">info@benitopepito.art</a></p>
             <button
               type="submit"
-              className="inline-flex items-center bg-amber-500 hover:bg-amber-400 text-black font-semibold px-6 py-3 rounded-lg"
+              className="inline-flex items-center bg-[var(--gold)] text-black font-semibold px-6 py-3 hover:bg-white hover:text-[var(--leaf)]"
             >
               Send Message
             </button>

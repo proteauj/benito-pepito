@@ -75,8 +75,8 @@ export default function HomePage() {
 
       {/* Category Slideshows: two side-by-side on md+ */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="leafy-divider pb-3 mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Collections</h2>
+        <div className="pb-4 mb-2">
+          <p className="text-lg font-semibold text-[var(--leaf)]">Quietly curated works across Sculpture, Painting, and Home & Garden.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {Object.entries(productsByCategory).map(([category, products]) => (
@@ -89,14 +89,10 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Hero Section (moved below to prioritize artworks) */}
-      <section className="bg-gradient-to-r from-emerald-700 to-[var(--gold)] text-white py-10">
+      {/* Compact CTA under collections */}
+      <section className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-5xl font-bold mb-6">Welcome to Benito Pepito</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Discover singular artworks across curated categories.
-          </p>
-          <a href="#" className="inline-block bg-[var(--gold)] text-black px-8 py-3 rounded-lg font-semibold hover:bg-[var(--gold-dark)] transition-colors">
+          <a href="/products" className="inline-block bg-[var(--gold)] text-black px-8 py-3 font-semibold hover:bg-white hover:text-[var(--leaf)] transition-colors">
             Explore Collections
           </a>
         </div>

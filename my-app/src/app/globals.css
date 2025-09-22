@@ -6,8 +6,8 @@
   --foreground: #111111; /* mostly black text */
   --gold: #D4AF37; /* metallic gold */
   --gold-dark: #c49a2e;
-  --leaf: #059669; /* emerald-600 */
-  --leaf-dark: #047857; /* emerald-700 */
+  --leaf: #0b8a5a; /* richer emerald */
+  --leaf-dark: #066a46; /* deeper emerald */
 }
 
 @theme inline {
@@ -17,20 +17,22 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Keep a consistent light, stone-like palette across modes */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #e9e5df;
+    --foreground: #111111;
   }
 }
 
 body {
   background: var(--background);
   /* Subtle rock texture overlay */
-  background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=55');
+  background-image: url('/textures/stone.svg');
   background-size: cover;
+  background-repeat: no-repeat;
   background-attachment: fixed;
-  background-blend-mode: multiply;
+  background-blend-mode: normal; /* keep texture visible */
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.975rem; /* lower body font for visual quietness */
@@ -47,6 +49,29 @@ h1, h2, h3 {
 /* Leafy divider helper */
 .leafy-divider {
   border-bottom: 1px solid color-mix(in oklab, var(--leaf) 30%, transparent);
+}
+
+/* Link styles that are visible on stone backgrounds */
+.gold-link {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.gold-link:hover {
+  background: white;
+  color: var(--leaf);
+}
+
+.link-chip {
+  display: inline-block;
+  background: var(--gold);
+  color: black;
+  padding: 0.25rem 0.5rem;
+  font-weight: 600;
+}
+.link-chip:hover {
+  background: white;
+  color: var(--leaf);
 }
 
 .slideshow {

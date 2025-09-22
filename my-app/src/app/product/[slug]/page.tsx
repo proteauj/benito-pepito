@@ -35,6 +35,16 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  function slugify(input: string) {
+    return input
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
   useEffect(() => {
     async function fetchProduct() {
       if (!params.slug) return;
@@ -92,12 +102,14 @@ export default function ProductPage() {
               </Link>
             </li>
             <li>
-              <svg className="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="flex-shrink-0 h-5 w-5 text-black/40" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
               </svg>
             </li>
             <li>
-              <span className="text-gray-500">{product.category}</span>
+              <Link href={`/category/${slugify(product.category)}`} className="gold-link">
+                {product.category}
+              </Link>
             </li>
             <li>
               <svg className="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -116,7 +128,7 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div>
-            <div className="aspect-square bg-white rounded-lg overflow-hidden mb-4 relative">
+            <div className="aspect-square bg-white overflow-hidden mb-4 relative border border-[#cfc9c0]">
               <SafeImage
                 src={product?.images[selectedImageIndex]}
                 alt={product?.title || 'Artwork'}
@@ -135,8 +147,8 @@ export default function ProductPage() {
                 <button
                   key={index}
                   onClick={() => setSelectedImageIndex(index)}
-                  className={`aspect-square bg-white rounded-lg overflow-hidden border-2 ${
-                    selectedImageIndex === index ? 'border-[var(--gold)]' : 'border-gray-200'
+                  className={`aspect-square bg-white overflow-hidden border-2 ${
+                    selectedImageIndex === index ? 'border-[var(--gold)]' : 'border-[#cfc9c0]'
                   }`}
                 >
                   <SafeImage
@@ -153,9 +165,9 @@ export default function ProductPage() {
 
           {/* Product Info */}
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">{product.artist}</h1>
-            <p className="text-gray-600 mb-1">{product.title} · {product.year}</p>
-            <p className="text-gray-600 mb-4">{product.medium}</p>
+            <h1 className="text-3xl font-bold text-black mb-1">{product.artist}</h1>
+            <p className="text-black/70 mb-1">{product.title} · {product.year}</p>
+            <p className="text-black/70 mb-4">{product.medium}</p>
             
             {/* Rating */}
             <div className="flex items-center mb-4">
@@ -166,7 +178,7 @@ export default function ProductPage() {
                     className={`w-5 h-5 ${
                       i < Math.floor(product.rating)
                         ? 'text-[var(--gold)]'
-                        : 'text-gray-300'
+                        : 'text-black/20'
                     }`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -175,7 +187,7 @@ export default function ProductPage() {
                   </svg>
                 ))}
               </div>
-              <span className="ml-2 text-gray-600">
+              <span className="ml-2 text-black/70">
                 {product.rating} ({product.reviews} reviews)
               </span>
             </div>
@@ -183,14 +195,14 @@ export default function ProductPage() {
             {/* Stock Status */}
             <div className="mb-6">
               {product.inStock ? (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-green-100 text-green-800">
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   Available
                 </span>
               ) : (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-700">
+                <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-black/10 text-black">
                   Sold
                 </span>
               )}
@@ -201,7 +213,7 @@ export default function ProductPage() {
               <button
                 onClick={() => product && addToCart(product, 1)}
                 disabled={!product.inStock}
-                className="flex-1 bg-[var(--gold)] text-black py-3 px-6 rounded-lg font-semibold hover:bg-[var(--gold-dark)] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 bg-[var(--gold)] text-black py-3 px-6 font-semibold hover:bg-white hover:text-[var(--leaf)] disabled:bg-black/30 disabled:cursor-not-allowed transition-colors"
               >
                 {product.inStock ? 'Add to Cart' : 'Sold'}
               </button>
@@ -209,10 +221,10 @@ export default function ProductPage() {
 
             {/* Additional Actions */}
             <div className="flex space-x-4">
-              <button className="flex-1 border border-[#cfc9c0] text-black py-3 px-6 rounded-lg font-semibold hover:bg-white transition-colors">
+              <button className="flex-1 border border-[#cfc9c0] text-black py-3 px-6 font-semibold hover:bg-white transition-colors">
                 Add to Wishlist
               </button>
-              <button className="flex-1 border border-[#cfc9c0] text-black py-3 px-6 rounded-lg font-semibold hover:bg-white transition-colors">
+              <button className="flex-1 border border-[#cfc9c0] text-black py-3 px-6 font-semibold hover:bg-white transition-colors">
                 Share
               </button>
             </div>

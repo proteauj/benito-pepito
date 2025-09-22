@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
-import SafeImage from '@/components/SafeImage';
+import ArtworkSquare from '@/components/ArtworkSquare';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
@@ -172,8 +171,8 @@ export default function CategoryPage() {
           {filteredSorted.map((p) => (
             <div key={p.id} className="group bg-white overflow-hidden border border-[#cfc9c0]">
               <Link href={`/product/${p.slug}`}>
-                <div className="relative aspect-[4/3]">
-                  <SafeImage src={p.image} alt={p.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="relative">
+                  <ArtworkSquare src={p.image} alt={p.title} />
                   {!p.inStock && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <span className="bg-[var(--gold)] text-black px-4 py-2 rounded-full font-semibold">Sold</span>

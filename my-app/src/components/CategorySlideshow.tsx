@@ -62,7 +62,7 @@ export default function CategorySlideshow({ category, products }: CategorySlides
       </div>
       
       <div className="relative bg-white border border-[#cfc9c0] overflow-hidden">
-        <div className="relative h-80">
+        <div className="relative">
           <Link href={`/category/${category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`}>
             <ArtworkSquare src={currentProduct.image} alt={currentProduct.title} priority />
           </Link>

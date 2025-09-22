@@ -141,6 +141,7 @@ export default function ProductPage() {
                   <ArtworkSquare
                     src={image}
                     alt={`${product?.title || 'Artwork'} ${index + 1}`}
+                    matPaddingClass="p-1"
                   />
                 </button>
               ))}

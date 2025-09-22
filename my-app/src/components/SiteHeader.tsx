@@ -6,26 +6,26 @@ import { useCart } from '@/contexts/CartContext';
 export default function SiteHeader() {
   const { itemCount, toggleCart } = useCart();
   return (
-    <header className="bg-gradient-to-r from-[var(--leaf-dark)] to-[var(--leaf)] border-b border-[#cfc9c0]">
+    <header className="bg-gradient-to-r from-[color-mix(in_oklab,var(--leaf)_35%,white)] to-[color-mix(in_oklab,var(--leaf-dark)_35%,white)] border-b border-[#cfc9c0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-[var(--gold)] hover:text-white">Benito Pepito</Link>
+            <Link href="/" className="text-2xl font-bold text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] px-2 py-1 transition-colors">Benito Pepito</Link>
           </div>
           <nav className="hidden md:flex space-x-2 h-16">
-            <Link href="/" className="h-full px-3 text-[var(--gold)] hover:text-white flex items-center">Home</Link>
-            <Link href="/categories" className="h-full px-3 text-[var(--gold)] hover:text-white flex items-center">Categories</Link>
-            <Link href="/products" className="h-full px-3 text-[var(--gold)] hover:text-white flex items-center">All Works</Link>
-            <Link href="/about" className="h-full px-3 text-[var(--gold)] hover:text-white flex items-center">About</Link>
-            <Link href="/contact" className="h-full px-3 text-[var(--gold)] hover:text-white flex items-center">Contact</Link>
+            <Link href="/" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">Home</Link>
+            <Link href="/categories" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">Categories</Link>
+            <Link href="/products" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">All Works</Link>
+            <Link href="/about" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">About</Link>
+            <Link href="/contact" className="h-full px-3 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors">Contact</Link>
           </nav>
           <div className="flex items-center space-x-2 h-16">
-            <Link href="/products" className="h-16 w-16 text-[var(--gold)] hover:text-white flex items-center justify-center" aria-label="Search">
+            <Link href="/products" className="h-16 w-16 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] flex items-center justify-center transition-colors" aria-label="Search">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </Link>
-            <button onClick={toggleCart} className="h-16 w-16 text-[var(--gold)] hover:text-white relative flex items-center justify-center" aria-label="Cart">
+            <button onClick={toggleCart} className="h-16 w-16 text-[var(--gold)] hover:bg-white hover:text-[var(--leaf)] relative flex items-center justify-center transition-colors" aria-label="Cart">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13v6a2 2 0 002 2h6a2 2 0 002-2v-6" />
               </svg>

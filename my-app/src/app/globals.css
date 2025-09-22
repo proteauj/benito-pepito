@@ -1,7 +1,21 @@
-/* Strong green gradient for the top menu header */
+/* Solid gold background for the top menu header */
 .headerGradient {
-  /* Vertical gradient: top (darker) -> bottom (leaf) */
-  background-image: linear-gradient(180deg, #032a1b 0%, #0b8a5a 100%);
+  background-color: var(--gold);
+}
+
+/* Force Mouly display font where needed */
+.mouly-font {
+  font-family: 'Mouly', Arial, Helvetica, sans-serif !important;
+}
+
+/* Nooa Semi Serif (regular) — add the font files under public/fonts/nooa/ */
+@font-face {
+  font-family: 'NooaSemiSerif';
+  src: url('/fonts/nooa/nooa-semiserif-regular.woff2') format('woff2'),
+       url('/fonts/nooa/nooa-semiserif-regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* Opaque granite background for side drawers */
@@ -73,7 +87,8 @@ body {
   background-attachment: fixed;
   background-blend-mode: normal; /* keep texture visible */
   color: var(--foreground);
-  font-family: 'Mouly', Arial, Helvetica, sans-serif;
+  /* Use Nooa for all body text by default */
+  font-family: 'NooaSemiSerif', Georgia, 'Times New Roman', serif;
   font-size: 1.075rem; /* larger for Mouly readability */
   line-height: 1.6; /* a bit more leading for clarity */
 }

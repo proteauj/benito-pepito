@@ -154,7 +154,7 @@ export default function ProductsIndexPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-end justify-between mb-8 leafy-divider pb-3">
           <h1 className="text-4xl font-bold">All Artworks</h1>
-          <Link href="/categories" className="text-[var(--gold)] hover:text-[var(--gold-dark)]">Categories →</Link>
+          <Link href="/categories" className="link-chip">Categories →</Link>
         </div>
 
         {/* Controls */}
@@ -163,40 +163,55 @@ export default function ProductsIndexPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search title, artist, medium"
-            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
           />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as any)}
-            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-          >
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-          >
-            <option value="all">All artists</option>
-            {artists.map((a) => (
-              <option key={a} value={a}>{a}</option>
-            ))}
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-          >
-            <option value="lastUpdated-desc">Last Updated (Newest)</option>
-            <option value="lastUpdated-asc">Last Updated (Oldest)</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="year-desc">Newest</option>
-            <option value="year-asc">Oldest</option>
-            <option value="artist">Artist A→Z</option>
-          </select>
+          <div className="relative">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as any)}
+              className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            >
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="relative">
+            <select
+              value={artist}
+              onChange={(e) => setArtist(e.target.value)}
+              className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            >
+              <option value="all">All artists</option>
+              {artists.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            >
+              <option value="lastUpdated-desc">Last Updated (Newest)</option>
+              <option value="lastUpdated-asc">Last Updated (Oldest)</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="year-desc">Newest</option>
+              <option value="year-asc">Oldest</option>
+              <option value="artist">Artist A→Z</option>
+            </select>
+            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
+            </svg>
+          </div>
         </div>
 
         {/* Grid */}

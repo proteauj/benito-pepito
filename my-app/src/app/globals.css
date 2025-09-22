@@ -64,13 +64,15 @@ h1, h2, h3 {
 
 .link-chip {
   display: inline-block;
-  background: var(--gold);
-  color: black;
-  padding: 0.25rem 0.5rem;
+  background: white;
+  color: var(--leaf);
+  border: 1px solid color-mix(in oklab, var(--leaf) 35%, transparent);
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
   font-weight: 600;
 }
 .link-chip:hover {
-  background: white;
+  background: color-mix(in oklab, white 70%, var(--leaf) 30%);
   color: var(--leaf);
 }
 

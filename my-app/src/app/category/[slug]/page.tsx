@@ -134,7 +134,7 @@ export default function CategoryPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex items-end justify-between mb-8 leafy-divider pb-3">
             <h1 className="text-4xl font-bold">{categoryTitle}</h1>
-            <Link href="/" className="text-[var(--gold)] hover:text-[var(--gold-dark)]">← Back</Link>
+            <Link href="/" className="link-chip">← Back</Link>
           </div>
 
         {/* Controls */}
@@ -144,7 +144,7 @@ export default function CategoryPage() {
             <span className="text-[var(--leaf)] font-medium">Only available</span>
           </label>
           <select
-            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
             value={artistFilter}
             onChange={e => setArtistFilter(e.target.value)}
           >
@@ -154,7 +154,7 @@ export default function CategoryPage() {
             ))}
           </select>
           <select
-            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
           >

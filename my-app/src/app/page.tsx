@@ -92,7 +92,7 @@ export default function HomePage() {
       {/* Compact CTA under collections */}
       <section className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <a href="/products" className="inline-block bg-[var(--gold)] text-black px-8 py-3 font-semibold hover:bg-white hover:text-[var(--leaf)] transition-colors">
+          <a href="/products" className="inline-block bg-[var(--gold)] text-black px-8 py-3 font-semibold hover:bg-[var(--gold-dark)] transition-colors">
             Explore Collections
           </a>
         </div>

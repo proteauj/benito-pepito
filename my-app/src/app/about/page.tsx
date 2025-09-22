@@ -24,10 +24,10 @@ export default function AboutPage() {
 
         {/* Media links row */}
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-white hover:text-[var(--leaf)]">Explore Categories</a>
+          <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">Explore Categories</a>
           <a href="/contact" className="border border-[#cfc9c0] text-black px-5 py-2 font-semibold hover:bg-white">Contact</a>
-          <a href="#" className="text-black hover:text-[var(--leaf)]">Instagram</a>
-          <a href="#" className="text-black hover:text-[var(--leaf)]">Press</a>
+          <a href="#" className="link-chip">Instagram</a>
+          <a href="#" className="link-chip">Press</a>
         </div>
       </div>
     </div>

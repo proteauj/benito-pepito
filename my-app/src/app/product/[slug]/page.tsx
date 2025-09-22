@@ -97,25 +97,15 @@ export default function ProductPage() {
         <nav className="flex" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-4">
             <li>
-              <Link href="/" className="text-black/60 hover:text-black">
-                Home
-              </Link>
+              <Link href="/" className="link-chip">Home</Link>
             </li>
+            <li aria-hidden className="text-black/40">›</li>
             <li>
-              <svg className="flex-shrink-0 h-5 w-5 text-black/40" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </li>
-            <li>
-              <Link href={`/category/${slugify(product.category)}`} className="gold-link">
+              <Link href={`/category/${slugify(product.category)}`} className="link-chip">
                 {product.category}
               </Link>
             </li>
-            <li>
-              <svg className="flex-shrink-0 h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </li>
+            <li aria-hidden className="text-black/40">›</li>
             <li>
               <span className="text-gray-900 font-medium">{product.title}</span>
             </li>

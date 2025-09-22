@@ -43,7 +43,7 @@ export default function ContactPage() {
             <p className="text-black/70">Or write us directly: <a href="mailto:info@benitopepito.art" className="underline">info@benitopepito.art</a></p>
             <button
               type="submit"
-              className="inline-flex items-center bg-[var(--gold)] text-black font-semibold px-6 py-3 hover:bg-white hover:text-[var(--leaf)]"
+              className="inline-flex items-center bg-[var(--gold)] text-black font-semibold px-6 py-3 hover:bg-[var(--gold-dark)]"
             >
               Send Message
             </button>

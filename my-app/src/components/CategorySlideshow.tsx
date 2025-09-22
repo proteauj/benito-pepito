@@ -55,7 +55,7 @@ export default function CategorySlideshow({ category, products }: CategorySlides
         <h2 className="text-3xl font-bold text-black">{category}</h2>
         <Link 
           href={`/category/${category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`}
-          className="text-[#D4AF37] hover:text-[#c49a2e] font-medium"
+          className="link-chip"
         >
           View All →
         </Link>

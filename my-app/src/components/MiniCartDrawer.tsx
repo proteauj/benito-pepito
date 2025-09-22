@@ -71,7 +71,7 @@ export default function MiniCartDrawer() {
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 border-t border-[#2a2f2d] p-5 bg-white text-black">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-[#2a2f2d] p-5 bg-[#e4dfd7] text-black">
           <div className="flex justify-between mb-3">
             <span>Total</span>
             <span className="text-xl font-bold">${total.toFixed(2)}</span>

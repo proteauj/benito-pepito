@@ -1,13 +1,13 @@
 {
   "nav.home": "Accueil",
   "nav.categories": "Catégories",
-  "nav.allWorks": "Toutes les œuvres",
-  "nav.about": "À propos",
+  "nav.allWorks": "Œuvres",
+  "nav.about": "Artiste",
   "nav.contact": "Contact",
 
   "breadcrumbs.home": "Accueil",
 
-  "headings.allArtworks": "Toutes les œuvres",
+  "headings.allArtworks": "Œuvres",
   "category.viewAll": "Voir tout →",
 
   "filters.onlyAvailable": "Seulement disponibles",
@@ -59,7 +59,7 @@
 
   "home.tagline": "Une sélection discrète d'œuvres en Sculpture, Peinture et Maison & Jardin.",
 
-  "about.title": "À propos",
+  "about.title": "Artiste",
   "about.description": "Benito Pepito est une galerie centrée sur les artistes. Nous sélectionnons des œuvres singulières en sculpture, peinture et maison & jardin. Nous privilégions les matières, les procédés et une présentation épurée — pour laisser chaque pièce respirer.",
   "contact.title": "Contact",
   "actions.sendMessage": "Envoyer le message",

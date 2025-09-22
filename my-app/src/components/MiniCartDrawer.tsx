@@ -22,7 +22,7 @@ export default function MiniCartDrawer() {
 
       {/* Drawer */}
       <aside
-        className={`absolute right-0 top-0 h-full w-full sm:w-[420px] stoneBg text-[var(--foreground)] shadow-xl transform transition-transform ${
+        className={`absolute right-0 top-0 h-full w-full sm:w-[420px] drawerBg text-[var(--foreground)] shadow-xl transform transition-transform ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"

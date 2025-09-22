@@ -3,6 +3,27 @@
   /* Vertical gradient: top (darker) -> bottom (leaf) */
   background-image: linear-gradient(180deg, #032a1b 0%, #0b8a5a 100%);
 }
+
+/* Opaque granite background for side drawers */
+.drawerBg {
+  background-color: var(--background);
+  background-image:
+    linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+    url('/stoneBg.jpeg');
+  background-size: cover; /* fill the drawer area */
+  background-repeat: no-repeat; /* no tiling on desktop */
+  background-position: center top;
+}
+@media (max-width: 768px) {
+  .drawerBg {
+    background-image:
+      linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+      url('/stoneBg-rotated.jpg');
+    background-repeat: no-repeat, repeat-y; /* vertical tiling only */
+    background-size: cover, 100% auto; /* span full width, repeat down */
+    background-position: center, center top;
+  }
+}
 @import "tailwindcss";
 
 :root {
@@ -46,8 +67,9 @@ body {
   background-image:
     linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
     url('/stoneBg.jpeg');
-  background-size: cover;
-  background-repeat: no-repeat;
+  /* gradient covers; texture spans full width and only repeats vertically */
+  background-size: cover, 100% auto;
+  background-repeat: no-repeat, repeat-y;
   background-attachment: fixed;
   background-blend-mode: normal; /* keep texture visible */
   color: var(--foreground);
@@ -62,10 +84,12 @@ body {
   background-image:
     linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
     url('/stoneBg.jpeg');
-  background-size: cover;
-  background-repeat: no-repeat;
+  /* gradient covers; texture spans full width and only repeats vertically */
+  background-size: cover, 100% auto;
+  background-repeat: no-repeat, repeat-y;
   background-attachment: fixed;
   background-blend-mode: normal;
+  position: relative; /* allow mobile ::before overlay */
 }
 
 /* Mobile tuning: show more of the stone texture and avoid iOS fixed-attachment jank */
@@ -73,10 +97,86 @@ body {
   body,
   .stoneBg {
     /* For layered backgrounds, specify sizes per layer: gradient, image */
-    background-size: cover, contain; /* gradient covers; image uses contain as tile unit */
+    background-size: cover, 100% auto; /* gradient covers; image spans full width */
     background-position: center top, center top; /* align both layers */
     background-repeat: no-repeat, repeat-y; /* tile stone image vertically to fill height */
     background-attachment: scroll, scroll; /* disable fixed on mobile */
+  }
+
+  /* On mobile, disable the body stone image to avoid duplicate/unrotated layer */
+  body {
+    /* Solid base only; overlay will carry gradient + texture */
+    background-image: none;
+    background-color: var(--background);
+    background-attachment: scroll;
+    position: relative; /* enable ::before layering */
+  }
+
+  /* On mobile, render the rotated, repeating stone texture across the whole page */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    /* Single unified background: gradient overlay + repeated texture */
+    background-image:
+      linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+      url('/stoneBg-rotated.jpg');
+    background-position: center, center top;
+    background-repeat: no-repeat, repeat-y; /* overlay doesn't repeat; texture repeats vertically only */
+    background-size: cover, 100% auto; /* overlay covers; texture spans full width and repeats down */
+    /* No transform needed: asset is already rotated, allowing native repeat */
+    pointer-events: none;
+    z-index: 0; /* above body background, below content */
+    opacity: 1;
+  }
+
+  /* Make section backgrounds transparent so body::before is visible */
+  .stoneBg {
+    background: transparent; /* remove solid color fill */
+    background-image: linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)); /* gradient only */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-attachment: scroll;
+  }
+}
+
+/* If the screen is wider than tall on mobile, fall back to desktop (non-rotated) behavior */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Remove the mobile overlay */
+  body::before { content: none; }
+
+  /* Restore layered desktop background with vertical-only repeat */
+  body {
+    background-image:
+      linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+      url('/stoneBg.jpeg');
+    background-position: center top, center top;
+    background-repeat: no-repeat, repeat-y;
+    background-size: cover, 100% auto;
+    background-attachment: scroll;
+  }
+
+  /* Ensure sections also use non-rotated texture */
+  .stoneBg {
+    background: var(--background);
+    background-image:
+      linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+      url('/stoneBg.jpeg');
+    background-position: center top, center top;
+    background-repeat: no-repeat, repeat-y;
+    background-size: cover, 100% auto;
+    background-attachment: scroll;
+  }
+
+  /* Drawer granite non-rotated in landscape */
+  .drawerBg {
+    background-image:
+      linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+      url('/stoneBg.jpeg');
+    background-repeat: no-repeat, repeat-y;
+    background-size: cover, 100% auto;
+    background-position: center, center top;
   }
 }
 
@@ -148,7 +248,7 @@ a.btn,
 
 /* Leafy divider helper */
 .leafy-divider {
-  border-bottom: 1px solid color-mix(in oklab, var(--leaf) 30%, transparent);
+  border-bottom: 3px solid var(--gold);
 }
 
 /* Link styles that are visible on stone backgrounds */

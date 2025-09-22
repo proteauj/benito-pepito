@@ -136,7 +136,9 @@ export default function ProductPage() {
 
           {/* Product Info */}
           <div>
-            <h1 className="text-3xl font-bold text-black mb-1">{product.title} · {product.year}</h1>
+            <div className="leafy-divider pb-3 mb-4">
+              <h1 className="text-3xl font-bold text-black">{product.title} · {product.year}</h1>
+            </div>
             <p className="text-black/70 mb-4">{product.medium}</p>
             
             {/* Rating removed per request */}

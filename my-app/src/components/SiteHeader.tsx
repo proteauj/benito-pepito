@@ -60,19 +60,18 @@ export default function SiteHeader() {
         />
         {/* Panel */}
         <aside
-          className={`absolute left-0 top-0 h-full w-4/5 max-w-xs drawerBg text-[var(--foreground)] shadow-xl transform transition-transform ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`absolute left-2 top-2 inline-block w-auto max-w-[90vw] text-[var(--foreground)] shadow-xl transform transition-transform ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
           role="dialog"
           aria-label="Main menu"
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#2a2f2d]">
-            <span className="font-semibold">Menu</span>
-            <button onClick={() => setMobileOpen(false)} className="text-[var(--foreground)]/70 hover:text-[var(--gold)]" aria-label="Close menu">✕</button>
+          <div className="flex items-center justify-end px-3 py-2 bg-[var(--gold)] text-black">
+            <button onClick={() => setMobileOpen(false)} className="text-black hover:bg-white hover:text-[var(--leaf)] px-2 py-1" aria-label="Close menu">✕</button>
           </div>
-          <nav className="p-5 space-y-3">
-            <Link href="/categories" onClick={() => setMobileOpen(false)} className="block px-3 py-2 bg-white border border-[#cfc9c0]">{t('nav.categories')}</Link>
-            <Link href="/products" onClick={() => setMobileOpen(false)} className="block px-3 py-2 bg-white border border-[#cfc9c0]">{t('nav.allWorks')}</Link>
-            <Link href="/about" onClick={() => setMobileOpen(false)} className="block px-3 py-2 bg-white border border-[#cfc9c0]">{t('nav.about')}</Link>
-            <Link href="/contact" onClick={() => setMobileOpen(false)} className="block px-3 py-2 bg-white border border-[#cfc9c0]">{t('nav.contact')}</Link>
+          <nav className="p-2 bg-transparent flex flex-col gap-2">
+            <Link href="/categories" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.categories')}</Link>
+            <Link href="/products" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.allWorks')}</Link>
+            <Link href="/about" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.about')}</Link>
+            <Link href="/contact" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.contact')}</Link>
           </nav>
         </aside>
       </div>

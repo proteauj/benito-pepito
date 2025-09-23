@@ -8,8 +8,12 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="leafy-divider pb-3 mb-6">
+        <div className="flex items-end justify-between leafy-divider pb-3 mb-6 gap-4">
           <h1 className="text-4xl font-bold">{t('about.title')}</h1>
+          <div className="flex items-center gap-2">
+            <a href="#" className="link-chip">{t('social.instagram')}</a>
+            <a href="#" className="link-chip">{t('social.press')}</a>
+          </div>
         </div>
 
         {/* Hero image */}
@@ -22,12 +26,10 @@ export default function AboutPage() {
           {t('about.description')}
         </p>
 
-        {/* Media links row */}
+        {/* CTA row */}
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">{t('actions.exploreCategories')}</a>
           <a href="/contact" className="btn-ghost">{t('actions.contact')}</a>
-          <a href="#" className="link-chip">{t('social.instagram')}</a>
-          <a href="#" className="link-chip">{t('social.press')}</a>
         </div>
       </div>
     </div>

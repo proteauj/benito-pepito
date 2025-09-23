@@ -11,8 +11,8 @@ export default function AboutPage() {
         <div className="flex items-end justify-between leafy-divider pb-3 mb-6 gap-4">
           <h1 className="text-4xl font-bold">{t('about.title')}</h1>
           <div className="flex items-center gap-2">
-            <a href="#" className="link-chip">{t('social.instagram')}</a>
-            <a href="#" className="link-chip">{t('social.press')}</a>
+            <a href="https://www.instagram.com/benitopepito_artist?igsh=MTJxMTZjbmlyNGMw&utm_source=qr" className="link-chip">{t('social.instagram')}</a>
+            <a href="http://www.tiktok.com/@benitopepito_artist" className="link-chip">{t('social.tiktok')}</a>
           </div>
         </div>
 

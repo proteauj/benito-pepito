@@ -34,13 +34,13 @@ export default function SiteFooter() {
             <h4 className="font-semibold mb-3">{t('footer.follow')}</h4>
             <ul className="space-y-2 text-black/70">
               <li>
-                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.instagram')}</a>
+                <a href="https://www.instagram.com/benitopepito_artist?igsh=MTJxMTZjbmlyNGMw&utm_source=qr" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.instagram')}</a>
               </li>
               <li>
-                <a href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.tiktok')}</a>
+                <a href="http://www.tiktok.com/@benitopepito_artist" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.tiktok')}</a>
               </li>
               <li>
-                <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.facebook')}</a>
+                <a href="https://www.facebook.com/share/19a3sMG4YU/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.facebook')}</a>
               </li>
             </ul>
           </div>

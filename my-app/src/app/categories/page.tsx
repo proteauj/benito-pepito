@@ -8,19 +8,19 @@ const categories = [
   {
     name: 'Sculpture',
     slug: 'sculpture',
-    image: '/artworks/sculpture/placeholder.svg',
+    image: '/images/sculpt2.jpg',
     description: 'One-of-a-kind pieces molded and carved to perfection.'
   },
   {
     name: 'Painting',
     slug: 'painting',
-    image: '/artworks/painting/placeholder.svg',
+    image: '/images/paint11.jpeg',
     description: 'Original works on canvas and paper across movements and styles.'
   },
   {
     name: 'Home & Garden',
     slug: 'home-and-garden',
-    image: '/artworks/home-garden/placeholder.svg',
+    image: '/images/home6.jpg',
     description: 'Leafy greens and living installations to transform spaces.'
   },
 ];

@@ -23,7 +23,9 @@ export default function SiteFooter() {
           <div>
             <h4 className="font-semibold mb-3">{t('footer.contact')}</h4>
             <ul className="space-y-2 text-black/70">
-              <li>info@benitopepito.art</li>
+              <li>
+                <a href="mailto:info@benitopepito.art" className="hover:text-[var(--gold)]">info@benitopepito.art</a>
+              </li>
               <li>{t('footer.address')}</li>
               <li>{t('footer.hours')}</li>
             </ul>
@@ -31,9 +33,15 @@ export default function SiteFooter() {
           <div>
             <h4 className="font-semibold mb-3">{t('footer.follow')}</h4>
             <ul className="space-y-2 text-black/70">
-              <li><a href="#" className="hover:text-[var(--gold)]">{t('social.instagram')}</a></li>
-              <li><a href="#" className="hover:text-[var(--gold)]">{t('social.tiktok')}</a></li>
-              <li><a href="#" className="hover:text-[var(--gold)]">{t('social.facebook')}</a></li>
+              <li>
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.instagram')}</a>
+              </li>
+              <li>
+                <a href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.tiktok')}</a>
+              </li>
+              <li>
+                <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--gold)]">{t('social.facebook')}</a>
+              </li>
             </ul>
           </div>
         </div>

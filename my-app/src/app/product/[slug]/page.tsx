@@ -120,6 +120,11 @@ export default function ProductPage() {
     }
 
     fetchProduct();
+
+    // Refresh product data every 30 seconds to catch stock updates
+    const interval = setInterval(fetchProduct, 30000);
+
+    return () => clearInterval(interval);
   }, [params.slug]);
 
   if (loading) {

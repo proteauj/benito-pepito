@@ -21,10 +21,18 @@ export async function POST(request: Request) {
     const line_items = items.map((it: any) => ({
       price_data: {
         currency: 'cad',
-        product_data: { name: it.name },
+        product_data: {
+          name: it.name,
+          metadata: {
+            productId: it.id // Store product ID in metadata
+          }
+        },
         unit_amount: Math.round(Number(it.price) * 100),
       },
       quantity: Number(it.quantity) || 1,
+      metadata: {
+        productId: it.id // Store product ID in line item metadata
+      }
     }));
 
     const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`;

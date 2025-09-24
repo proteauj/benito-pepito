@@ -4,62 +4,36 @@
   "nav.allWorks": "All Works",
   "nav.about": "About",
   "nav.contact": "Contact",
-
   "breadcrumbs.home": "Home",
-
   "headings.allArtworks": "All Artworks",
   "category.viewAll": "View All →",
-
   "filters.onlyAvailable": "Only available",
   "search.placeholder": "Search title, medium",
-
   "actions.view": "View",
   "actions.add": "Add",
   "actions.prev": "Prev",
   "actions.next": "Next",
-
   "status.sold": "Sold",
   "status.available": "Available",
-
   "product.addToCart": "Add to Cart",
-  "product.sold": "Sold",
-
   "cta.exploreCollections": "Explore Collections",
-
   "errors.productNotFound": "Product not found",
   "errors.categoryNotFound": "Category not found",
   "actions.backToHome": "Back to Home",
   "actions.back": "← Back",
-
   "loading": "Loading",
-
   "pagination.page": "Page",
   "pagination.of": "of",
-
-  "labels.reviews": "reviews",
-
   "actions.wishlistAdd": "Add to Wishlist",
   "actions.wishlistRemove": "Remove from Wishlist",
   "actions.share": "Share",
-
   "sort.lastUpdatedDesc": "Last Updated (Newest)",
   "sort.lastUpdatedAsc": "Last Updated (Oldest)",
   "sort.priceAsc": "Price: Low to High",
   "sort.priceDesc": "Price: High to Low",
   "sort.yearDesc": "Newest",
   "sort.yearAsc": "Oldest",
-
-  "category.Sculpture": "Sculpture",
-  "category.Painting": "Painting",
-  "category.Home & Garden": "Home & Garden",
-  "category.All": "All",
-
-  "categoryDesc.Sculpture": "One-of-a-kind pieces molded and carved to perfection.",
-  "categoryDesc.Painting": "Original works on canvas and paper across movements and styles.",
-  "categoryDesc.Home & Garden": "Leafy greens and living installations to transform spaces.",
-
   "home.tagline": "Masterpieces across Sculpture, Painting, and Home & Garden.",
-
   "about.title": "About",
   "contact.title": "Contact",
   "actions.sendMessage": "Send Message",
@@ -79,10 +53,8 @@
   "actions.exploreCategories": "Explore Categories",
   "actions.contact": "Contact",
   "social.instagram": "Instagram",
-  "social.press": "Press",
   "social.tiktok": "TikTok",
   "social.facebook": "Facebook",
-
   "footer.blurb": "Marketplace for sculpture, painting, and home & garden installations.",
   "footer.explore": "Explore",
   "footer.contact": "Contact",
@@ -90,12 +62,10 @@
   "footer.address": "4th Dufresne Street, Saint-Jean-sur-Richelieu, QC",
   "footer.hours": "Mon–Sat, 08:00–17:00",
   "footer.rights": "All rights reserved.",
-
   "minicart.title": "Your Selection",
   "minicart.empty": "Your cart is empty.",
   "minicart.review": "Review Cart",
   "actions.remove": "Remove",
-
   "cart.emptyTitle": "Your cart is empty",
   "cart.emptySubtitle": "Browse artworks and add them to your cart.",
   "cart.emptyCta": "Continue Shopping",
@@ -106,9 +76,10 @@
   "cart.processing": "Processing...",
   "cart.checkout": "Checkout",
   "cart.clear": "Clear Cart",
-
   "success.title": "Payment Successful",
   "success.message": "Thank you! Your order has been placed successfully.",
-  "cancel.title": "Payment Canceled",
-  "cancel.message": "Your payment was canceled. You can continue shopping and try again."
+  "success.paymentVerified": "Payment verified successfully",
+  "success.stockUpdated": "Stock updated automatically",
+  "success.verificationIssue": "Payment verification issue",
+  "success.stockNotUpdated": "Stock could not be updated automatically"
 }

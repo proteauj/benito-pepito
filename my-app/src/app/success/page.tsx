@@ -11,31 +11,69 @@ export default function SuccessPage() {
   const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [stockUpdated, setStockUpdated] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
+    const productsParam = searchParams.get('products');
 
     if (sessionId) {
       // Verify the payment status
-      verifyPayment(sessionId);
+      verifyPayment(sessionId, productsParam);
     } else {
       setLoading(false);
     }
   }, [searchParams]);
 
-  const verifyPayment = async (sessionId: string) => {
+  const verifyPayment = async (sessionId: string, productsParam: string | null) => {
     try {
       const response = await fetch(`/api/verify-payment?session_id=${sessionId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          console.log('Payment verified successfully');
+          // Update stock using products from URL parameter
+          if (productsParam) {
+            try {
+              const productIds = JSON.parse(decodeURIComponent(productsParam));
+              if (Array.isArray(productIds) && productIds.length > 0) {
+                await updateStock(productIds);
+                setStockUpdated(true);
+              }
+            } catch (error) {
+              console.error('Error parsing products from URL:', error);
+            }
+          }
+
+          setPaymentStatus('success');
+        } else {
+          setPaymentStatus('error');
         }
+      } else {
+        setPaymentStatus('error');
       }
     } catch (error) {
-      console.error('Error verifying payment:', error);
+      setPaymentStatus('error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateStock = async (productIds: string[]) => {
+    try {
+      const response = await fetch('/api/products', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productIds, inStock: false }),
+      });
+
+      if (response.ok) {
+        console.log('Stock updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating stock:', error);
     }
   };
 
@@ -59,8 +97,26 @@ export default function SuccessPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
+
           <h1 className="text-3xl font-bold text-black mb-2">{t('success.title')}</h1>
           <p className="text-black/70 text-lg">{t('success.message')}</p>
+
+          {/* Payment Status */}
+          {paymentStatus === 'success' && (
+            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-800 font-medium">{t('success.paymentVerified')}</p>
+              {stockUpdated && (
+                <p className="text-green-600 text-sm mt-1">{t('success.stockUpdated')}</p>
+              )}
+            </div>
+          )}
+
+          {paymentStatus === 'error' && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 font-medium">{t('success.verificationIssue')}</p>
+              <p className="text-red-600 text-sm mt-1">{t('success.stockNotUpdated')}</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">

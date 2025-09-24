@@ -38,11 +38,38 @@ export async function POST(request: NextRequest) {
 
         if (session.line_items) {
           for (const item of session.line_items.data) {
-            if (item.price?.product) {
-              // Get product metadata
-              const product = await stripe.products.retrieve(item.price.product as string);
-              if (product.metadata.productId) {
-                productIds.push(product.metadata.productId);
+            console.log('Processing line item:', {
+              priceId: item.price?.id,
+              quantity: item.quantity,
+              amount: item.amount_total
+            });
+
+            // Get product ID from price metadata
+            if (item.price?.id) {
+              try {
+                const price = await stripe.prices.retrieve(item.price.id);
+                console.log('Retrieved price:', {
+                  priceId: price.id,
+                  productId: price.product,
+                  metadata: price.metadata
+                });
+
+                if (price.product && typeof price.product === 'string') {
+                  const product = await stripe.products.retrieve(price.product);
+                  console.log('Retrieved product:', {
+                    productId: product.id,
+                    metadata: product.metadata
+                  });
+
+                  if (product.metadata?.productId) {
+                    productIds.push(product.metadata.productId);
+                    console.log('Added product ID to update list:', product.metadata.productId);
+                  } else {
+                    console.log('No productId found in product metadata');
+                  }
+                }
+              } catch (error) {
+                console.error('Error retrieving product metadata:', error);
               }
             }
           }

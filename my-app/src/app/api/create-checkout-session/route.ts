@@ -23,19 +23,13 @@ export async function POST(request: Request) {
         currency: 'cad',
         product_data: {
           name: it.name,
-          metadata: {
-            productId: it.id // Store product ID in metadata
-          }
         },
         unit_amount: Math.round(Number(it.price) * 100),
       },
       quantity: Number(it.quantity) || 1,
-      metadata: {
-        productId: it.id // Store product ID in line item metadata
-      }
     }));
 
-    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
+    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}&products=${encodeURIComponent(JSON.stringify(items.map(it => it.id)))}`;
     const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/cancel`;
 
     const session = await stripe.checkout.sessions.create({

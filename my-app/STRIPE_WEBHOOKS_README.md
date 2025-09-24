@@ -42,8 +42,27 @@ NEXT_PUBLIC_APP_URL=https://votre-domaine.vercel.app
 1. **Client** : L'utilisateur ajoute des produits au panier et paie
 2. **Stripe** : Traite le paiement et envoie un webhook
 3. **Webhook** : Reçoit l'événement `checkout.session.completed`
-4. **Mise à jour** : Marque automatiquement les produits comme vendus (`inStock: false`)
-5. **Interface** : Les pages de produits se mettent à jour automatiquement
+4. **Récupération IDs** : Extrait les IDs des produits depuis les métadonnées des produits Stripe
+5. **Mise à jour** : Marque automatiquement les produits comme vendus (`inStock: false`)
+6. **Interface** : Les pages de produits se mettent à jour automatiquement
+
+### Structure des données Stripe :
+
+```json
+{
+  "line_items": [{
+    "price": {
+      "id": "price_123",
+      "product": "prod_456"
+    }
+  }],
+  "product_data": {
+    "metadata": {
+      "productId": "sc1" // ← Notre ID de produit
+    }
+  }
+}
+```
 
 ### Synchronisation automatique :
 
@@ -53,7 +72,14 @@ NEXT_PUBLIC_APP_URL=https://votre-domaine.vercel.app
 
 ## Test en local
 
-Pour tester en local, vous pouvez utiliser ngrok :
+### Option 1: Utiliser Stripe CLI
+
+```bash
+# Installer Stripe CLI
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+### Option 2: Utiliser ngrok
 
 ```bash
 npm install -g ngrok
@@ -61,6 +87,18 @@ ngrok http 3000
 ```
 
 Puis configurez l'URL ngrok dans Stripe comme endpoint de webhook.
+
+## Configuration des tests Stripe
+
+### Mode test :
+- Utilisez des clés de test : `sk_test_...`
+- Les webhooks fonctionneront de la même façon
+- Les paiements sont simulés (aucun frais réel)
+
+### Mode production :
+- Utilisez des clés live : `sk_live_...`
+- Configurez les vrais webhooks
+- Les paiements sont réels
 
 ## Sécurité
 

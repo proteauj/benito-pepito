@@ -14,7 +14,7 @@ export default function SiteHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/" className="h-16 flex items-center px-4 text-2xl md:text-3xl font-extrabold text-black hover:bg-white hover:text-[var(--leaf)] transition-colors whitespace-nowrap mouly-font">Benito Pepito</Link>
+            <Link href="/" className="h-16 flex items-center px-4 text-5xl lg:text-5xl font-extrabold text-black hover:bg-white hover:text-[var(--leaf)] transition-colors whitespace-nowrap mouly-font">Benito Pepito</Link>
           </div>
           {/* Desktop navigation (no Home link) */}
           <nav className="hidden md:flex space-x-2 h-16">

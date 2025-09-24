@@ -57,10 +57,10 @@
   "categoryDesc.Painting": "Œuvres originales sur toile et papier à travers styles et mouvements.",
   "categoryDesc.Home & Garden": "Verdure et installations vivantes pour transformer les espaces.",
 
-  "home.tagline": "Une sélection discrète d'œuvres en Sculpture, Peinture et Maison & Jardin.",
+  "home.tagline": "Œuvres grandioses en Sculpture, Peinture et Maison & Jardin.",
 
   "about.title": "Artiste",
-  "about.description": "Benito Pepito est une galerie centrée sur les artistes. Nous sélectionnons des œuvres singulières en sculpture, peinture et maison & jardin. Nous privilégions les matières, les procédés et une présentation épurée — pour laisser chaque pièce respirer.",
+  "about.description": "Benito Pepito est un artiste pluridisciplinaire. Il travaille la sculpture, peinture et maison & jardin. Il privilégie les matières, les procédés et il aime créer des œuvres grandioses.",
   "contact.title": "Contact",
   "actions.sendMessage": "Envoyer le message",
   "actions.exploreCategories": "Explorer les catégories",
@@ -98,11 +98,11 @@
   "social.tiktok": "TikTok",
   "social.facebook": "Facebook",
 
-  "footer.blurb": "Galerie et marché centrés sur les artistes pour la sculpture, la peinture et les installations maison & jardin.",
+  "footer.blurb": "Galerie centrée sur la sculpture, la peinture et les installations maison & jardin.",
   "footer.explore": "Explorer",
   "footer.contact": "Contact",
   "footer.follow": "Suivre",
-  "footer.address": "123, avenue Stone, Montréal (QC)",
-  "footer.hours": "Lun–Sam, 10:00–18:00",
+  "footer.address": "4 rue Dufresne, Saint-Jean-sur-Richelieu, QC",
+  "footer.hours": "Lun–Sam, 08:00–17:00",
   "footer.rights": "Tous droits réservés."
 }

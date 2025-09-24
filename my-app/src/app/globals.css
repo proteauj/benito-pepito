@@ -3,9 +3,14 @@
   background-color: var(--gold);
 }
 
-/* Force Mouly display font where needed */
+/* Mouly Display Font */
 .mouly-font {
   font-family: 'Mouly', Arial, Helvetica, sans-serif !important;
+}
+
+/* Text shadow utility for better text visibility */
+.text-shadow-white {
+  text-shadow: 2px 2px 0px white;
 }
 
 /* Nooa Semi Serif (regular) — add the font files under public/fonts/nooa/ */

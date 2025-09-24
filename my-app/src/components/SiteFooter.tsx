@@ -9,7 +9,7 @@ export default function SiteFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-3">Benito Pepito</h3>
+            <h3 className="text-2xl font-bold mb-3 mouly-font">Benito Pepito</h3>
             <p className="text-black/70">{t('footer.blurb')}</p>
           </div>
           <div>

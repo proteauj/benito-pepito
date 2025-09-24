@@ -18,8 +18,6 @@ interface Product {
   images: string[];
   category: string;
   inStock: boolean;
-  rating: number;
-  reviews: number;
   artist: string;
   medium: string;
   year: number;

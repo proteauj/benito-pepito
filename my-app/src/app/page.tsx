@@ -16,8 +16,6 @@ interface Product {
   images: string[];
   category: string;
   inStock: boolean;
-  rating: number;
-  reviews: number;
   artist: string;
   medium: string;
   year: number;
@@ -80,7 +78,7 @@ export default function HomePage() {
         <div className="leafy-divider pb-3 mb-6">
           <h1 className="text-4xl font-bold">{t('nav.home')}</h1>
         </div>
-        <p className="text-lg font-semibold text-[var(--leaf)] mb-6">{t('home.tagline')}</p>
+        <p className="text-lg font-semibold text-[var(--leaf)] mb-6 text-shadow-white">{t('home.tagline')}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {Object.entries(productsByCategory).map(([category, products]) => (
             <CategorySlideshow

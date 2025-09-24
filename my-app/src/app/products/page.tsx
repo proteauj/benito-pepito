@@ -16,8 +16,6 @@ interface Product {
   images: string[];
   category: "Sculpture" | "Painting" | "Home & Garden";
   inStock: boolean;
-  rating: number;
-  reviews: number;
   artist: string;
   medium: string;
   year: number;

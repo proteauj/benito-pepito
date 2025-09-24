@@ -16,20 +16,25 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Hero image */}
-        <div className="relative aspect-[16/7] border border-[#cfc9c0] bg-white mb-8">
-          <SafeImage src="/artworks/about/hero.svg" alt={t('about.heroAlt')} fill className="object-cover" />
-        </div>
+        {/* Two-column layout: Image left, Description right */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
+          {/* Left column: Hero image */}
+          <div className="relative aspect-[4/3] border border-[#cfc9c0] bg-white">
+            <SafeImage src="/images/staff/benitoPepito.jpg" alt={t('about.heroAlt')} fill className="object-cover" />
+          </div>
 
-        {/* Short description */}
-        <p className="text-lg text-black/85 leading-relaxed max-w-3xl">
-          {t('about.description')}
-        </p>
+          {/* Right column: Description */}
+          <div className="flex flex-col justify-start">
+            <p className="text-lg font-semibold text-black/85 leading-relaxed mb-6 text-shadow-white">
+              {t('about.description')}
+            </p>
 
-        {/* CTA row */}
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">{t('actions.exploreCategories')}</a>
-          <a href="/contact" className="btn-ghost">{t('actions.contact')}</a>
+            {/* CTA buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">{t('actions.exploreCategories')}</a>
+              <a href="/contact" className="btn-ghost">{t('actions.contact')}</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -29,7 +29,7 @@
   "errors.productNotFound": "Produit introuvable",
   "errors.categoryNotFound": "Catégorie introuvable",
   "actions.backToHome": "Retour à l'accueil",
-  "actions.back": "← Retour",
+  "actions.remove": "Retirer",
 
   "loading": "Chargement",
 
@@ -38,7 +38,8 @@
 
   "labels.reviews": "avis",
 
-  "actions.wishlist": "Ajouter aux favoris",
+  "actions.wishlistAdd": "Ajouter aux favoris",
+  "actions.wishlistRemove": "Retirer des favoris",
   "actions.share": "Partager",
 
   "sort.lastUpdatedDesc": "Dernière mise à jour (Plus récent)",
@@ -79,7 +80,8 @@
   "cart.title": "Votre panier",
   "cart.orderSummary": "Récapitulatif",
   "cart.items": "Articles",
-  "cart.total": "Total",
+  "cart.clear": "Vider le panier",
+  "cart.checkout": "Payer",
   "cart.processing": "Traitement...",
   "success.title": "Paiement réussi",
   "success.message": "Merci ! Votre commande a été passée avec succès.",

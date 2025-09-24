@@ -38,7 +38,8 @@
 
   "labels.reviews": "reviews",
 
-  "actions.wishlist": "Add to Wishlist",
+  "actions.wishlistAdd": "Add to Wishlist",
+  "actions.wishlistRemove": "Remove from Wishlist",
   "actions.share": "Share",
 
   "sort.lastUpdatedDesc": "Last Updated (Newest)",
@@ -103,7 +104,7 @@
   "cart.items": "Items",
   "cart.total": "Total",
   "cart.processing": "Processing...",
-  "cart.checkout": "Checkout with Stripe",
+  "cart.checkout": "Checkout",
   "cart.clear": "Clear Cart",
 
   "success.title": "Payment Successful",

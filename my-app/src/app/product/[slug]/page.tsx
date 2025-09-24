@@ -33,6 +33,63 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+
+  useEffect(() => {
+    // Check if product is in wishlist on component mount
+    if (product) {
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      setIsInWishlist(wishlist.includes(product.id));
+    }
+  }, [product]);
+
+  const toggleWishlist = () => {
+    if (!product) return;
+
+    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    let newWishlist;
+
+    if (isInWishlist) {
+      // Remove from wishlist
+      newWishlist = wishlist.filter((id: string) => id !== product.id);
+      setIsInWishlist(false);
+    } else {
+      // Add to wishlist
+      newWishlist = [...wishlist, product.id];
+      setIsInWishlist(true);
+    }
+
+    localStorage.setItem('wishlist', JSON.stringify(newWishlist));
+  };
+
+  const shareProduct = async () => {
+    if (!product) return;
+
+    const shareData = {
+      title: product.title,
+      text: `${product.title} - ${product.description}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // Fallback to clipboard
+        copyToClipboard();
+      }
+    } else {
+      // Fallback for browsers without Web Share API
+      copyToClipboard();
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      // You could add a toast notification here
+      alert('Lien copié dans le presse-papiers !');
+    });
+  };
 
   function slugify(input: string) {
     return input
@@ -138,7 +195,19 @@ export default function ProductPage() {
               <h1 className="text-3xl font-bold text-black">{product.title} · {product.year}</h1>
             </div>
             <p className="text-black/70 mb-4">{product.medium}</p>
-            
+
+            {/* Price */}
+            <div className="mb-6">
+              <div className="text-4xl font-bold text-black">
+                ${product.price.toFixed(2)}
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span className="text-lg text-black/50 line-through ml-3">
+                    ${product.originalPrice.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+
             {/* Rating removed per request */}
 
             {/* Stock Status */}
@@ -170,10 +239,20 @@ export default function ProductPage() {
 
             {/* Additional Actions */}
             <div className="flex space-x-4">
-              <button className="btn-ghost flex-1">
-                {t('actions.wishlist')}
+              <button
+                onClick={toggleWishlist}
+                className={`btn-ghost flex-1 transition-colors ${
+                  isInWishlist
+                    ? 'bg-[var(--leaf)] text-white hover:bg-[var(--leaf-dark)]'
+                    : 'hover:bg-[var(--gold)] hover:text-black'
+                }`}
+              >
+                {isInWishlist ? t('actions.wishlistRemove') : t('actions.wishlistAdd')}
               </button>
-              <button className="btn-ghost flex-1">
+              <button
+                onClick={shareProduct}
+                className="btn-ghost flex-1 hover:bg-[var(--gold)] hover:text-black transition-colors"
+              >
                 {t('actions.share')}
               </button>
             </div>

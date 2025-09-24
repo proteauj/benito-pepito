@@ -23,7 +23,7 @@ export const products: Product[] = [
     slug: 'inunchuk-sculpture',
     title: 'Inunchuk Sculpture',
     description: 'Inukshuk sculpture; a meditation on balance and place.',
-    price: 200,
+    price: 1,
     originalPrice: 300,
     image: '/images/sculpt1.jpeg',
     images: ['/images/sculpt1.jpeg'],

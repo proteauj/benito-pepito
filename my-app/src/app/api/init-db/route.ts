@@ -1,6 +1,6 @@
 import { sql } from '@vercel/postgres';
-import { runMigrations } from './lib/db/migrate';
-import { initializeProductStock } from './lib/db/init';
+import { runMigrations } from '../../../../lib/db/migrate';
+import { initializeProductStock } from '../../../../lib/db/init';
 
 export default async function handler() {
   try {

@@ -1,12 +1,10 @@
 import { sql } from './client';
-import fs from 'fs';
-import path from 'path';
 
 export async function runMigrations() {
-  const migrationsDir = path.join(process.cwd(), 'migrations');
-
   try {
-    // Create migrations table if it doesn't exist
+    console.log('🚀 Starting database migrations...');
+
+    // Create migrations table
     await sql`
       CREATE TABLE IF NOT EXISTS migrations (
         id SERIAL PRIMARY KEY,
@@ -15,35 +13,46 @@ export async function runMigrations() {
       )
     `;
 
-    // Get executed migrations
-    const executedMigrations = await sql`SELECT name FROM migrations`;
-    const executedNames = new Set(executedMigrations.rows.map(row => row.name));
-
-    // Get all migration files
-    const migrationFiles = fs.readdirSync(migrationsDir)
-      .filter(file => file.endsWith('.sql'))
-      .sort();
-
-    for (const file of migrationFiles) {
-      if (executedNames.has(file)) {
-        console.log(`✅ Migration ${file} already executed`);
-        continue;
-      }
-
-      console.log(`🚀 Executing migration ${file}...`);
-
-      const migrationSQL = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
-
-      // Execute migration
-      await sql.begin(async sql => {
-        await sql.unsafe(migrationSQL);
-        await sql`INSERT INTO migrations (name) VALUES (${file})`;
-      });
-
-      console.log(`✅ Migration ${file} executed successfully`);
+    // Check if migration already executed
+    const existingMigrations = await sql`SELECT name FROM migrations WHERE name = '001_initial_schema'`;
+    if (existingMigrations.rows.length > 0) {
+      console.log('✅ Migration already executed');
+      return;
     }
 
-    console.log('🎉 All migrations completed!');
+    // Create orders table
+    await sql`
+      CREATE TABLE IF NOT EXISTS orders (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        stripe_session_id VARCHAR(255) UNIQUE NOT NULL,
+        customer_email VARCHAR(255),
+        product_ids JSONB NOT NULL,
+        total_amount INTEGER NOT NULL,
+        currency VARCHAR(3) NOT NULL DEFAULT 'CAD',
+        status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `;
+
+    // Create product_stock table
+    await sql`
+      CREATE TABLE IF NOT EXISTS product_stock (
+        product_id VARCHAR(10) PRIMARY KEY,
+        in_stock BOOLEAN NOT NULL DEFAULT true,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `;
+
+    // Create indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_product_stock_in_stock ON product_stock(in_stock)`;
+
+    // Mark migration as executed
+    await sql`INSERT INTO migrations (name) VALUES ('001_initial_schema')`;
+
+    console.log('✅ Database migration completed successfully!');
 
   } catch (error) {
     console.error('❌ Migration failed:', error);

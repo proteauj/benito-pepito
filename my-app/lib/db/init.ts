@@ -1,5 +1,5 @@
+import { products } from '@/data/products';
 import { DatabaseService } from './service';
-import { products } from '../../data/products';
 
 export async function initializeProductStock() {
   console.log('🔄 Initializing product stock...');

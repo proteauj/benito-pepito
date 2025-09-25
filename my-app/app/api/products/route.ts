@@ -1,6 +1,6 @@
+import { products } from '@/data/products';
 import { NextRequest, NextResponse } from 'next/server';
-import { products, Product } from '@/data/products';
-import { DatabaseService } from '@/lib/db/service';
+import { DatabaseService } from '../../../lib/db/service';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

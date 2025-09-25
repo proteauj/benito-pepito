@@ -20,6 +20,10 @@ export default async function handler(req, res) {
       payment_method_types: ["card"],
       mode: "payment",
       line_items,
+      billing_address_collection: "required",
+      shipping_address_collection: {
+        allowed_countries: ["CA", "US"]
+      },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cancel`,
       // optional: metadata, shipping, customer_email, etc.

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
+import { prisma } from '../../../../../lib/db/client';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -33,54 +34,8 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
 
-        // Extract product IDs from line items
-        const productIds: string[] = [];
-
-        if (session.line_items) {
-          for (const item of session.line_items.data) {
-            console.log('Processing line item:', {
-              priceId: item.price?.id,
-              quantity: item.quantity,
-              amount: item.amount_total
-            });
-
-            // Get product ID from price metadata
-            if (item.price?.id) {
-              try {
-                const price = await stripe.prices.retrieve(item.price.id);
-                console.log('Retrieved price:', {
-                  priceId: price.id,
-                  productId: price.product,
-                  metadata: price.metadata
-                });
-
-                if (price.product && typeof price.product === 'string') {
-                  const product = await stripe.products.retrieve(price.product);
-                  console.log('Retrieved product:', {
-                    productId: product.id,
-                    metadata: product.metadata
-                  });
-
-                  if (product.metadata?.productId) {
-                    productIds.push(product.metadata.productId);
-                    console.log('Added product ID to update list:', product.metadata.productId);
-                  } else {
-                    console.log('No productId found in product metadata');
-                  }
-                }
-              } catch (error) {
-                console.error('Error retrieving product metadata:', error);
-              }
-            }
-          }
-        }
-
-        // Mark products as sold
-        if (productIds.length > 0) {
-          await updateProductsStock(productIds, false);
-          console.log(`Marked ${productIds.length} products as sold after successful payment`);
-        }
-
+        // Extract and save order details
+        await saveOrderDetails(session);
         break;
 
       default:
@@ -91,6 +46,145 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Webhook error:', error);
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+  }
+}
+
+async function saveOrderDetails(session: Stripe.Checkout.Session) {
+  try {
+    console.log('💾 Saving order details for session:', session.id);
+
+    // Extract customer information
+    const customerEmail = session.customer_details?.email;
+    const customerName = session.customer_details?.name;
+
+    // Extract billing address
+    const billingAddress = session.customer_details?.address;
+
+    // Extract shipping address (Note: shipping_details might not exist on all session types)
+    const shippingAddress = (session as any).shipping_details?.address;
+
+    // Extract line items
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+    const productIds: string[] = [];
+    const itemsData: any[] = [];
+
+    for (const item of lineItems.data) {
+      console.log('Processing line item:', {
+        priceId: item.price?.id,
+        quantity: item.quantity,
+        amount: item.amount_total
+      });
+
+      // Get product ID from price metadata
+      if (item.price?.id) {
+        try {
+          const price = await stripe.prices.retrieve(item.price.id);
+
+          if (price.product && typeof price.product === 'string') {
+            const product = await stripe.products.retrieve(price.product);
+
+            if (product.metadata?.productId) {
+              productIds.push(product.metadata.productId);
+
+              itemsData.push({
+                productId: product.metadata.productId,
+                quantity: item.quantity,
+                price: item.amount_total / 100, // Convert from cents
+                name: item.description || product.name
+              });
+
+              console.log('Added product to order:', product.metadata.productId);
+            }
+          }
+        } catch (error) {
+          console.error('Error retrieving product metadata:', error);
+        }
+      }
+    }
+
+    // Calculate total amount
+    const totalAmount = session.amount_total ? session.amount_total / 100 : 0;
+
+    // Save order to database
+    const order = await prisma.order.create({
+      data: {
+        stripeSessionId: session.id,
+        customerEmail: customerEmail || '',
+        productIds: productIds,
+        totalAmount: Math.round(totalAmount),
+        currency: session.currency || 'CAD',
+        status: 'completed',
+      }
+    });
+
+    console.log('✅ Order saved successfully:', {
+      orderId: order.id,
+      sessionId: session.id,
+      email: customerEmail,
+      productCount: productIds.length,
+      totalAmount
+    });
+
+    // Save customer address information
+    if (billingAddress || shippingAddress) {
+      await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined);
+    }
+
+    // Mark products as sold
+    if (productIds.length > 0) {
+      await updateProductsStock(productIds, false);
+      console.log(`✅ Marked ${productIds.length} products as sold`);
+    }
+
+  } catch (error) {
+    console.error('❌ Error saving order details:', error);
+    throw error;
+  }
+}
+
+async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address) {
+  try {
+    // Save billing address if available
+    if (billingAddress) {
+      console.log('💾 Saving billing address for order:', orderId);
+
+      await prisma.customerAddress.create({
+        data: {
+          type: 'billing',
+          line1: billingAddress.line1,
+          line2: billingAddress.line2 || null,
+          city: billingAddress.city,
+          state: billingAddress.state || null,
+          postalCode: billingAddress.postal_code,
+          country: billingAddress.country,
+        }
+      });
+
+      console.log('✅ Billing address saved successfully');
+    }
+
+    // Save shipping address if available
+    if (shippingAddress) {
+      console.log('💾 Saving shipping address for order:', orderId);
+
+      await prisma.customerAddress.create({
+        data: {
+          type: 'shipping',
+          line1: shippingAddress.line1,
+          line2: shippingAddress.line2 || null,
+          city: shippingAddress.city,
+          state: shippingAddress.state || null,
+          postalCode: shippingAddress.postal_code,
+          country: shippingAddress.country,
+        }
+      });
+
+      console.log('✅ Shipping address saved successfully');
+    }
+
+  } catch (error) {
+    console.error('Error saving customer address:', error);
+    throw error;
   }
 }
 

@@ -20,6 +20,28 @@ model Order {
   status            String   @default("pending")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  billingAddress    CustomerAddress? @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+  shippingAddress   CustomerAddress? @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId  String?
+  shippingAddressId String?
+}
+
+model CustomerAddress {
+  id            String   @id @default(cuid())
+  type          String   // 'billing' or 'shipping'
+  name          String?
+  line1         String
+  line2         String?
+  city          String
+  state         String?
+  postalCode    String
+  country       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  billingOrders   Order[] @relation("OrderBillingAddress")
+  shippingOrders  Order[] @relation("OrderShippingAddress")
 }
 
 model ProductStock {

@@ -1,10 +1,10 @@
-import { sql } from './client';
+import { prisma } from './client';
 import { Order, ProductStock } from './types';
 
 export class DatabaseService {
   // Orders
   static async createOrder(orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<Order> {
-    const result = await sql`
+    const result = await prisma`
       INSERT INTO orders (stripe_session_id, customer_email, product_ids, total_amount, currency, status)
       VALUES (${orderData.stripeSessionId}, ${orderData.customerEmail}, ${JSON.stringify(orderData.productIds)}, ${orderData.totalAmount}, ${orderData.currency}, ${orderData.status})
       RETURNING *
@@ -14,7 +14,7 @@ export class DatabaseService {
   }
 
   static async updateOrderStatus(stripeSessionId: string, status: Order['status']): Promise<Order | null> {
-    const result = await sql`
+    const result = await prisma`
       UPDATE orders
       SET status = ${status}, updated_at = NOW()
       WHERE stripe_session_id = ${stripeSessionId}
@@ -26,7 +26,7 @@ export class DatabaseService {
   }
 
   static async getOrderBySessionId(stripeSessionId: string): Promise<Order | null> {
-    const result = await sql`
+    const result = await prisma`
       SELECT * FROM orders WHERE stripe_session_id = ${stripeSessionId}
     `;
 
@@ -36,7 +36,7 @@ export class DatabaseService {
 
   // Product Stock
   static async getProductStock(productId: string): Promise<boolean> {
-    const result = await sql`
+    const result = await prisma`
       SELECT in_stock FROM product_stock WHERE product_id = ${productId}
     `;
 
@@ -45,7 +45,7 @@ export class DatabaseService {
   }
 
   static async updateProductStock(productId: string, inStock: boolean): Promise<void> {
-    await sql`
+    await prisma`
       INSERT INTO product_stock (product_id, in_stock, updated_at)
       VALUES (${productId}, ${inStock}, NOW())
       ON CONFLICT (product_id)
@@ -62,7 +62,7 @@ export class DatabaseService {
 
     const params = productIds.flatMap(id => [id, inStock, new Date()]);
 
-    await sql`
+    await prisma`
       INSERT INTO product_stock (product_id, in_stock, updated_at)
       VALUES ${values}
       ON CONFLICT (product_id)

@@ -1,11 +1,11 @@
-import { sql } from './client';
+import { prisma } from './client';
 
 export async function runMigrations() {
   try {
     console.log('🚀 Starting database migrations...');
 
     // Create migrations table
-    await sql`
+    await prisma`
       CREATE TABLE IF NOT EXISTS migrations (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) UNIQUE NOT NULL,
@@ -14,14 +14,14 @@ export async function runMigrations() {
     `;
 
     // Check if migration already executed
-    const existingMigrations = await sql`SELECT name FROM migrations WHERE name = '001_initial_schema'`;
+    const existingMigrations = await prisma`SELECT name FROM migrations WHERE name = '001_initial_schema'`;
     if (existingMigrations.rows.length > 0) {
       console.log('✅ Migration already executed');
       return;
     }
 
     // Create orders table
-    await sql`
+    await prisma`
       CREATE TABLE IF NOT EXISTS orders (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         stripe_session_id VARCHAR(255) UNIQUE NOT NULL,
@@ -36,7 +36,7 @@ export async function runMigrations() {
     `;
 
     // Create product_stock table
-    await sql`
+    await prisma`
       CREATE TABLE IF NOT EXISTS product_stock (
         product_id VARCHAR(10) PRIMARY KEY,
         in_stock BOOLEAN NOT NULL DEFAULT true,
@@ -45,12 +45,12 @@ export async function runMigrations() {
     `;
 
     // Create indexes
-    await sql`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_product_stock_in_stock ON product_stock(in_stock)`;
+    await prisma`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)`;
+    await prisma`CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC)`;
+    await prisma`CREATE INDEX IF NOT EXISTS idx_product_stock_in_stock ON product_stock(in_stock)`;
 
     // Mark migration as executed
-    await sql`INSERT INTO migrations (name) VALUES ('001_initial_schema')`;
+    await prisma`INSERT INTO migrations (name) VALUES ('001_initial_schema')`;
 
     console.log('✅ Database migration completed successfully!');
 

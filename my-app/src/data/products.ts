@@ -117,7 +117,7 @@ export const products: Product[] = [
     slug: 'cement-on-cardboard-plant',
     title: 'Cement on cardboard – Plant',
     description: 'Spontaneous cement plant exploring rhythm and movement.',
-    price: 100,
+    price: 1,
     image: '/images/paint5.jpeg',
     images: ['/images/paint5.jpeg'],
     category: 'Painting',

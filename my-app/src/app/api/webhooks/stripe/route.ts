@@ -149,38 +149,50 @@ async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Addr
     if (billingAddress) {
       console.log('💾 Saving billing address for order:', orderId);
 
-      await prisma.customerAddress.create({
+      const billingAddr = await prisma.customerAddress.create({
         data: {
           type: 'billing',
-          line1: billingAddress.line1,
+          line1: billingAddress.line1 || '',
           line2: billingAddress.line2 || null,
-          city: billingAddress.city,
+          city: billingAddress.city || '',
           state: billingAddress.state || null,
-          postalCode: billingAddress.postal_code,
-          country: billingAddress.country,
+          postalCode: billingAddress.postal_code || '',
+          country: billingAddress.country || '',
         }
       });
 
-      console.log('✅ Billing address saved successfully');
+      // Link billing address to order
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { billingAddressId: billingAddr.id }
+      });
+
+      console.log('✅ Billing address saved and linked successfully');
     }
 
     // Save shipping address if available
     if (shippingAddress) {
       console.log('💾 Saving shipping address for order:', orderId);
 
-      await prisma.customerAddress.create({
+      const shippingAddr = await prisma.customerAddress.create({
         data: {
           type: 'shipping',
-          line1: shippingAddress.line1,
+          line1: shippingAddress.line1 || '',
           line2: shippingAddress.line2 || null,
-          city: shippingAddress.city,
+          city: shippingAddress.city || '',
           state: shippingAddress.state || null,
-          postalCode: shippingAddress.postal_code,
-          country: shippingAddress.country,
+          postalCode: shippingAddress.postal_code || '',
+          country: shippingAddress.country || '',
         }
       });
 
-      console.log('✅ Shipping address saved successfully');
+      // Link shipping address to order
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { shippingAddressId: shippingAddr.id }
+      });
+
+      console.log('✅ Shipping address saved and linked successfully');
     }
 
   } catch (error) {

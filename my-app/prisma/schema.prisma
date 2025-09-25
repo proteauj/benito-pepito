@@ -29,13 +29,12 @@ model Order {
 model CustomerAddress {
   id            String   @id @default(cuid())
   type          String   // 'billing' or 'shipping'
-  name          String?
-  line1         String
+  line1         String?
   line2         String?
-  city          String
+  city          String?
   state         String?
-  postalCode    String
-  country       String
+  postalCode    String?
+  country       String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

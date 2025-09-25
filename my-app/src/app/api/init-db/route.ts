@@ -1,8 +1,8 @@
-import { sql } from '@vercel/postgres';
+import { NextRequest } from 'next/server';
 import { runMigrations } from '../../../../lib/db/migrate';
 import { initializeProductStock } from '../../../../lib/db/init';
 
-export default async function handler() {
+export async function GET(request: NextRequest) {
   try {
     // Initialize database on startup
     await runMigrations();

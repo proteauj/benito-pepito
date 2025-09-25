@@ -1,4 +1,4 @@
-import { products } from '@/data/products';
+import { Product, products } from '@/data/products';
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '../../../lib/db/service';
 

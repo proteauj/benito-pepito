@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { runMigrations } from '../../../lib/db/migrate';
-import { initializeProductStock } from '../../../lib/db/init';
+import { runMigrations } from '../../../../lib/db/migrate';
+import { initializeProductStock } from '../../../../lib/db/init';
 
 export async function GET(request: NextRequest) {
   try {

@@ -11,15 +11,15 @@ datasource db {
 }
 
 model Order {
-  id                String   @id @default(cuid())
-  stripeSessionId   String   @unique
+  id                String           @id @default(cuid())
+  stripeSessionId   String           @unique
   customerEmail     String?
   productIds        String[]
   totalAmount       Int
-  currency          String   @default("CAD")
-  status            String   @default("pending")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  currency          String           @default("CAD")
+  status            String           @default("pending")
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   billingAddress    CustomerAddress? @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
   shippingAddress   CustomerAddress? @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
   billingAddressId  String?
@@ -27,30 +27,30 @@ model Order {
 }
 
 model CustomerAddress {
-  id            String   @id @default(cuid())
-  type          String   // 'billing' or 'shipping'
-  line1         String?
-  line2         String?
-  city          String?
-  state         String?
-  postalCode    String?
-  country       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id         String   @id @default(cuid())
+  type       String // 'billing' or 'shipping'
+  line1      String?
+  line2      String?
+  city       String?
+  state      String?
+  postalCode String?
+  country    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
-  billingOrders   Order[] @relation("OrderBillingAddress")
-  shippingOrders  Order[] @relation("OrderShippingAddress")
+  billingOrders  Order[] @relation("OrderBillingAddress")
+  shippingOrders Order[] @relation("OrderShippingAddress")
 }
 
 model ProductStock {
-  productId         String   @id
-  inStock           Boolean  @default(true)
-  updatedAt         DateTime @updatedAt
+  productId String   @id
+  inStock   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
 }
 
 model Migration {
-  id            String   @id @default(cuid())
-  name          String   @unique
-  executedAt    DateTime @default(now())
+  id         String   @id @default(cuid())
+  name       String   @unique
+  executedAt DateTime @default(now())
 }

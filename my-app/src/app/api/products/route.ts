@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/data/products';
-
-// In-memory storage for demo - in production, use a database
-let productsData = [...products];
+import { DatabaseService } from '@/lib/db/service';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -10,23 +8,44 @@ export async function GET(request: NextRequest) {
   const slug = searchParams.get('slug');
 
   if (slug) {
-    const product = productsData.find((p) => p.slug === slug);
+    const product = products.find((p) => p.slug === slug);
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    return NextResponse.json(product);
+
+    // Get stock status from database
+    const inStock = await DatabaseService.getProductStock(product.id);
+
+    return NextResponse.json({
+      ...product,
+      inStock
+    });
   }
 
   if (category) {
-    const filtered = productsData.filter((p) => p.category === (category as Product['category']));
-    return NextResponse.json(filtered);
+    const filtered = products.filter((p) => p.category === (category as Product['category']));
+    // Get stock status for all filtered products
+    const productsWithStock = await Promise.all(
+      filtered.map(async (product) => ({
+        ...product,
+        inStock: await DatabaseService.getProductStock(product.id)
+      }))
+    );
+    return NextResponse.json(productsWithStock);
   }
 
-  const categories = Array.from(new Set(productsData.map((p) => p.category)));
-  const productsByCategory = categories.reduce((acc, cat) => {
-    acc[cat] = productsData.filter((p) => p.category === cat);
+  const categories = Array.from(new Set(products.map((p) => p.category)));
+  const productsByCategory = categories.reduce(async (accPromise, cat) => {
+    const acc = await accPromise;
+    const categoryProducts = products.filter((p) => p.category === cat);
+    acc[cat] = await Promise.all(
+      categoryProducts.map(async (product) => ({
+        ...product,
+        inStock: await DatabaseService.getProductStock(product.id)
+      }))
+    );
     return acc;
-  }, {} as Record<string, Product[]>);
+  }, Promise.resolve({} as Record<string, Product[]>));
 
-  return NextResponse.json(productsByCategory);
+  return NextResponse.json(await productsByCategory);
 }
 
 export async function PUT(request: NextRequest) {
@@ -38,11 +57,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'productIds must be an array' }, { status: 400 });
     }
 
-    // Update products stock status
-    productsData = productsData.map(product => ({
-      ...product,
-      inStock: productIds.includes(product.id) ? inStock : product.inStock
-    }));
+    // Update products stock status in database
+    await DatabaseService.updateMultipleProductStock(productIds, inStock);
 
     console.log(`Updated ${productIds.length} products to inStock: ${inStock}`);
 

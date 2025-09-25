@@ -126,10 +126,10 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
       totalAmount
     });
 
-    // Save customer address information
-    if (billingAddress || shippingAddress) {
-      await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined);
-    }
+    // Save customer address information (temporarily disabled)
+    // if (billingAddress || shippingAddress) {
+    //   await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined);
+    // }
 
     // Mark products as sold
     if (productIds.length > 0) {
@@ -143,63 +143,63 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
   }
 }
 
-async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address) {
-  try {
-    // Save billing address if available
-    if (billingAddress) {
-      console.log('💾 Saving billing address for order:', orderId);
+// async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address) {
+//   try {
+//     // Save billing address if available
+//     if (billingAddress) {
+//       console.log('💾 Saving billing address for order:', orderId);
 
-      const billingAddr = await prisma.customerAddress.create({
-        data: {
-          type: 'billing',
-          line1: billingAddress.line1 || '',
-          line2: billingAddress.line2 || null,
-          city: billingAddress.city || '',
-          state: billingAddress.state || null,
-          postalCode: billingAddress.postal_code || '',
-          country: billingAddress.country || '',
-        }
-      });
+//       const billingAddr = await prisma.customerAddress.create({
+//         data: {
+//           type: 'billing',
+//           line1: billingAddress.line1 || '',
+//           line2: billingAddress.line2 || null,
+//           city: billingAddress.city || '',
+//           state: billingAddress.state || null,
+//           postalCode: billingAddress.postal_code || '',
+//           country: billingAddress.country || '',
+//         }
+//       });
 
-      // Link billing address to order
-      await prisma.order.update({
-        where: { id: orderId },
-        data: { billingAddressId: billingAddr.id }
-      });
+//       // Link billing address to order
+//       await prisma.order.update({
+//         where: { id: orderId },
+//         data: { billingAddressId: billingAddr.id }
+//       });
 
-      console.log('✅ Billing address saved and linked successfully');
-    }
+//       console.log('✅ Billing address saved and linked successfully');
+//     }
 
-    // Save shipping address if available
-    if (shippingAddress) {
-      console.log('💾 Saving shipping address for order:', orderId);
+//     // Save shipping address if available
+//     if (shippingAddress) {
+//       console.log('💾 Saving shipping address for order:', orderId);
 
-      const shippingAddr = await prisma.customerAddress.create({
-        data: {
-          type: 'shipping',
-          line1: shippingAddress.line1 || '',
-          line2: shippingAddress.line2 || null,
-          city: shippingAddress.city || '',
-          state: shippingAddress.state || null,
-          postalCode: shippingAddress.postal_code || '',
-          country: shippingAddress.country || '',
-        }
-      });
+//       const shippingAddr = await prisma.customerAddress.create({
+//         data: {
+//           type: 'shipping',
+//           line1: shippingAddress.line1 || '',
+//           line2: shippingAddress.line2 || null,
+//           city: shippingAddress.city || '',
+//           state: shippingAddress.state || null,
+//           postalCode: shippingAddress.postal_code || '',
+//           country: shippingAddress.country || '',
+//         }
+//       });
 
-      // Link shipping address to order
-      await prisma.order.update({
-        where: { id: orderId },
-        data: { shippingAddressId: shippingAddr.id }
-      });
+//       // Link shipping address to order
+//       await prisma.order.update({
+//         where: { id: orderId },
+//         data: { shippingAddressId: shippingAddr.id }
+//       });
 
-      console.log('✅ Shipping address saved and linked successfully');
-    }
+//       console.log('✅ Shipping address saved and linked successfully');
+//     }
 
-  } catch (error) {
-    console.error('Error saving customer address:', error);
-    throw error;
-  }
-}
+//   } catch (error) {
+//     console.error('Error saving customer address:', error);
+//     throw error;
+//   }
+// }
 
 async function updateProductsStock(productIds: string[], inStock: boolean) {
   try {

@@ -152,12 +152,12 @@ async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Addr
       await prisma.customerAddress.create({
         data: {
           type: 'billing',
-          line1: billingAddress.line1 || '',
+          line1: billingAddress.line1,
           line2: billingAddress.line2 || null,
-          city: billingAddress.city || '',
+          city: billingAddress.city,
           state: billingAddress.state || null,
-          postalCode: billingAddress.postal_code || '',
-          country: billingAddress.country || '',
+          postalCode: billingAddress.postal_code,
+          country: billingAddress.country,
         }
       });
 
@@ -171,12 +171,12 @@ async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Addr
       await prisma.customerAddress.create({
         data: {
           type: 'shipping',
-          line1: shippingAddress.line1 || '',
+          line1: shippingAddress.line1,
           line2: shippingAddress.line2 || null,
-          city: shippingAddress.city || '',
+          city: shippingAddress.city,
           state: shippingAddress.state || null,
-          postalCode: shippingAddress.postal_code || '',
-          country: shippingAddress.country || '',
+          postalCode: shippingAddress.postal_code,
+          country: shippingAddress.country,
         }
       });
 

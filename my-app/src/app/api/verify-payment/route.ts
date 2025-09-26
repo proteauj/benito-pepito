@@ -58,7 +58,7 @@ async function saveAddressInformation(sessionId: string, session: Stripe.Checkou
     const billingAddress = session.customer_details?.address;
 
     // Extract shipping address from Stripe session
-    const shippingAddress = (session as any).shipping_details?.address;
+    const shippingAddress = (session as any).collected_information?.shipping_details?.address;
 
     console.log('🏠 Address data from Stripe:', { billingAddress, shippingAddress });
 

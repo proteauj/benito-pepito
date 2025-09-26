@@ -69,7 +69,6 @@
   "success.title": "Paiement réussi",
   "success.message": "Merci ! Votre commande a été passée avec succès.",
   "success.paymentVerified": "Paiement vérifié avec succès",
-  "success.stockUpdated": "Stock mis à jour automatiquement",
   "success.verificationIssue": "Problème de vérification du paiement",
   "success.stockNotUpdated": "Le stock n'a pas pu être mis à jour automatiquement",
   "minicart.title": "Votre sélection",

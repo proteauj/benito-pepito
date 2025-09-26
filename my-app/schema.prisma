@@ -49,6 +49,28 @@ model ProductStock {
   updatedAt DateTime @updatedAt
 }
 
+model Product {
+  id            String   @id
+  slug          String   @unique
+  title         String
+  description   String
+  price         Int
+  originalPrice Int?
+  image         String
+  images        String[]
+  category      String
+  inStock       Boolean  @default(true)
+  artist        String
+  medium        String
+  year          Int
+  lastUpdated   DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  stock ProductStock?
+}
+
 model Migration {
   id         String   @id @default(cuid())
   name       String   @unique

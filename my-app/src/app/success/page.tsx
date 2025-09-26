@@ -12,7 +12,6 @@ export default function SuccessPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
-  const [stockUpdated, setStockUpdated] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -40,7 +39,6 @@ export default function SuccessPage() {
                 const productIds = cartItems.map((item: any) => item.id);
                 await updateStock(productIds);
                 await updateOrderWithCart(sessionId, cartItems);
-                setStockUpdated(true);
                 console.log('✅ Stock updated for products:', productIds);
               }
             } catch (error) {
@@ -132,9 +130,6 @@ export default function SuccessPage() {
           {paymentStatus === 'success' && (
             <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-800 font-medium">{t('success.paymentVerified')}</p>
-              {stockUpdated && (
-                <p className="text-green-600 text-sm mt-1">{t('success.stockUpdated')}</p>
-              )}
             </div>
           )}
 

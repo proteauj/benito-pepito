@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
@@ -69,11 +68,9 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
 
     // Extract billing address from Stripe session
     const billingAddress = session.customer_details?.address;
-
-    // Extract shipping address from Stripe session
     const shippingAddress = (session as any).collected_information?.shipping_details?.address;
 
-    console.log('🏠 Address data from Stripe:', { billingAddress, shippingAddress });
+    console.log('🏠 Address data from Stripe:', { billingAddress: session.customer_details?.address, shippingAddress });
 
     // Calculate total amount from Stripe session
     const totalAmount = session.amount_total ? session.amount_total / 100 : 0;
@@ -100,13 +97,11 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
 
     // Save customer address information
     if (billingAddress || shippingAddress) {
-      await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined, customerEmail || '');
+      await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined, customerEmail || '', session.id);
       console.log('✅ Customer addresses saved');
     } else {
       console.log('⚠️ No address data available from Stripe session');
     }
-
-    // Note: Product stock update will be handled via the success page
     // since we have the cart data in the URL
 
   } catch (error) {
@@ -115,8 +110,27 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
   }
 }
 
-async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address, customerEmail?: string) {
+async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address, customerEmail?: string, sessionId?: string) {
   try {
+    // Check if addresses already exist for this session to prevent duplicates
+    if (sessionId) {
+      const existingOrder = await prisma.order.findUnique({
+        where: { stripeSessionId: sessionId },
+        include: {
+          billingAddress: true,
+          shippingAddress: true
+        }
+      });
+
+      if (existingOrder) {
+        // If addresses are already linked to this session, skip saving
+        if (existingOrder.billingAddressId || existingOrder.shippingAddressId) {
+          console.log('📍 Addresses already exist for this session, skipping save');
+          return;
+        }
+      }
+    }
+
     // Save billing address if available
     if (billingAddress) {
       console.log('💾 Saving billing address for order:', orderId);

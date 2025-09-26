@@ -38,6 +38,11 @@ export async function POST(request: Request) {
       line_items,
       success_url: successUrl,
       cancel_url: cancelUrl,
+      billing_address_collection: 'required',
+      shipping_address_collection: {
+        allowed_countries: ['CA'], // Canada et États-Unis
+      },
+      customer_creation: 'always',
     });
 
     return NextResponse.json({ url: session.url });

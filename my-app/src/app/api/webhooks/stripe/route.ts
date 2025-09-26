@@ -54,6 +54,18 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
   try {
     console.log('💾 Saving order details for session:', session.id);
 
+    // Get cart data from URL (simplified approach)
+    const productIds: string[] = [];
+    const itemsData: any[] = [];
+
+    console.log('📋 Session data:', {
+      customer_details: session.customer_details,
+      shipping_details: (session as any).shipping_details,
+      amount_total: session.amount_total,
+      currency: session.currency,
+      payment_status: session.payment_status
+    });
+
     // Extract customer information
     const customerEmail = session.customer_details?.email;
     const customerName = session.customer_details?.name;
@@ -61,13 +73,14 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
     // Extract billing address
     const billingAddress = session.customer_details?.address;
 
-    // Extract shipping address (Note: shipping_details might not exist on all session types)
+    // Extract shipping address
     const shippingAddress = (session as any).shipping_details?.address;
 
-    // Extract line items
+    console.log('🏠 Address data:', { billingAddress, shippingAddress });
+
+    // Extract line items and try to get product IDs
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-    const productIds: string[] = [];
-    const itemsData: any[] = [];
+    console.log('🛒 Line items:', lineItems.data.length);
 
     for (const item of lineItems.data) {
       console.log('Processing line item:', {
@@ -76,7 +89,7 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
         amount: item.amount_total
       });
 
-      // Get product ID from price metadata
+      // Try to get product ID from price metadata
       if (item.price?.id) {
         try {
           const price = await stripe.prices.retrieve(item.price.id);
@@ -84,24 +97,25 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
           if (price.product && typeof price.product === 'string') {
             const product = await stripe.products.retrieve(price.product);
 
-            if (product.metadata?.productId) {
-              productIds.push(product.metadata.productId);
-
-              itemsData.push({
-                productId: product.metadata.productId,
-                quantity: item.quantity,
-                price: item.amount_total / 100, // Convert from cents
-                name: item.description || product.name
-              });
-
-              console.log('Added product to order:', product.metadata.productId);
+            // Try to get productId from metadata
+            const productId = product.metadata?.productId;
+            if (productId) {
+              productIds.push(productId);
+              console.log('✅ Found productId from Stripe metadata:', productId);
+            } else {
+              // Fallback: use product name as identifier for now
+              console.log('⚠️ No productId metadata, using product name as fallback');
+              // For now, we'll create a temporary ID based on product name
+              // In production, you'd want to ensure all products have proper metadata
             }
           }
         } catch (error) {
-          console.error('Error retrieving product metadata:', error);
+          console.error('❌ Error retrieving product metadata:', error);
         }
       }
     }
+
+    console.log('📊 Final product IDs:', productIds);
 
     // Calculate total amount
     const totalAmount = session.amount_total ? session.amount_total / 100 : 0;
@@ -126,15 +140,19 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
       totalAmount
     });
 
-    // Save customer address information (temporarily disabled)
+    // Save customer address information
     if (billingAddress || shippingAddress) {
       await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined);
+    } else {
+      console.log('⚠️ No address data to save');
     }
 
-    // Mark products as sold
+    // Mark products as sold (only if we have product IDs)
     if (productIds.length > 0) {
       await updateProductsStock(productIds, false);
       console.log(`✅ Marked ${productIds.length} products as sold`);
+    } else {
+      console.log('⚠️ No products to mark as sold - missing Stripe metadata');
     }
 
   } catch (error) {

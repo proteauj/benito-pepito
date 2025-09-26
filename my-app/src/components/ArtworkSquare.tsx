@@ -13,7 +13,7 @@ interface ArtworkSquareProps {
 
 // Renders any image into a square with a wood-like background and a small inset
 // so tall/wide artworks are zoomed out to fit uniformly.
-export default function ArtworkSquare({ src, alt, priority = false, className = "", matPaddingClass = "p-2 sm:p-3 md:p-4" }: ArtworkSquareProps) {
+export default function ArtworkSquare({ src, alt, priority = false, className = "", matPaddingClass = "p-2" }: ArtworkSquareProps) {
   return (
     <div className={`relative w-full aspect-square bg-[color:var(--wood,theme(colors.amber.800))] art-wood overflow-hidden ${className}`}>
       {/* Frame border */}

@@ -21,7 +21,7 @@ async function syncProductStock() {
     const productsTsContent = fs.readFileSync(productsTsPath, 'utf8');
 
     // Extract product objects using regex - find all objects with id and inStock
-    const productMatches = productsTsContent.match(/{\s*"id":\s*"[^"]+",[\s\S]*?"inStock":\s*(true|false),/g);
+    const productMatches = productsTsContent.match(/{\s*id:\s*'[^']+',[\s\S]*?inStock:\s*(true|false),/g);
 
     if (!productMatches || productMatches.length === 0) {
       console.error('❌ Impossible de trouver les produits dans products.ts');
@@ -36,8 +36,8 @@ async function syncProductStock() {
     for (const productMatch of productMatches) {
       try {
         // Extract id and inStock values using regex
-        const idMatch = productMatch.match(/"id":\s*"([^"]+)"/);
-        const inStockMatch = productMatch.match(/"inStock":\s*(true|false)/);
+        const idMatch = productMatch.match(/id:\s*'([^']+)'/);
+        const inStockMatch = productMatch.match(/inStock:\s*(true|false)/);
 
         if (idMatch && inStockMatch) {
           const productId = idMatch[1];

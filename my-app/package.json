@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:test": "node test-automated.js && next dev",
     "build": "next build",
+    "build:test": "node test-automated.js && next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node test-automated.js",
+    "test:full": "node test-final-fixes.js",
     "db:init": "npx tsx scripts/init-db.ts",
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:seed": "npx tsx prisma/seed.ts",

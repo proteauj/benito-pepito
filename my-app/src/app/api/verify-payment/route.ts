@@ -48,11 +48,12 @@ export async function GET(request: NextRequest) {
     console.error('Error verifying payment:', error);
     return NextResponse.json({ error: 'Failed to verify payment' }, { status: 500 });
   }
-}
-
 async function saveAddressInformation(sessionId: string, session: Stripe.Checkout.Session) {
   try {
     console.log('💾 Saving address information for session:', sessionId);
+
+    // Extract customer email from Stripe session
+    const customerEmail = session.customer_details?.email;
 
     // Extract billing address from Stripe session
     const billingAddress = session.customer_details?.address;
@@ -60,30 +61,35 @@ async function saveAddressInformation(sessionId: string, session: Stripe.Checkou
     // Extract shipping address from Stripe session
     const shippingAddress = (session as any).collected_information?.shipping_details?.address;
 
-    console.log('🏠 Address data from Stripe:', { billingAddress, shippingAddress });
-
     // Check if order already exists
     const existingOrder = await prisma.order.findUnique({
       where: { stripeSessionId: sessionId }
     });
 
-    if (!existingOrder) {
-      console.log('⚠️ No existing order found for session:', sessionId);
-      return;
-    }
+    if (existingOrder) {
+      // Update customer email if it's missing
+      if (!existingOrder.customerEmail && customerEmail) {
+        await prisma.order.update({
+          where: { id: existingOrder.id },
+          data: { customerEmail: customerEmail }
+        });
+        console.log('✅ Customer email updated in existing order');
+      }
 
-    // Save customer address information
-    if (billingAddress || shippingAddress) {
-      await saveCustomerAddress(existingOrder.id, billingAddress || undefined, shippingAddress || undefined);
-      console.log('✅ Customer addresses saved');
+      // Save customer address information
+      if (billingAddress || shippingAddress) {
+        await saveCustomerAddress(existingOrder.id, billingAddress || undefined, shippingAddress || undefined);
+        console.log('✅ Customer addresses saved');
+      } else {
+        console.log('⚠️ No address data available from Stripe session');
+      }
     } else {
-      console.log('⚠️ No address data available from Stripe session');
+      console.log('⚠️ No existing order found for session:', sessionId);
     }
 
   } catch (error) {
     console.error('❌ Error saving address information:', error);
     // Don't throw error to avoid breaking the payment verification flow
-  }
 }
 
 async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address) {

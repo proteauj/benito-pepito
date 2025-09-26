@@ -100,7 +100,7 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
 
     // Save customer address information
     if (billingAddress || shippingAddress) {
-      await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined);
+      await saveCustomerAddress(order.id, billingAddress || undefined, shippingAddress || undefined, customerEmail || '');
       console.log('✅ Customer addresses saved');
     } else {
       console.log('⚠️ No address data available from Stripe session');
@@ -115,61 +115,115 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
   }
 }
 
-async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address) {
+async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address, customerEmail?: string) {
   try {
     // Save billing address if available
     if (billingAddress) {
       console.log('💾 Saving billing address for order:', orderId);
 
-      const billingAddr = await prisma.customerAddress.create({
-        data: {
-          type: 'billing',
-          line1: billingAddress.line1 || '',
-          line2: billingAddress.line2 || null,
-          city: billingAddress.city || '',
-          state: billingAddress.state || null,
-          postalCode: billingAddress.postal_code || '',
-          country: billingAddress.country || '',
-        }
-      });
+      // Check if identical address already exists to avoid duplicates
+      const existingBillingAddress = await findOrCreateAddress(billingAddress, 'billing', customerEmail);
 
-      // Link billing address to order
-      await prisma.order.update({
-        where: { id: orderId },
-        data: { billingAddressId: billingAddr.id }
-      });
+      if (existingBillingAddress) {
+        // Link existing address to order
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { billingAddressId: existingBillingAddress.id }
+        });
+        console.log('✅ Existing billing address linked successfully');
+      } else {
+        // Create new address
+        const billingAddr = await prisma.customerAddress.create({
+          data: {
+            type: 'billing',
+            line1: billingAddress.line1 || '',
+            line2: billingAddress.line2 || null,
+            city: billingAddress.city || '',
+            state: billingAddress.state || null,
+            postalCode: billingAddress.postal_code || '',
+            country: billingAddress.country || '',
+          }
+        });
 
-      console.log('✅ Billing address saved and linked successfully');
+        // Link new address to order
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { billingAddressId: billingAddr.id }
+        });
+
+        console.log('✅ New billing address saved and linked successfully');
+      }
     }
 
     // Save shipping address if available
     if (shippingAddress) {
       console.log('💾 Saving shipping address for order:', orderId);
 
-      const shippingAddr = await prisma.customerAddress.create({
-        data: {
-          type: 'shipping',
-          line1: shippingAddress.line1 || '',
-          line2: shippingAddress.line2 || null,
-          city: shippingAddress.city || '',
-          state: shippingAddress.state || null,
-          postalCode: shippingAddress.postal_code || '',
-          country: shippingAddress.country || '',
-        }
-      });
+      // Check if identical address already exists to avoid duplicates
+      const existingShippingAddress = await findOrCreateAddress(shippingAddress, 'shipping', customerEmail);
 
-      // Link shipping address to order
-      await prisma.order.update({
-        where: { id: orderId },
-        data: { shippingAddressId: shippingAddr.id }
-      });
+      if (existingShippingAddress) {
+        // Link existing address to order
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { shippingAddressId: existingShippingAddress.id }
+        });
+        console.log('✅ Existing shipping address linked successfully');
+      } else {
+        // Create new address
+        const shippingAddr = await prisma.customerAddress.create({
+          data: {
+            type: 'shipping',
+            line1: shippingAddress.line1 || '',
+            line2: shippingAddress.line2 || null,
+            city: shippingAddress.city || '',
+            state: shippingAddress.state || null,
+            postalCode: shippingAddress.postal_code || '',
+            country: shippingAddress.country || '',
+          }
+        });
 
-      console.log('✅ Shipping address saved and linked successfully');
+        // Link new address to order
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { shippingAddressId: shippingAddr.id }
+        });
+
+        console.log('✅ New shipping address saved and linked successfully');
+      }
     }
 
   } catch (error) {
     console.error('Error saving customer address:', error);
     throw error;
+  }
+}
+
+async function findOrCreateAddress(address: Stripe.Address, type: string, customerEmail?: string): Promise<any | null> {
+  try {
+    // Look for existing address with exact match
+    const existingAddress = await prisma.customerAddress.findFirst({
+      where: {
+        type: type,
+        line1: address.line1 || '',
+        line2: address.line2 || null,
+        city: address.city || '',
+        state: address.state || null,
+        postalCode: address.postal_code || '',
+        country: address.country || '',
+      }
+    });
+
+    if (existingAddress) {
+      console.log('📍 Found existing address, reusing it');
+      return existingAddress;
+    }
+
+    return null; // Address doesn't exist, will be created by caller
+
+  } catch (error) {
+    console.error('Error finding existing address:', error);
+    return null;
   }
 }
 

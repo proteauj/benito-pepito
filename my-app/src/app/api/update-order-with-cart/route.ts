@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.create({
       data: {
         stripeSessionId: sessionId,
-        customerEmail: '', // Will be updated by webhook
+        customerEmail: '', // Will be updated by webhook or verify-payment
         productIds: productIds,
         totalAmount: Math.round(totalAmount),
         currency: 'CAD',

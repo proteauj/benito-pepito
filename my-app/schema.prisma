@@ -56,9 +56,9 @@ model Migration {
 }
 
 model PageVisit {
-  id         String   @id @default(cuid())
-  page       String   // 'homepage', 'products', etc.
-  visitorIP  String?  // Optional for privacy
-  userAgent  String?  // Optional browser info
-  visitedAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  page      String // 'homepage', 'products', etc.
+  visitorIP String? // Optional for privacy
+  userAgent String? // Optional browser info
+  visitedAt DateTime @default(now())
 }

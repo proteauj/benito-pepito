@@ -21,11 +21,3 @@ CREATE TABLE IF NOT EXISTS product_stock (
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_product_stock_in_stock ON product_stock(in_stock);
-
--- Insert initial product stock data
-INSERT INTO product_stock (product_id, in_stock)
-SELECT
-  id as product_id,
-  inStock as in_stock
-FROM jsonb_array_elements_text($1::jsonb -> 'products') as products(id, inStock)
-ON CONFLICT (product_id) DO NOTHING;

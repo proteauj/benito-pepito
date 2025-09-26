@@ -30,6 +30,22 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const { itemCount, toggleCart } = useCart();
 
+  // Track homepage visit
+  useEffect(() => {
+    const trackVisit = async () => {
+      try {
+        await fetch('/api/analytics/track?page=homepage', {
+          method: 'POST',
+        });
+      } catch (error) {
+        // Silently fail if tracking fails - don't break the user experience
+        console.debug('Analytics tracking failed:', error);
+      }
+    };
+
+    trackVisit();
+  }, []); // Empty dependency array - only run once on mount
+
   useEffect(() => {
     async function fetchProducts() {
       try {

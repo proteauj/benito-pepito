@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
+  url      = "prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza18tT2Z6d1ZZbkZBbUZpOGZFZTBkVFYiLCJhcGlfa2V5IjoiMDFLNVoyRlM1OVpHWERTODZOV0E5TkIyRkUiLCJ0ZW5hbnRfaWQiOiI0NWFiZDNjNWZjNTRmODIwOTNhYWU1NGNlMmJlNTBmMzJkOWE3YzU5YmI2OTQ3NGVkMTBhMzRhYTMxZTNlNjNlIiwiaW50ZXJuYWxfc2VjcmV0IjoiZDk3NzIzZDQtNDlhZS00NWU5LWI0NTYtOWFmN2QwZWE4ZDU1In0.BUEv6DByHtfPlt7oEKL60D5jPnPKoNPpd1-C1NHcIQ4"
 }
 
 model Order {
@@ -53,4 +53,12 @@ model Migration {
   id         String   @id @default(cuid())
   name       String   @unique
   executedAt DateTime @default(now())
+}
+
+model PageVisit {
+  id         String   @id @default(cuid())
+  page       String   // 'homepage', 'products', etc.
+  visitorIP  String?  // Optional for privacy
+  userAgent  String?  // Optional browser info
+  visitedAt  DateTime @default(now())
 }

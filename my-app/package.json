@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:init": "npx tsx scripts/init-db.ts",
     "db:migrate": "npx tsx lib/db/migrate.ts",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",

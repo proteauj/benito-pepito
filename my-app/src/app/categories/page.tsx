@@ -39,7 +39,7 @@ export default function CategoriesPage() {
               </div>
               <div className="p-5">
                 <h2 className="text-xl font-semibold text-black">{t(`category.${c.name}`)}</h2>
-                <p className="text-sm text-black/70">{t(`categoryDesc.${c.name}`)}</p>
+                <p className="text-sm text-black/70">{t(`category.${c.name}`)}</p>
                 <span className="inline-block mt-3 bg-[var(--gold)] text-black px-3 py-1 font-semibold hover:bg-white hover:text-[var(--leaf)]">{t('category.viewAll')}</span>
               </div>
             </Link>

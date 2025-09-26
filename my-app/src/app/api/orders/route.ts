@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseService } from '../../../../lib/db/service';
+import { prisma } from '../../../../lib/db/client';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-08-27.basil'
+});
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -43,6 +49,9 @@ export async function POST(request: NextRequest) {
       status: status || 'completed'
     });
 
+    // Update address information if available in Stripe session
+    await updateOrderAddressInformation(stripeSessionId, order.id);
+
     return NextResponse.json(order);
   } catch (error) {
     console.error('Error creating order:', error);
@@ -71,5 +80,92 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating order:', error);
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
+  }
+}
+
+async function updateOrderAddressInformation(sessionId: string, orderId: string) {
+  try {
+    console.log('💾 Updating address information for session:', sessionId);
+
+    // Retrieve the session from Stripe to get address information
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    // Extract billing address from Stripe session
+    const billingAddress = session.customer_details?.address;
+
+    // Extract shipping address from Stripe session
+    const shippingAddress = (session as any).shipping_details?.address;
+
+    console.log('🏠 Address data from Stripe:', { billingAddress, shippingAddress });
+
+    // Save customer address information if available
+    if (billingAddress || shippingAddress) {
+      await saveOrderAddress(orderId, billingAddress || undefined, shippingAddress || undefined);
+      console.log('✅ Customer addresses saved');
+    } else {
+      console.log('⚠️ No address data available from Stripe session');
+    }
+
+  } catch (error) {
+    console.error('❌ Error updating address information:', error);
+    // Don't throw error to avoid breaking the order creation flow
+  }
+}
+
+async function saveOrderAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address) {
+  try {
+    // Save billing address if available
+    if (billingAddress) {
+      console.log('💾 Saving billing address for order:', orderId);
+
+      const billingAddr = await prisma.customerAddress.create({
+        data: {
+          type: 'billing',
+          line1: billingAddress.line1 || '',
+          line2: billingAddress.line2 || null,
+          city: billingAddress.city || '',
+          state: billingAddress.state || null,
+          postalCode: billingAddress.postal_code || '',
+          country: billingAddress.country || '',
+        }
+      });
+
+      // Link billing address to order
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { billingAddressId: billingAddr.id }
+      });
+
+      console.log('✅ Billing address saved and linked successfully');
+    }
+
+    // Save shipping address if available
+    if (shippingAddress) {
+      console.log('💾 Saving shipping address for order:', orderId);
+
+      const shippingAddr = await prisma.customerAddress.create({
+        data: {
+          type: 'shipping',
+          line1: shippingAddress.line1 || '',
+          line2: shippingAddress.line2 || null,
+          city: shippingAddress.city || '',
+          state: shippingAddress.state || null,
+          postalCode: shippingAddress.postal_code || '',
+          country: shippingAddress.country || '',
+        }
+      });
+
+      // Link shipping address to order
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { shippingAddressId: shippingAddr.id }
+      });
+
+      console.log('✅ Shipping address saved and linked successfully');
+    }
+
+  } catch (error) {
+    console.error('Error saving order address:', error);
+    throw error;
   }
 }

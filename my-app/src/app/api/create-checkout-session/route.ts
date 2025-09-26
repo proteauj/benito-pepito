@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       quantity: Number(it.quantity) || 1,
     }));
 
-    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}&products=${encodeURIComponent(JSON.stringify(items.map(it => it.id)))}`;
+    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/success?session_id={CHECKOUT_SESSION_ID}&cart=${encodeURIComponent(JSON.stringify(items))}`;
     const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/cancel`;
 
     const session = await stripe.checkout.sessions.create({

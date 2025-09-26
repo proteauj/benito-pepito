@@ -16,32 +16,35 @@ export default function SuccessPage() {
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
-    const productsParam = searchParams.get('products');
+    const cartParam = searchParams.get('cart');
 
     if (sessionId) {
       // Verify the payment status
-      verifyPayment(sessionId, productsParam);
+      verifyPayment(sessionId, cartParam);
     } else {
       setLoading(false);
     }
   }, [searchParams]);
 
-  const verifyPayment = async (sessionId: string, productsParam: string | null) => {
+  const verifyPayment = async (sessionId: string, cartParam: string | null) => {
     try {
       const response = await fetch(`/api/verify-payment?session_id=${sessionId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          // Update stock using products from URL parameter
-          if (productsParam) {
+          // Update stock using cart data from URL parameter
+          if (cartParam) {
             try {
-              const productIds = JSON.parse(decodeURIComponent(productsParam));
-              if (Array.isArray(productIds) && productIds.length > 0) {
+              const cartItems = JSON.parse(decodeURIComponent(cartParam));
+              if (Array.isArray(cartItems) && cartItems.length > 0) {
+                const productIds = cartItems.map((item: any) => item.id);
                 await updateStock(productIds);
+                await updateOrderWithCart(sessionId, cartItems);
                 setStockUpdated(true);
+                console.log('✅ Stock updated for products:', productIds);
               }
             } catch (error) {
-              console.error('Error parsing products from URL:', error);
+              console.error('Error parsing cart data from URL:', error);
             }
           }
 
@@ -59,6 +62,28 @@ export default function SuccessPage() {
     }
   };
 
+  const updateOrderWithCart = async (sessionId: string, cartItems: any[]) => {
+    try {
+      const response = await fetch('/api/update-order-with-cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId, cartItems }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Order updated successfully:', data);
+        return data;
+      } else {
+        console.error('❌ Failed to update order:', response.statusText);
+      }
+    } catch (error) {
+      console.error('❌ Error updating order:', error);
+    }
+  };
+
   const updateStock = async (productIds: string[]) => {
     try {
       const response = await fetch('/api/products', {
@@ -70,10 +95,12 @@ export default function SuccessPage() {
       });
 
       if (response.ok) {
-        console.log('Stock updated successfully');
+        console.log('✅ Stock updated successfully');
+      } else {
+        console.error('❌ Failed to update stock');
       }
     } catch (error) {
-      console.error('Error updating stock:', error);
+      console.error('❌ Error updating stock:', error);
     }
   };
 

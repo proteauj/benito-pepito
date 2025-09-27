@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 let prisma: any = null;
 
 try {
-  const dbClientModule = require('../../../lib/db/client');
+  const dbClientModule = require('../../../../lib/db/client');
   prisma = dbClientModule.prisma;
 } catch (error) {
   console.log('Prisma client not available');

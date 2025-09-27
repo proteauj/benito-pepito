@@ -1,7 +1,7 @@
 // app/components/SafeImage.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { forwardRef, useState, useEffect } from "react";
 
 interface SafeImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string | undefined | null;
@@ -9,50 +9,57 @@ interface SafeImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>,
   className?: string;
 }
 
-export default function SafeImage({
+const SafeImage = forwardRef<HTMLImageElement, SafeImageProps>(({
   src: originalSrc,
   alt = "",
   fallbackSrc = "/images/placeholder.jpg",
   className = "",
   ...props
-}: SafeImageProps) {
+}, ref) => {
   const [imgSrc, setImgSrc] = useState<string>(() => {
-    if (!originalSrc) return fallbackSrc;
-    return processImagePath(originalSrc);
+    const processed = processImagePath(originalSrc || '');
+    console.log('Initial image path:', { originalSrc, processed });
+    return processed || fallbackSrc;
   });
 
-  function processImagePath(path: string): string {
-    // Si c'est une URL complète, la retourner telle quelle
+  function processImagePath(path: string | undefined | null): string {
+    if (!path) return '';
     if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) {
       return path;
     }
-    
-    // Si le chemin commence par /, le retourner tel quel
-    if (path.startsWith('/')) {
-      return path;
-    }
-    
-    // Sinon, ajouter le préfixe /images/
-    return `/images/${path}`;
+    // Si le chemin ne commence pas par /, on ajoute /images/
+    return path.startsWith('/') ? path : `/images/${path}`;
   }
 
   useEffect(() => {
     if (!originalSrc) {
+      console.log('No source, using fallback');
       setImgSrc(fallbackSrc);
       return;
     }
     
-    setImgSrc(processImagePath(originalSrc));
+    const newPath = processImagePath(originalSrc);
+    console.log('Source changed:', { originalSrc, newPath });
+    setImgSrc(newPath);
   }, [originalSrc, fallbackSrc]);
 
-  const handleError = () => {
-    console.error(`Image failed to load: ${imgSrc}`);
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    console.error('Image error:', {
+      src: imgSrc,
+      originalSrc,
+      fallbackSrc,
+      error: e
+    });
+    
     if (imgSrc !== fallbackSrc) {
+      console.log('Falling back to default image');
       setImgSrc(fallbackSrc);
     }
   };
 
-  if (!originalSrc && !fallbackSrc) {
+  console.log('Rendering SafeImage with src:', imgSrc);
+
+  if (!imgSrc) {
     return (
       <div 
         className={`bg-gray-200 flex items-center justify-center ${className}`}
@@ -68,6 +75,7 @@ export default function SafeImage({
 
   return (
     <img
+      ref={ref}
       {...props}
       src={imgSrc}
       alt={alt}
@@ -76,4 +84,8 @@ export default function SafeImage({
       loading={props.loading || "lazy"}
     />
   );
-}
+});
+
+SafeImage.displayName = 'SafeImage';
+
+export default SafeImage;

@@ -1,19 +1,30 @@
-// app/components/ProductCard.tsx
-"use client";
+// app/products/ProductCard.tsx
+'use client';
 
-import Link from "next/link";
-import { useI18n } from "@/i18n/I18nProvider";
-import { Product } from "@/types";
-import SafeImage from "@/components/SafeImage";
+import Link from 'next/link';
+import { useI18n } from '@/i18n/I18nProvider';
+import { Product } from '@/types';
+import SafeImage from '@/components/SafeImage';
+import { useEffect, useRef } from 'react';
 
 interface ProductCardProps {
   product: Product;
   className?: string;
 }
 
-export default function ProductCard({ product, className = "" }: ProductCardProps) {
+export default function ProductCard({ product, className = '' }: ProductCardProps) {
   const { t } = useI18n();
-  
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Debug
+  useEffect(() => {
+    console.log('ProductCard mounted with product:', {
+      id: product.id,
+      image: product.image,
+      title: product.title
+    });
+  }, [product.id]);
+
   return (
     <div className={`group relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}>
       <Link 
@@ -23,11 +34,18 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
       >
         <div className="aspect-square relative overflow-hidden bg-gray-50">
           <SafeImage
+            ref={imgRef}
             src={product.image}
             alt={product.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             width={400}
             height={400}
+            onError={(e) => {
+              console.error('Image failed to load:', {
+                src: product.image,
+                error: e
+              });
+            }}
           />
           {!product.inStock && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">

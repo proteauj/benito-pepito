@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useI18n } from '../i18n/I18nProvider';
 import { useProductTranslations } from '../hooks/useProductTranslations';
-import ArtworkSquare from '../components/ArtworkSquare';
+import dynamic from 'next/dynamic';
+import Loading from '@/components/Loading';
 
 interface Product {
   id: string;
@@ -278,6 +279,14 @@ export default function ProductsIndexPage() {
     };
   }, [isLoadingMore, hasMore, pageSize, filteredSorted.length]);
 
+  const ProductByCategory = dynamic(
+    () => import('./ProductByCategory'),
+    { 
+      ssr: false,
+      loading: () => <Loading />
+    }
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -357,41 +366,14 @@ export default function ProductsIndexPage() {
         )}
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayedItems.map((p: Product, index: number) => {
-            const isFirstOfCategory = index === 0 || displayedItems[index - 1]?.category !== p.category;
-            return (
-              <div key={p.id}>
-                {isFirstOfCategory && (
-                  <div data-category={p.category} className="sr-only" style={{ marginTop: '-100px', paddingTop: '100px' }}></div>
-                )}
-                <Link href={`/product/${p.slug}`} className="group bg-white overflow-hidden border border-[#cfc9c0] block">
-                  <div className="relative">
-                    <ArtworkSquare src={p.image} alt={p.title} />
-                    {!p.inStock && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <span className="bg-[var(--gold)] text-black px-4 py-2 rounded-full font-semibold">{t('status.sold')}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-5 text-black">
-                    <h3 className="text-xl font-semibold">{getTranslatedText(p, 'title')} · {p.year}</h3>
-                    <p className="text-sm text-black/60 mb-3">{getTranslatedText(p, 'medium')}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-baseline space-x-2">
-                        <span className="text-2xl font-bold">${p.price}</span>
-                        {p.originalPrice && (
-                          <span className="text-sm line-through text-black/40">${p.originalPrice}</span>
-                        )}
-                      </div>
-                      <span className="px-3 py-2 bg-[var(--gold)] text-black text-sm font-semibold">{t('actions.view')}</span>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            );
-          })}
-        </div>
+        <Suspense fallback={<Loading />}>
+          <ProductByCategory 
+            products={displayedItems}
+            isLoadingMore={isLoadingMore}
+            hasMore={hasMore}
+            loadMore={loadMore}
+          />
+        </Suspense>
 
         {/* Infinite scroll will load automatically when scrolling */}
       </div>

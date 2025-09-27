@@ -1,34 +1,120 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types';
 import { useI18n } from '@/i18n/I18nProvider';
 import { useProductTranslations } from '@/hooks/useProductTranslations';
 import ArtworkSquare from '@/components/ArtworkSquare';
+import Loading from '@/components/Loading';
 
-interface ProductsByCategory {
-  [key: string]: Product[];
+interface ProductByCategoryProps {
+  searchParams: URLSearchParams;
 }
 
-interface ProductsContentProps {
-  products: Product[];
-  isLoadingMore: boolean;
-  hasMore: boolean;
-  loadMore: () => void;
-}
-
-export default function ProductByCategory({ 
-  products, 
-  isLoadingMore, 
-  hasMore, 
-  loadMore 
-}: ProductsContentProps) {
+export default function ProductByCategory({ searchParams }: ProductByCategoryProps) {
   const { t } = useI18n();
   const { getTranslatedText } = useProductTranslations();
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const category = searchParams.get('category');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch('/api/products');
+      
+      if (!res.ok) {
+        throw new Error('Erreur lors du chargement des produits');
+      }
+      
+      const data = await res.json();
+      let productsList: Product[] = [];
+      
+      if (category && data[category]) {
+        productsList = data[category];
+      } else {
+        productsList = Object.values(data).flat();
+      }
+      
+      setProducts(prev => page === 1 ? productsList : [...prev, ...productsList]);
+      setHasMore(productsList.length > 0);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  // useEffect(() => {
+  //   setProducts([]);
+  //   setPage(1);
+  // }, [category]);
+  
+  useEffect(() => {
+    loadProducts();
+  }, [page]);
+
+  const loadMore = () => {
+    if (isLoading) return;
+    
+    if (hasMore) {
+      // Charge la page suivante normalement
+      setPage(prev => prev + 1);
+    } else {
+      // Retourne au début de la liste
+      setPage(1);
+      // Fait défiler vers le haut de manière fluide
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Réinitialise hasMore pour éviter des déclenchements multiples
+      setHasMore(true);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`/api/products?page=${page}&category=${category || ''}`);
+        
+        if (!res.ok) throw new Error('Erreur de chargement');
+        
+        const data = await res.json();
+        let productsList: Product[] = [];
+        
+        if (category && data[category]) {
+          productsList = data[category];
+        } else {
+          productsList = Object.values(data).flat();
+        }
+        
+        // Si on est à la première page, on remplace les produits
+        // Sinon on les ajoute à la suite
+        setProducts(prev => page === 1 ? productsList : [...prev, ...productsList]);
+        
+        // On considère qu'il y a plus de produits tant qu'on n'a pas atteint la fin
+        setHasMore(productsList.length > 0);
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [page, category]);
+
+  {isLoading && page === 1 && (
+    <div className="flex items-center justify-center h-64">
+      <Loading />
+    </div>
+  )}
 
   return (
     <div className="space-y-8">
@@ -97,10 +183,15 @@ export default function ProductByCategory({
         })}
       </div>
 
-      {/* Bouton Voir plus */}
-      {hasMore && (
-        <div className="text-center mt-8">
-            {isLoadingMore ? t('loading') : null}
+      {isLoading && page > 1 && (
+        <div className="flex justify-center my-8">
+          <Loading />
+        </div>
+      )}
+
+      {!hasMore && products.length > 0 && (
+        <div className="text-center py-4 text-sm text-gray-400">
+          {t('products.endOfList')}
         </div>
       )}
     </div>

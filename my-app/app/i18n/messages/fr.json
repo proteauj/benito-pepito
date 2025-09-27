@@ -21,6 +21,7 @@
   "status.sold": "Vendu",
   "status.available": "Disponible",
   "product.addToCart": "Ajouter au panier",
+  "product.endOfList": "Fin de la gallerie",
   "cta.exploreCollections": "Explorer les collections",
   "errors.productNotFound": "Produit introuvable",
   "errors.categoryNotFound": "Catégorie introuvable",

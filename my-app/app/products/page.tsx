@@ -7,6 +7,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useProductTranslations } from '../hooks/useProductTranslations';
 import dynamic from 'next/dynamic';
 import Loading from '@/components/Loading';
+import ProductByCategory from './ProductByCategory';
+import ProductsContent from './ProductsContent';
 
 interface Product {
   id: string;
@@ -279,13 +281,15 @@ export default function ProductsIndexPage() {
     };
   }, [isLoadingMore, hasMore, pageSize, filteredSorted.length]);
 
-  const ProductByCategory = dynamic(
-    () => import('./ProductByCategory'),
-    { 
-      ssr: false,
-      loading: () => <Loading />
-    }
-  );
+  const dynamic = 'force-dynamic';
+
+  function ProductsPage() {
+    return (
+      <Suspense fallback={<Loading />}>
+        <ProductsContent />
+      </Suspense>
+    );
+  }
 
   if (loading) {
     return (
@@ -367,12 +371,7 @@ export default function ProductsIndexPage() {
 
         {/* Grid */}
         <Suspense fallback={<Loading />}>
-          <ProductByCategory 
-            products={displayedItems}
-            isLoadingMore={isLoadingMore}
-            hasMore={hasMore}
-            loadMore={loadMore}
-          />
+          <ProductsContent />
         </Suspense>
 
         {/* Infinite scroll will load automatically when scrolling */}

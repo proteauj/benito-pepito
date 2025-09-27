@@ -19,6 +19,7 @@
   "status.sold": "Sold",
   "status.available": "Available",
   "product.addToCart": "Add to Cart",
+  "product.endOfList": "End of the gallery",
   "cta.exploreCollections": "Explore Collections",
   "errors.productNotFound": "Product not found",
   "errors.categoryNotFound": "Category not found",

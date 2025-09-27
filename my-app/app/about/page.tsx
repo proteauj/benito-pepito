@@ -21,7 +21,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 items-start">
           {/* Left column: Hero image */}
           <div className="relative aspect-[4/3] border border-[#cfc9c0] bg-white">
-            <SafeImage src="/images/staff/benitoPepito.jpg" alt={t('about.heroAlt')} fill className="object-cover" />
+            <SafeImage src="/images/staff/benitoPepito.jpg" alt={t('about.heroAlt')} className="object-cover" />
           </div>
 
           {/* Right column: Description */}

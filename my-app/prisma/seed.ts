@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { products } from '../src/data/products.js'
+import { products } from '../app/data/products.js'
 import fs from 'fs'
 import path from 'path'
 

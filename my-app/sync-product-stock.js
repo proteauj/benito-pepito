@@ -17,7 +17,7 @@ async function syncProductStock() {
 
   try {
     // Read products.ts file
-    const productsTsPath = path.join(__dirname, 'src/data/products.ts');
+    const productsTsPath = path.join(__dirname, 'app/data/products.ts');
     const productsTsContent = fs.readFileSync(productsTsPath, 'utf8');
 
     // Extract product objects using regex - find all objects with id and inStock

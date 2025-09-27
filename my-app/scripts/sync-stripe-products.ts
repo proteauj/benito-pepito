@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { products } from '../src/data/products';
+import { products } from '../app/data/products';
 
 async function syncStripeProducts() {
   console.log('🔄 Synchronisation des produits Stripe...');

@@ -20,7 +20,7 @@ async function syncProductsToDatabase() {
 
   try {
     // Read products.ts file
-    const productsTsPath = path.join(__dirname, 'src/data/products.ts');
+    const productsTsPath = path.join(__dirname, 'app/data/products.ts');
     const productsTsContent = fs.readFileSync(productsTsPath, 'utf8');
 
     // Extract products array using regex

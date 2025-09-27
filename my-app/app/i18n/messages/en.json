@@ -1,11 +1,11 @@
 {
   "nav.home": "Home",
   "nav.categories": "Categories",
-  "nav.allWorks": "All Works",
+  "nav.allWorks": "Gallery",
   "nav.about": "About",
   "nav.contact": "Contact",
   "breadcrumbs.home": "Home",
-  "headings.allArtworks": "All Artworks",
+  "headings.allArtworks": "Gallery",
   "category.Sculpture": "Sculpture",
   "category.Painting": "Painting",
   "category.Home & Garden": "Home & Garden",

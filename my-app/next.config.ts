@@ -2,24 +2,14 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  outputFileTracingRoot: path.join(__dirname, ".."),
   images: {
     // Désactive l'optimisation pour les images locales
     unoptimized: true,
-    // Désactive le cache en développement
-    disableStaticImages: process.env.NODE_ENV === 'development',
+    disableStaticImages: true, 
   },
-  reactStrictMode: true,
-  // Désactive le cache des pages statiques
-  generateEtags: false,
   // Important pour éviter les problèmes de cache
   experimental: {
-    // Optionnel : définir une taille maximale pour le corps des requêtes
-    serverActions: {
-      bodySizeLimit: '2mb',
-      allowedOrigins: ['benitopepito.com', '*.benitopepito.com']
-    }
+    disableOptimizedLoading: true,
   },
   webpack: (config) => {
     // Ajouter des alias pour les chemins d'importation

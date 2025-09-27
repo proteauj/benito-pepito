@@ -1,26 +1,35 @@
-"use client";
-
+// app/components/SafeImage.tsx
 import Image, { ImageProps } from "next/image";
 import { useEffect, useState } from "react";
 
-// A thin wrapper around next/image that swaps to a fallback image URL if the original fails.
-// Use for remote images that may 404 or be rate-limited.
-export default function SafeImage(props: ImageProps & { fallbackSrc?: string }) {
-  const { src, alt, fallbackSrc = "/textures/stone.svg", ...rest } = props;
-  const [currentSrc, setCurrentSrc] = useState(src);
+interface SafeImageProps extends Omit<ImageProps, 'src'> {
+  src: string | undefined | null;
+  fallbackSrc?: string;
+}
 
-  // When the src prop changes (e.g., slideshow moves to next product),
-  // reset currentSrc so the new image is displayed.
+export default function SafeImage({ 
+  src, 
+  alt, 
+  fallbackSrc = "/images/placeholder.jpg", // Mettez un chemin d'image de secours dans public/images
+  ...rest 
+}: SafeImageProps) {
+  const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
+
   useEffect(() => {
-    setCurrentSrc(src);
-  }, [src]);
+    setImgSrc(src || fallbackSrc);
+  }, [src, fallbackSrc]);
 
   return (
     <Image
       {...rest}
-      src={currentSrc}
+      src={imgSrc}
       alt={alt}
-      onError={() => setCurrentSrc(fallbackSrc)}
+      onError={() => {
+        if (imgSrc !== fallbackSrc) {
+          setImgSrc(fallbackSrc);
+        }
+      }}
+      unoptimized // Important pour éviter les problèmes avec les images locales
     />
   );
 }

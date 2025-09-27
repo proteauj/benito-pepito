@@ -4,16 +4,23 @@ import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 import { useI18n } from '@/i18n/I18nProvider';
 import SafeImage from './SafeImage';
+import { useEffect, useState } from 'react';
 
 export default function MiniCartDrawer() {
+  const [isMounted, setIsMounted] = useState(false);
   const { isOpen, items, total, itemCount, updateQuantity, removeFromCart, closeCart } = useCart();
   const { t } = useI18n();
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
   return (
-    <div
-      className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
-      aria-hidden={!isOpen}
-    >
+    <div className={`fixed inset-0 z-50 ${isOpen ? 'block' : 'hidden'}`}>
       {/* Backdrop */}
       <div
         className={`absolute inset-0 bg-black/50 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'}`}

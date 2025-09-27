@@ -4,6 +4,7 @@ import { I18nProvider } from './i18n/I18nProvider'
 import { CartProvider } from './contexts/CartContext'
 import SiteHeader from './components/SiteHeader'
 import SiteFooter from './components/SiteFooter'
+import MiniCartDrawer from './components/MiniCartDrawer'
 
 export const metadata: Metadata = {
   title: 'Benito Pepito - Art Gallery',
@@ -24,6 +25,7 @@ export default function RootLayout({
               <SiteHeader />
               <main className="flex-1">
                 {children}
+                <MiniCartDrawer />
               </main>
               <SiteFooter />
             </div>

@@ -9,8 +9,6 @@ const fs = require('fs');
 const path = require('path');
 
 async function syncProductsToDatabase() {
-  console.log('🔄 Synchronisation des produits vers la base de données...\n');
-
   try {
     // Read products.ts file
     const productsTsPath = path.join(__dirname, 'app/data/products.ts');
@@ -45,8 +43,6 @@ async function syncProductsToDatabase() {
 
     // Parse products
     const products = eval(`(${jsonString})`);
-
-    console.log(`📊 Produits trouvés: ${products.length}`);
 
     // For now, just log what would be synced
     // TODO: Implement actual database sync when Prisma client is available

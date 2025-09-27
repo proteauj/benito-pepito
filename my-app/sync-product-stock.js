@@ -13,7 +13,6 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function syncProductStock() {
-  console.log('🔄 Synchronisation du stock des produits...\n');
 
   try {
     // Read products.ts file
@@ -27,10 +26,6 @@ async function syncProductStock() {
       console.error('❌ Impossible de trouver les produits dans products.ts');
       process.exit(1);
     }
-
-    console.log(`📊 Produits trouvés: ${productMatches.length}`);
-
-    console.log('💾 Synchronisation du stock avec la base de données...');
 
     // Process each product
     for (const productMatch of productMatches) {
@@ -56,19 +51,11 @@ async function syncProductStock() {
               updatedAt: new Date()
             }
           });
-
-          console.log(`✅ Produit ${productId} - Stock: ${inStock ? '✅' : '❌'} synchronisé`);
         }
       } catch (error) {
         console.error(`❌ Erreur lors du traitement d'un produit:`, error.message);
       }
     }
-
-    console.log('\n✅ Synchronisation du stock terminée avec succès!');
-
-    console.log('\n🎉 Tous les produits ont été synchronisés avec succès!');
-    console.log('💡 Utilisez cette commande pour synchroniser à l\'avenir: node sync-product-stock.js');
-
   } catch (error) {
     console.error('❌ Erreur lors de la synchronisation:', error.message);
     process.exit(1);

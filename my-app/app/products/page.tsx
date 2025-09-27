@@ -8,8 +8,8 @@ import { useI18n } from '@/i18n/I18nProvider';
 import { useProductTranslations } from '@/hooks/useProductTranslations';
 import ProductsLoading from '@/components/ProductsLoading';
 import { Product } from '@/types';
+import ProductCard from './ProductCard';
 
-// Déplacer le contenu principal dans un composant séparé
 function ProductsContent() {
   const { t } = useI18n();
   const { getTranslatedText } = useProductTranslations();
@@ -27,7 +27,7 @@ function ProductsContent() {
   const [hasMounted, setHasMounted] = useState(false);
   const pageSize = 12;
 
-  // Votre logique existante ici...
+  // Chargement des données
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -48,7 +48,54 @@ function ProductsContent() {
     fetchData();
   }, []);
 
-  // Le reste de votre logique existante...
+  // Gestion des paramètres d'URL
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl && data[categoryFromUrl as keyof typeof data]) {
+      setCategory(categoryFromUrl as Product["category"]);
+      setUserSelectedCategory(true);
+    }
+  }, [searchParams, data]);
+
+  // Fonction pour gérer le changement de catégorie
+  const handleCategoryChange = (newCategory: "All" | Product["category"]) => {
+    setCategory(newCategory);
+    setUserSelectedCategory(newCategory !== "All");
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (newCategory === "All") {
+      params.delete('category');
+    } else {
+      params.set('category', newCategory);
+    }
+    router.push(`/products?${params.toString()}`);
+  };
+
+  // Fonction pour trier les produits
+  const sortProducts = (products: Product[]) => {
+    return [...products].sort((a, b) => {
+      switch (sortBy) {
+        case "lastUpdated":
+          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+        case "price-asc":
+          return a.price - b.price;
+        case "price-desc":
+          return b.price - a.price;
+        default:
+          return 0; // Ordre par défaut
+      }
+    });
+  };
+
+  // Obtenir les catégories uniques
+  const categories = useMemo(() => {
+    return ["All", ...Object.keys(data)];
+  }, [data]);
+
+  // Charger plus de produits
+  const loadMore = () => {
+    setDisplayCount(prev => prev + pageSize);
+  };
 
   if (loading) {
     return <ProductsLoading />;
@@ -70,19 +117,53 @@ function ProductsContent() {
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* En-tête */}
         <div className="flex items-end justify-between mb-8 leafy-divider pb-3">
           <h1 className="text-4xl font-bold">{t('headings.allArtworks')}</h1>
         </div>
 
-        {/* Votre interface utilisateur existante */}
+        {/* Barre de recherche et filtres */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Barre de recherche */}
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t('search.placeholder')}
             className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
           />
-          {/* Ajoutez vos autres contrôles ici... */}
+
+          {/* Filtre par catégorie */}
+          <div className="relative">
+            <select
+              value={category}
+              onChange={(e) => handleCategoryChange(e.target.value as any)}
+              className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            >
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{t(`category.${cat}`)}</option>
+              ))}
+            </select>
+            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
+            </svg>
+          </div>
+
+          {/* Filtre de tri */}
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            >
+              <option value="default">{t('sort.default')}</option>
+              <option value="lastUpdated">{t('sort.lastUpdatedDesc')}</option>
+              <option value="price-asc">{t('sort.priceAsc')}</option>
+              <option value="price-desc">{t('sort.priceDesc')}</option>
+            </select>
+            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
+            </svg>
+          </div>
         </div>
 
         {/* Contenu des produits */}
@@ -93,16 +174,11 @@ function ProductsContent() {
               <div key={category} id={`category-${category}`} className="space-y-6">
                 <h2 className="text-2xl font-bold">{category}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {products.map((product) => (
-                    <div key={product.id} className="bg-white rounded-lg p-4">
-                      <img 
-                        src={product.image} 
-                        alt={product.title}
-                        className="w-full h-48 object-cover rounded"
-                      />
-                      <h3 className="mt-2 font-medium">{product.title}</h3>
-                      <p className="text-gray-600">${product.price}</p>
-                    </div>
+                  {sortProducts(products).map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                    />
                   ))}
                 </div>
               </div>

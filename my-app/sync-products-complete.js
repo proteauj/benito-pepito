@@ -16,8 +16,6 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function syncProductsToDatabase() {
-  console.log('🔄 Synchronisation des produits vers la base de données...\n');
-
   try {
     // Read products.ts file
     const productsTsPath = path.join(__dirname, 'app/data/products.ts');
@@ -55,10 +53,6 @@ async function syncProductsToDatabase() {
     // Parse products
     const products = eval(`(${jsonString})`);
 
-    console.log(`📊 Produits trouvés: ${products.length}`);
-
-    console.log('💾 Synchronisation du stock des produits avec la base de données...');
-
     // Sync each product stock to database
     for (const product of products) {
       try {
@@ -75,23 +69,10 @@ async function syncProductsToDatabase() {
             updatedAt: new Date()
           }
         });
-
-        console.log(`✅ ${product.title} (${product.id}) - Stock: ${product.inStock ? '✅' : '❌'} synchronisé`);
       } catch (error) {
         console.error(`❌ Erreur pour ${product.id}:`, error.message);
       }
     }
-
-    console.log('\n✅ Synchronisation du stock terminée avec succès!');
-
-    console.log('\n📋 Produits synchronisés:');
-    products.forEach((product, index) => {
-      console.log(`${index + 1}. ${product.title} (${product.id}) - ${product.category} - Stock: ${product.inStock ? '✅' : '❌'}`);
-    });
-
-    console.log('\n🎉 Tous les produits ont été synchronisés avec succès!');
-    console.log('💡 Utilisez cette commande pour synchroniser à l\'avenir: npm run db:sync-products');
-
   } catch (error) {
     console.error('❌ Erreur lors de la synchronisation:', error.message);
     process.exit(1);

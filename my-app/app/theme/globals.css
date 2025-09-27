@@ -1,11 +1,19 @@
 /* Solid gold background for the top menu header */
 .headerGradient {
   background-color: var(--gold);
+  position: relative;
+  z-index: 30;
 }
 
 /* Mouly Display Font */
 .mouly-font {
   font-family: 'Mouly', Arial, Helvetica, sans-serif !important;
+}
+
+@media (max-width: 360px) {
+  .mouly-font {
+    font-size: 2rem;
+  }
 }
 
 /* Text shadow utility for better text visibility */

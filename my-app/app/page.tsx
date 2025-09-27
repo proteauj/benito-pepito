@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from "next/link";
-import CategorySlideshow from "../src/components/CategorySlideshow";
-import { useCart } from "../src/contexts/CartContext";
-import { useI18n } from "../src/i18n/I18nProvider";
+import { useCart } from './contexts/CartContext';
+import CategorySlideshow from './components/CategorySlideshow';
+import { useI18n } from './i18n/I18nProvider';
 
 interface Product {
   id: string;

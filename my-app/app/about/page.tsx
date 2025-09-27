@@ -1,7 +1,8 @@
 'use client';
 
-import SafeImage from '@/components/SafeImage';
-import { useI18n } from '@/i18n/I18nProvider';
+import SafeImage from "../components/SafeImage";
+import { useI18n } from "../i18n/I18nProvider";
+
 
 export default function AboutPage() {
   const { t } = useI18n();
@@ -31,7 +32,7 @@ export default function AboutPage() {
 
             {/* CTA buttons */}
             <div className="flex flex-wrap items-center gap-3">
-              <a href="/categories" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">{t('actions.exploreCategories')}</a>
+              <a href="/products" className="bg-[var(--gold)] text-black px-5 py-2 font-semibold hover:bg-[var(--gold-dark)]">{t('products')}</a>
               <a href="/contact" className="btn-ghost">{t('actions.contact')}</a>
             </div>
           </div>

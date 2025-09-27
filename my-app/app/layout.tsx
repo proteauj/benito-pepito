@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import '../src/app/globals.css'
-import { I18nProvider } from '../src/i18n/I18nProvider'
-import { CartProvider } from '../src/contexts/CartContext'
-import SiteHeader from '../src/components/SiteHeader'
-import SiteFooter from '../src/components/SiteFooter'
+import './theme/globals.css'
+import { I18nProvider } from './i18n/I18nProvider'
+import { CartProvider } from './contexts/CartContext'
+import SiteHeader from './components/SiteHeader'
+import SiteFooter from './components/SiteFooter'
 
 export const metadata: Metadata = {
   title: 'Benito Pepito - Art Gallery',

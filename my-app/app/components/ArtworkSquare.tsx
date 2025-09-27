@@ -1,6 +1,7 @@
 "use client";
 
-import SafeImage from "@/components/SafeImage";
+import SafeImage from "./SafeImage";
+
 
 interface ArtworkSquareProps {
   src: string;

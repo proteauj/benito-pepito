@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import ArtworkSquare from "../../src/components/ArtworkSquare";
-import { useI18n } from "../../src/i18n/I18nProvider";
+import { useI18n } from '../i18n/I18nProvider';
+import { useProductTranslations } from '../hooks/useProductTranslations';
+import ArtworkSquare from '../components/ArtworkSquare';
 
 interface Product {
   id: string;
   slug: string;
   title: string;
+  titleFr?: string;
   description: string;
+  descriptionFr?: string;
   price: number;
   originalPrice?: number;
   image: string;
@@ -19,6 +22,7 @@ interface Product {
   inStock: boolean;
   artist: string;
   medium: string;
+  mediumFr?: string;
   year: number;
   lastUpdated: string;
 }
@@ -27,30 +31,45 @@ type ProductsByCategory = Record<string, Product[]>;
 
 export default function ProductsIndexPage() {
   const { t } = useI18n();
+  const { getTranslatedText } = useProductTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [data, setData] = useState<ProductsByCategory>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [q, setQ] = useState("");
   const [category, setCategory] = useState<"All" | Product["category"]>("All");
-  const [sortBy, setSortBy] = useState<"lastUpdated" | "price-asc" | "price-desc">("lastUpdated");
-  const [displayCount, setDisplayCount] = useState(9);
+  const [sortBy, setSortBy] = useState<"default" | "lastUpdated" | "price-asc" | "price-desc">("default");
+  const [displayCount, setDisplayCount] = useState(12); // Augmenté pour un meilleur premier chargement
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const pageSize = 9;
+  const [userSelectedCategory, setUserSelectedCategory] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+  const pageSize = 12; // Augmenté pour charger plus d'éléments à la fois
 
-  // Initialize category from URL params
+  // Initialize scroll target from URL params
   useEffect(() => {
     const categoryParam = searchParams.get("category");
     if (categoryParam && ["Sculpture", "Painting", "Home & Garden"].includes(categoryParam)) {
-      setCategory(categoryParam as Product["category"]);
-    }
-  }, [searchParams]);
+      // Scroll to category section after products are loaded
+      const scrollToCategory = () => {
+        const element = document.querySelector(`[data-category="${categoryParam}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      };
 
-  // Update URL when category changes
+      // Wait for products to load then scroll
+      if (!loading && Object.keys(data).length > 0) {
+        setTimeout(scrollToCategory, 100);
+      }
+    }
+  }, [searchParams, loading, data]);
+
+  // Update URL when category changes (only when user explicitly selects)
   const handleCategoryChange = (newCategory: "All" | Product["category"]) => {
     setCategory(newCategory);
+    setUserSelectedCategory(newCategory !== "All");
+
     const params = new URLSearchParams(searchParams.toString());
     if (newCategory === "All") {
       params.delete("category");
@@ -60,20 +79,41 @@ export default function ProductsIndexPage() {
     router.replace(`/products?${params.toString()}`);
   };
 
+  // Chargement initial des données
   useEffect(() => {
-    async function load() {
+    const loadProducts = async () => {
+      // Vérifier d'abord le cache local
+      const cachedData = localStorage.getItem('cachedProducts');
+      const cacheTime = localStorage.getItem('productsCacheTime');
+      const oneHourAgo = Date.now() - 60 * 60 * 1000; // 1 heure de cache
+
+      if (cachedData && cacheTime && parseInt(cacheTime) > oneHourAgo) {
+        setData(JSON.parse(cachedData));
+        setLoading(false);
+      }
+
       try {
-        const res = await fetch("/api/products");
-        if (!res.ok) throw new Error("Failed to fetch");
+        const res = await fetch("/api/products", {
+          next: { revalidate: 3600 } // Revalidation après 1 heure
+        });
+        if (!res.ok) throw new Error("Failed to fetch products");
         const json = await res.json();
+        
+        // Mettre à jour le cache local
+        localStorage.setItem('cachedProducts', JSON.stringify(json));
+        localStorage.setItem('productsCacheTime', Date.now().toString());
+        
         setData(json);
       } catch (e: any) {
+        console.error("Error loading products:", e);
         setError(e.message || "Error loading products");
       } finally {
         setLoading(false);
       }
-    }
-    load();
+    };
+
+    loadProducts();
+    setHasMounted(true);
   }, []);
 
   const flat = useMemo(() => {
@@ -90,91 +130,153 @@ export default function ProductsIndexPage() {
   // Removed artists list (no artist filter)
 
   const filteredSorted = useMemo(() => {
+    // Créer une copie du tableau plat pour éviter les mutations
     let arr = [...flat];
-    // category
-    if (category !== "All") arr = arr.filter((p) => p.category === category);
-    // search
+
+    // Filtrer par catégorie si sélectionnée
+    if (userSelectedCategory && category !== "All") {
+      arr = arr.filter((p) => p.category === category);
+    }
+
+    // Filtrer par terme de recherche
     const term = q.trim().toLowerCase();
     if (term) {
-      arr = arr.filter(
-        (p) =>
-          p.title.toLowerCase().includes(term) ||
-          p.medium.toLowerCase().includes(term)
-      );
+      const searchTerms = term.split(' ').filter(t => t.length > 0);
+      
+      arr = arr.filter((p) => {
+        const searchText = `${p.title} ${p.medium} ${p.description}`.toLowerCase();
+        return searchTerms.every(t => searchText.includes(t));
+      });
     }
-    // sort
-    switch (sortBy) {
-      case "lastUpdated":
-        arr.sort(
-          (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
-        );
-        break;
-      case "price-asc":
-        arr.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        arr.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        break;
-    }
-    return arr;
-  }, [flat, category, q, sortBy]);
 
-  const displayedItems = filteredSorted.slice(0, displayCount);
-  const hasMoreInCategory = displayCount < filteredSorted.length;
+    // Obtenir l'ordre original des produits depuis le fichier products.ts
+    const allProducts = Object.values(data).flat();
+    
+    // Trier les résultats
+    return [...arr].sort((a, b) => {
+      // Si un tri spécifique est sélectionné, l'appliquer
+      switch (sortBy) {
+        case "lastUpdated":
+          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+        case "price-asc":
+          return a.price - b.price;
+        case "price-desc":
+          return b.price - a.price;
+        default:
+          // Par défaut, utiliser l'ordre du fichier products.ts
+          const indexA = allProducts.findIndex(p => p.id === a.id);
+          const indexB = allProducts.findIndex(p => p.id === b.id);
+          return indexA - indexB;
+      }
+    });
+  }, [flat, userSelectedCategory, category, q, sortBy]);
 
-  // Get next category in cycle
-  const getNextCategory = (currentCategory: Product["category"]) => {
+  // Utiliser useMemo pour éviter les recalculs inutiles
+  const { displayedItems, hasMore } = useMemo(() => {
+    return {
+      displayedItems: filteredSorted.slice(0, displayCount),
+      hasMore: displayCount < filteredSorted.length
+    };
+  }, [filteredSorted, displayCount]);
+
+  // Obtenir la catégorie suivante dans l'ordre défini
+  const getNextCategory = (currentCategory: Product["category"]): Product["category"] => {
     const categoryOrder: Product["category"][] = ["Sculpture", "Painting", "Home & Garden"];
     const currentIndex = categoryOrder.indexOf(currentCategory);
-
-    if (currentIndex >= categoryOrder.length - 1) {
-      return categoryOrder[0]; // Go back to first category
-    } else {
-      return categoryOrder[currentIndex + 1];
+    
+    // Si la catégorie actuelle n'est pas dans l'ordre ou est la dernière, retourner la première
+    if (currentIndex === -1 || currentIndex === categoryOrder.length - 1) {
+      return categoryOrder[0];
     }
+    
+    // Sinon retourner la catégorie suivante
+    return categoryOrder[currentIndex + 1];
   };
 
-  const hasMoreOverall = hasMoreInCategory || (category !== "All");
+  const hasMoreOverall = hasMore;
 
-  // Infinite scroll - load more when user scrolls near bottom
+  // Infinite scroll avec navigation entre catégories
   useEffect(() => {
+    if (!hasMounted) return;
+    
     const handleScroll = () => {
-      const scrollPosition = window.innerHeight + window.scrollY;
+      const scrollPosition = window.innerHeight + document.documentElement.scrollTop;
       const documentHeight = document.documentElement.offsetHeight;
-      const threshold = 1000; // Load more when 1000px from bottom
+      const threshold = 300; // Seuil de déclenchement réduit pour une meilleure réactivité
 
-      if (scrollPosition >= documentHeight - threshold && !isLoadingMore && hasMoreOverall) {
-        loadMore();
+      // Vérifier si on est proche du bas de la page
+      if (scrollPosition >= documentHeight - threshold) {
+        // Si on peut charger plus d'éléments dans la catégorie actuelle
+        if (hasMore && !isLoadingMore) {
+          loadMore();
+        } 
+        // Si on a tout chargé dans la catégorie actuelle et qu'on n'est pas sur "Toutes les catégories"
+        else if (!hasMore && category !== "All" && !isLoadingMore) {
+          const nextCategory = getNextCategory(category);
+          
+          // Trouver le premier élément de la catégorie suivante
+          const nextCategoryElement = document.querySelector(`[data-category="${nextCategory}"]`);
+          
+          if (nextCategoryElement) {
+            // Faire défiler jusqu'à la catégorie suivante
+            nextCategoryElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Mettre à jour l'URL et l'état de la catégorie
+            const params = new URLSearchParams(window.location.search);
+            params.set('category', nextCategory);
+            window.history.replaceState({}, '', `?${params.toString()}`);
+            
+            // Mettre à jour l'état de la catégorie
+            setCategory(nextCategory);
+            setUserSelectedCategory(true);
+          }
+        }
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoadingMore, hasMoreOverall]);
-
-  // Load more items
-  const loadMore = () => {
-    if (isLoadingMore) return;
-
-    setIsLoadingMore(true);
-
-    // Simulate loading delay
-    setTimeout(() => {
-      if (hasMoreInCategory) {
-        setDisplayCount(prev => Math.min(prev + pageSize, filteredSorted.length));
-      } else if (category !== "All") {
-        // Switch to next category
-        const nextCat = getNextCategory(category);
-        if (nextCat) {
-          handleCategoryChange(nextCat);
-          setDisplayCount(pageSize); // Reset count for new category
-        }
+    const debouncedScroll = debounce(handleScroll, 150);
+    
+    window.addEventListener('scroll', debouncedScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', debouncedScroll);
+    };
+  }, [isLoadingMore, hasMore, hasMoreOverall, hasMounted, category]);
+  
+  // Fonction de debounce pour optimiser les événements de scroll
+  function debounce<T extends (...args: any[]) => void>(
+    func: T,
+    wait: number
+  ): (...args: Parameters<T>) => void {
+    let timeout: NodeJS.Timeout | null = null;
+    return function(...args: Parameters<T>) {
+      if (timeout !== null) {
+        clearTimeout(timeout);
       }
-      setIsLoadingMore(false);
-    }, 500);
-  };
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  }
+
+  // Charger plus d'éléments
+  const loadMore = useMemo(() => {
+    return () => {
+      if (isLoadingMore || !hasMore) return;
+      
+      setIsLoadingMore(true);
+      
+      // Utiliser requestAnimationFrame pour un rendu plus fluide
+      requestAnimationFrame(() => {
+        setDisplayCount(prev => {
+          const newCount = Math.min(prev + pageSize, filteredSorted.length);
+          return newCount;
+        });
+        
+        // Délai minimum pour éviter les chargements trop rapides
+        setTimeout(() => {
+          setIsLoadingMore(false);
+        }, 300);
+      });
+    };
+  }, [isLoadingMore, hasMore, pageSize, filteredSorted.length]);
 
   if (loading) {
     return (
@@ -233,9 +335,10 @@ export default function ProductsIndexPage() {
           <div className="relative">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "lastUpdated" | "price-asc" | "price-desc")}
+              onChange={(e) => setSortBy(e.target.value as "default" | "lastUpdated" | "price-asc" | "price-desc")}
               className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
             >
+              <option value="default">{t('sort.default')}</option>
               <option value="lastUpdated">{t('sort.lastUpdatedDesc')}</option>
               <option value="price-asc">{t('sort.priceAsc')}</option>
               <option value="price-desc">{t('sort.priceDesc')}</option>
@@ -255,31 +358,39 @@ export default function ProductsIndexPage() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayedItems.map((p: Product) => (
-            <Link key={p.id} href={`/product/${p.slug}`} className="group bg-white overflow-hidden border border-[#cfc9c0] block">
-              <div className="relative">
-                <ArtworkSquare src={p.image} alt={p.title} />
-                {!p.inStock && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="bg-[var(--gold)] text-black px-4 py-2 rounded-full font-semibold">{t('status.sold')}</span>
-                  </div>
+          {displayedItems.map((p: Product, index: number) => {
+            const isFirstOfCategory = index === 0 || displayedItems[index - 1]?.category !== p.category;
+            return (
+              <div key={p.id}>
+                {isFirstOfCategory && (
+                  <div data-category={p.category} className="sr-only" style={{ marginTop: '-100px', paddingTop: '100px' }}></div>
                 )}
-              </div>
-              <div className="p-5 text-black">
-                <h3 className="text-xl font-semibold">{p.title} · {p.year}</h3>
-                <p className="text-sm text-black/60 mb-3">{p.medium}</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-2xl font-bold">${p.price}</span>
-                    {p.originalPrice && (
-                      <span className="text-sm line-through text-black/40">${p.originalPrice}</span>
+                <Link href={`/product/${p.slug}`} className="group bg-white overflow-hidden border border-[#cfc9c0] block">
+                  <div className="relative">
+                    <ArtworkSquare src={p.image} alt={p.title} />
+                    {!p.inStock && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="bg-[var(--gold)] text-black px-4 py-2 rounded-full font-semibold">{t('status.sold')}</span>
+                      </div>
                     )}
                   </div>
-                  <span className="px-3 py-2 bg-[var(--gold)] text-black text-sm font-semibold">{t('actions.view')}</span>
-                </div>
+                  <div className="p-5 text-black">
+                    <h3 className="text-xl font-semibold">{getTranslatedText(p, 'title')} · {p.year}</h3>
+                    <p className="text-sm text-black/60 mb-3">{getTranslatedText(p, 'medium')}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-baseline space-x-2">
+                        <span className="text-2xl font-bold">${p.price}</span>
+                        {p.originalPrice && (
+                          <span className="text-sm line-through text-black/40">${p.originalPrice}</span>
+                        )}
+                      </div>
+                      <span className="px-3 py-2 bg-[var(--gold)] text-black text-sm font-semibold">{t('actions.view')}</span>
+                    </div>
+                  </div>
+                </Link>
               </div>
-            </Link>
-          ))}
+            );
+          })}
         </div>
 
         {/* Infinite scroll will load automatically when scrolling */}

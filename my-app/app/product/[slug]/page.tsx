@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import ArtworkSquare from '@/components/ArtworkSquare';
+import ArtworkSquare from '../../components/ArtworkSquare';
 import Link from 'next/link';
-import { useI18n } from '@/i18n/I18nProvider';
-import { useCart } from '@/contexts/CartContext';
+import { useI18n } from '../../i18n/I18nProvider';
+import { useCart } from '../../contexts/CartContext';
+import { useProductTranslations } from '../../hooks/useProductTranslations';
 
 interface Product {
   id: string;
@@ -27,7 +28,8 @@ export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const { addToCart } = useCart();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const { getTranslatedText } = useProductTranslations();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -197,15 +199,16 @@ export default function ProductPage() {
           {/* Product Info */}
           <div>
             <div className="leafy-divider pb-3 mb-4">
-              <h1 className="text-3xl font-bold text-black">{product.title} · {product.year}</h1>
+              <h1 className="text-3xl font-bold text-black">{getTranslatedText(product, 'title')} · {product.year}</h1>
             </div>
-            <p className="text-black/70 mb-4">{product.medium}</p>
+            <p className="text-black/70 mb-4">{getTranslatedText(product, 'description')}</p>
+            <p className="text-black/70 mb-4">{getTranslatedText(product, 'medium')}</p>
 
             {/* Price */}
             <div className="mb-6">
               <div className="text-4xl font-bold text-black">
                 ${product.price.toFixed(2)}
-                {product.originalPrice && product.originalPrice > product.price && (
+                {product.originalPrice && (
                   <span className="text-lg text-black/50 line-through ml-3">
                     ${product.originalPrice.toFixed(2)}
                   </span>

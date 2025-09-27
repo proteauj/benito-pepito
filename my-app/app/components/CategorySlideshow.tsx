@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import ArtworkSquare from '@/components/ArtworkSquare';
-import { useI18n } from '@/i18n/I18nProvider';
 import Link from 'next/link';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '../contexts/CartContext';
+import { useI18n } from '../i18n/I18nProvider';
+import { useProductTranslations } from '../hooks/useProductTranslations';
+import ArtworkSquare from './ArtworkSquare';
 
 interface Product {
   id: string;
@@ -30,6 +31,7 @@ interface CategorySlideshowProps {
 
 export default function CategorySlideshow({ category, products }: CategorySlideshowProps) {
   const { t } = useI18n();
+  const { getTranslatedText } = useProductTranslations();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { addToCart } = useCart();
 

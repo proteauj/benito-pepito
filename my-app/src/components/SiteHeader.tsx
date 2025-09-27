@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useCart } from '@/contexts/CartContext';
-import { useI18n } from '@/i18n/I18nProvider';
+import { useCart } from '../contexts/CartContext';
+import { useI18n } from '../i18n/I18nProvider';
+import LanguageSelector from './LanguageSelector';
 
 export default function SiteHeader() {
   const { itemCount, toggleCart } = useCart();
@@ -18,12 +19,12 @@ export default function SiteHeader() {
           </div>
           {/* Desktop navigation (no Home link) */}
           <nav className="hidden md:flex space-x-2 h-16">
-            <Link href="/categories" className="h-full px-3 text-black hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors text-lg md:text-xl font-semibold">{t('nav.categories')}</Link>
             <Link href="/products" className="h-full px-3 text-black hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors text-lg md:text-xl font-semibold">{t('nav.allWorks')}</Link>
             <Link href="/about" className="h-full px-3 text-black hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors text-lg md:text-xl font-semibold">{t('nav.about')}</Link>
             <Link href="/contact" className="h-full px-3 text-black hover:bg-white hover:text-[var(--leaf)] flex items-center transition-colors text-lg md:text-xl font-semibold">{t('nav.contact')}</Link>
           </nav>
           <div className="flex items-center space-x-2 h-16">
+            <LanguageSelector />
             {/* Mobile hamburger */}
             <button
               className="md:hidden h-16 w-16 text-black hover:bg-white hover:text-[var(--leaf)] flex items-center justify-center transition-colors"
@@ -65,10 +66,10 @@ export default function SiteHeader() {
           aria-label="Main menu"
         >
           <div className="flex items-center justify-end px-3 py-2 bg-[var(--gold)] text-black">
-            <button onClick={() => setMobileOpen(false)} className="text-black hover:bg-white hover:text-[var(--leaf)] px-2 py-1" aria-label="Close menu">✕</button>
+            <LanguageSelector />
+            <button onClick={() => setMobileOpen(false)} className="text-black hover:bg-white hover:text-[var(--leaf)] px-2 py-1 ml-2" aria-label="Close menu">✕</button>
           </div>
           <nav className="p-2 bg-transparent flex flex-col gap-2">
-            <Link href="/categories" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.categories')}</Link>
             <Link href="/products" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.allWorks')}</Link>
             <Link href="/about" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.about')}</Link>
             <Link href="/contact" onClick={() => setMobileOpen(false)} className="block w-full px-4 py-3 bg-[var(--gold)] text-black hover:bg-[var(--gold-dark)] transition-colors">{t('nav.contact')}</Link>

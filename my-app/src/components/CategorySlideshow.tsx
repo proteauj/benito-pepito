@@ -54,10 +54,10 @@ export default function CategorySlideshow({ category, products }: CategorySlides
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold text-black">{t(`category.${category}`)}</h2>
         <Link 
-          href={`/category/${category.toLowerCase().replace(/&/g, 'and').replace(/\s+/g, '-')}`}
+          href={`/products?category=${encodeURIComponent(category)}`}
           className="link-chip"
         >
-          {t('category.viewAll')}
+          {t('category.All')}
         </Link>
       </div>
       

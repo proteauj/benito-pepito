@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../../lib/db/client';
+
+// Try to import database client - will fail in environments without database
+let prisma: any = null;
+
+try {
+  const dbClientModule = require('../../../lib/db/client');
+  prisma = dbClientModule.prisma;
+} catch (error) {
+  console.log('Prisma client not available');
+}
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if database is available
+    if (!prisma) {
+      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = searchParams.get('page') || 'homepage';
 

@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useI18n } from '@/i18n/I18nProvider';
-import CategorySlideshow from '@/components/CategorySlideshow';
-import { useCart } from '@/contexts/CartContext';
+import Link from "next/link";
+import CategorySlideshow from "../src/components/CategorySlideshow";
+import { useCart } from "../src/contexts/CartContext";
+import { useI18n } from "../src/i18n/I18nProvider";
 
 interface Product {
   id: string;
@@ -109,9 +110,9 @@ export default function HomePage() {
       {/* Compact CTA under collections */}
       <section className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <a href="/products" className="inline-block bg-[var(--gold)] text-black px-8 py-3 font-semibold hover:bg-[var(--gold-dark)] transition-colors">
+          <Link href="/products" className="inline-block bg-[var(--gold)] text-black px-8 py-3 font-semibold hover:bg-[var(--gold-dark)] transition-colors">
             {t('cta.exploreCollections')}
-          </a>
+          </Link>
         </div>
       </section>
 

@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { prisma } from '../../../../lib/db/client';
+
+// Try to import database client - will fail in environments without database
+let prisma: any = null;
+
+try {
+  const dbClientModule = require('../../../lib/db/client');
+  prisma = dbClientModule.prisma;
+} catch (error) {
+  console.log('Prisma client not available');
+}
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -54,6 +63,12 @@ async function saveAddressInformation(sessionId: string, session: Stripe.Checkou
   try {
     console.log('💾 Saving address information for session:', sessionId);
 
+    // Skip if database not available
+    if (!prisma) {
+      console.log('⚠️ Database not available, skipping address save');
+      return;
+    }
+
     // Extract customer email from Stripe session
     const customerEmail = session.customer_details?.email;
 
@@ -97,6 +112,12 @@ async function saveAddressInformation(sessionId: string, session: Stripe.Checkou
 
 async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address, sessionId?: string) {
   try {
+    // Skip if database not available
+    if (!prisma) {
+      console.log('⚠️ Database not available, skipping address save');
+      return;
+    }
+
     // Check if addresses already exist for this session to prevent duplicates
     if (sessionId) {
       const existingOrder = await prisma.order.findUnique({

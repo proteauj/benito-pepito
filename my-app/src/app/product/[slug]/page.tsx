@@ -162,7 +162,7 @@ export default function ProductPage() {
             </li>
             <li aria-hidden className="text-black/40">›</li>
             <li>
-              <Link href={`/category/${slugify(product.category)}`} className="link-chip">
+              <Link href={`/products?category=${encodeURIComponent(product.category)}`} className="link-chip">
                 {t(`category.${product.category}`)}
               </Link>
             </li>

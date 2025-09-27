@@ -92,8 +92,8 @@ body {
   background-attachment: fixed;
   background-blend-mode: normal; /* keep texture visible */
   color: var(--foreground);
-  /* Use Nooa for all body text by default */
-  font-family: 'NooaSemiSerif', Georgia, 'Times New Roman', serif;
+  /* Use system serif font instead of Nooa */
+  font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.075rem; /* larger for Mouly readability */
   line-height: 1.6; /* a bit more leading for clarity */
 }

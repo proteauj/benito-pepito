@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { prisma } from '../../../../../lib/db/client';
+
+// Try to import database client - will fail in environments without database
+let prisma: any = null;
+
+try {
+  const dbClientModule = require('../../../lib/db/client');
+  prisma = dbClientModule.prisma;
+} catch (error) {
+  console.log('Prisma client not available');
+}
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -62,6 +71,12 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
   try {
     console.log('💾 Saving order details for session:', session.id);
 
+    // Skip if database not available
+    if (!prisma) {
+      console.log('⚠️ Database not available, skipping order save');
+      return;
+    }
+
     // Extract customer information from Stripe session
     const customerEmail = session.customer_details?.email;
     const customerName = session.customer_details?.name;
@@ -112,6 +127,12 @@ async function saveOrderDetails(session: Stripe.Checkout.Session) {
 
 async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address, customerEmail?: string, sessionId?: string) {
   try {
+    // Skip if database not available
+    if (!prisma) {
+      console.log('⚠️ Database not available, skipping address save');
+      return;
+    }
+
     // Check if addresses already exist for this session to prevent duplicates
     if (sessionId) {
       const existingOrder = await prisma.order.findUnique({
@@ -215,6 +236,12 @@ async function saveCustomerAddress(orderId: string, billingAddress?: Stripe.Addr
 
 async function findOrCreateAddress(address: Stripe.Address, type: string, customerEmail?: string): Promise<any | null> {
   try {
+    // Skip if database not available
+    if (!prisma) {
+      console.log('⚠️ Database not available, skipping address lookup');
+      return null;
+    }
+
     // Look for existing address with exact match
     const existingAddress = await prisma.customerAddress.findFirst({
       where: {

@@ -1,7 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DatabaseService } from '../../../../lib/db/service';
-import { prisma } from '../../../../lib/db/client';
 import Stripe from 'stripe';
+
+// Try to import database services - will fail in environments without database
+let DatabaseService: any = null;
+let prisma: any = null;
+
+try {
+  const dbModule = require('../../../lib/db/service');
+  DatabaseService = dbModule.DatabaseService;
+} catch (error) {
+  console.log('DatabaseService not available');
+}
+
+try {
+  const dbClientModule = require('../../../lib/db/client');
+  prisma = dbClientModule.prisma;
+} catch (error) {
+  console.log('Prisma client not available');
+}
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil'
@@ -16,6 +32,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Check if database is available
+    if (!DatabaseService) {
+      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+    }
+
     const order = await DatabaseService.getOrderBySessionId(sessionId);
 
     if (!order) {
@@ -38,6 +59,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         error: 'Missing required fields: stripeSessionId, productIds, totalAmount'
       }, { status: 400 });
+    }
+
+    // Check if database is available
+    if (!DatabaseService) {
+      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
     }
 
     const order = await DatabaseService.createOrder({
@@ -70,6 +96,11 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Check if database is available
+    if (!DatabaseService) {
+      return NextResponse.json({ error: 'Database not available' }, { status: 503 });
+    }
+
     const order = await DatabaseService.updateOrderStatus(sessionId, status);
 
     if (!order) {
@@ -86,6 +117,12 @@ export async function PUT(request: NextRequest) {
 async function updateOrderAddressInformation(sessionId: string, orderId: string) {
   try {
     console.log('💾 Updating address information for session:', sessionId);
+
+    // Skip if database not available
+    if (!prisma) {
+      console.log('⚠️ Database not available, skipping address update');
+      return;
+    }
 
     // Retrieve the session from Stripe to get address information
     const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -114,6 +151,12 @@ async function updateOrderAddressInformation(sessionId: string, orderId: string)
 
 async function saveOrderAddress(orderId: string, billingAddress?: Stripe.Address, shippingAddress?: Stripe.Address, sessionId?: string) {
   try {
+    // Skip if database not available
+    if (!prisma) {
+      console.log('⚠️ Database not available, skipping address save');
+      return;
+    }
+
     // Check if addresses already exist for this session to prevent duplicates
     if (sessionId) {
       const existingOrder = await prisma.order.findUnique({

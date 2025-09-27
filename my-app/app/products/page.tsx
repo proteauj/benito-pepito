@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import ArtworkSquare from "@/components/ArtworkSquare";
-import { useI18n } from "@/i18n/I18nProvider";
+import ArtworkSquare from "../../src/components/ArtworkSquare";
+import { useI18n } from "../../src/i18n/I18nProvider";
 
 interface Product {
   id: string;
@@ -37,6 +37,7 @@ export default function ProductsIndexPage() {
   const [category, setCategory] = useState<"All" | Product["category"]>("All");
   const [sortBy, setSortBy] = useState<"lastUpdated" | "price-asc" | "price-desc">("lastUpdated");
   const [displayCount, setDisplayCount] = useState(9);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const pageSize = 9;
 
   // Initialize category from URL params
@@ -121,32 +122,59 @@ export default function ProductsIndexPage() {
   }, [flat, category, q, sortBy]);
 
   const displayedItems = filteredSorted.slice(0, displayCount);
-  const hasMore = displayCount < filteredSorted.length;
+  const hasMoreInCategory = displayCount < filteredSorted.length;
+
+  // Get next category in cycle
+  const getNextCategory = (currentCategory: Product["category"]) => {
+    const categoryOrder: Product["category"][] = ["Sculpture", "Painting", "Home & Garden"];
+    const currentIndex = categoryOrder.indexOf(currentCategory);
+
+    if (currentIndex >= categoryOrder.length - 1) {
+      return categoryOrder[0]; // Go back to first category
+    } else {
+      return categoryOrder[currentIndex + 1];
+    }
+  };
+
+  const hasMoreOverall = hasMoreInCategory || (category !== "All");
+
+  // Infinite scroll - load more when user scrolls near bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const documentHeight = document.documentElement.offsetHeight;
+      const threshold = 1000; // Load more when 1000px from bottom
+
+      if (scrollPosition >= documentHeight - threshold && !isLoadingMore && hasMoreOverall) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isLoadingMore, hasMoreOverall]);
 
   // Load more items
   const loadMore = () => {
-    setDisplayCount(prev => Math.min(prev + pageSize, filteredSorted.length));
-  };
+    if (isLoadingMore) return;
 
-  // Auto-advance to next category when reaching the end
-  useEffect(() => {
-    if (!hasMore && category !== "All" && displayedItems.length > 0) {
-      const categoryOrder: Product["category"][] = ["Sculpture", "Painting", "Home & Garden"];
-      const currentIndex = categoryOrder.indexOf(category);
+    setIsLoadingMore(true);
 
-      // If we're at the last category, go back to the first one
-      if (currentIndex >= categoryOrder.length - 1) {
-        setTimeout(() => {
-          handleCategoryChange("Sculpture");
-        }, 3000); // Wait 3 seconds before restarting
-      } else {
-        const nextCategory = categoryOrder[currentIndex + 1];
-        setTimeout(() => {
-          handleCategoryChange(nextCategory);
-        }, 2000); // Wait 2 seconds before advancing
+    // Simulate loading delay
+    setTimeout(() => {
+      if (hasMoreInCategory) {
+        setDisplayCount(prev => Math.min(prev + pageSize, filteredSorted.length));
+      } else if (category !== "All") {
+        // Switch to next category
+        const nextCat = getNextCategory(category);
+        if (nextCat) {
+          handleCategoryChange(nextCat);
+          setDisplayCount(pageSize); // Reset count for new category
+        }
       }
-    }
-  }, [hasMore, category, displayedItems.length, handleCategoryChange]);
+      setIsLoadingMore(false);
+    }, 500);
+  };
 
   if (loading) {
     return (
@@ -177,7 +205,6 @@ export default function ProductsIndexPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-end justify-between mb-8 leafy-divider pb-3">
           <h1 className="text-4xl font-bold">{t('headings.allArtworks')}</h1>
-          <Link href="/categories" className="link-chip">{t('nav.categories')}</Link>
         </div>
 
         {/* Controls */}
@@ -219,6 +246,13 @@ export default function ProductsIndexPage() {
           </div>
         </div>
 
+        {/* Loading indicator for infinite scroll */}
+        {isLoadingMore && (
+          <div className="flex justify-center mb-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--leaf)] border-t-transparent"></div>
+          </div>
+        )}
+
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayedItems.map((p: Product) => (
@@ -248,17 +282,7 @@ export default function ProductsIndexPage() {
           ))}
         </div>
 
-        {/* Load More Button */}
-        {hasMore && (
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={loadMore}
-              className="px-6 py-3 bg-[var(--gold)] text-black font-semibold hover:bg-[var(--gold-dark)]"
-            >
-              {t('actions.loadMore')}
-            </button>
-          </div>
-        )}
+        {/* Infinite scroll will load automatically when scrolling */}
       </div>
     </div>
   );

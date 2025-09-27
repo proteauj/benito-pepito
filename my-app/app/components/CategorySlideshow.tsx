@@ -6,6 +6,7 @@ import { useCart } from '../contexts/CartContext';
 import { useI18n } from '../i18n/I18nProvider';
 import { useProductTranslations } from '../hooks/useProductTranslations';
 import ArtworkSquare from './ArtworkSquare';
+import SafeImage from './SafeImage';
 
 interface Product {
   id: string;
@@ -30,9 +31,7 @@ interface CategorySlideshowProps {
 
 export default function CategorySlideshow({ category, products }: CategorySlideshowProps) {
   const { t } = useI18n();
-  const { getTranslatedText } = useProductTranslations();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { addToCart } = useCart();
 
   useEffect(() => {
     if (products.length === 0) return;
@@ -51,13 +50,24 @@ export default function CategorySlideshow({ category, products }: CategorySlides
   const currentProduct = products[currentIndex];
 
   return (
-    <div className="mb-12">
-      <h2 className="text-3xl font-bold text-black mb-6">{t(`category.${category}`)}</h2>
+    <div className="mb-12 w-full max-w-full overflow-hidden">
+      <h2 className="text-3xl font-bold text-black mb-6 px-4 sm:px-0">{t(`category.${category}`)}</h2>
       
-      <div className="relative bg-white border border-[#cfc9c0] overflow-hidden">
-        <div className="relative">
-          <Link href={`/product/${currentProduct.slug}`}>
-            <ArtworkSquare src={currentProduct.image} alt={currentProduct.title} priority />
+      <div className="relative bg-white border border-[#cfc9c0] overflow-hidden mx-auto w-full max-w-full rounded-lg">
+        <div className="relative w-full aspect-square p-2">
+          <Link 
+            href={`/product/${currentProduct.slug}`}
+            className="block w-full h-full relative group"
+          >
+            <div className="absolute inset-0 bg-white/70 rounded-md shadow-sm transform group-hover:scale-[0.98] transition-transform duration-300" />
+            <div className="relative w-full h-full overflow-hidden rounded-md border-2 border-white/70">
+              <SafeImage
+                src={currentProduct.image}
+                alt={currentProduct.title}
+                className="object-cover w-full h-full"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
           </Link>
           {!currentProduct.inStock && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">

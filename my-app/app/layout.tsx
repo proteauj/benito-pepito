@@ -17,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="h-full">
+      <body className="min-h-full">
         <I18nProvider>
           <CartProvider>
             <div className="min-h-screen flex flex-col">

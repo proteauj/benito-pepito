@@ -91,7 +91,7 @@ export default function ProductByCategory({ searchParams }: ProductByCategoryPro
         if (category && data[category]) {
           productsList = data[category];
         } else {
-          productsList = Object.values(data).flat();
+          productsList = (Object.values(data) as Product[][]).flat();
         }
         
         // Si on est à la première page, on remplace les produits

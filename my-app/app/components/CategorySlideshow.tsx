@@ -53,15 +53,7 @@ export default function CategorySlideshow({ category, products }: CategorySlides
 
   return (
     <div className="mb-12">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-black">{t(`category.${category}`)}</h2>
-        <Link 
-          href={`/products?category=${encodeURIComponent(category)}`}
-          className="link-chip"
-        >
-          {t('category.All')}
-        </Link>
-      </div>
+      <h2 className="text-3xl font-bold text-black mb-6">{t(`category.${category}`)}</h2>
       
       <div className="relative bg-white border border-[#cfc9c0] overflow-hidden">
         <div className="relative">

@@ -92,8 +92,13 @@ export default function HomePage() {
 
       {/* Category Slideshows: two side-by-side on md+ */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="leafy-divider pb-3 mb-6">
-          <h1 className="text-4xl font-bold">{t('nav.home')}</h1>
+        <div className="flex justify-between items-center mb-6">
+          <div className="leafy-divider">
+            <h1 className="text-4xl font-bold">{t('nav.home')}</h1>
+          </div>
+          <Link href="/products" className="bg-[var(--gold)] text-black px-6 py-2 font-semibold hover:bg-[var(--gold-dark)] transition-colors text-center">
+            {t('nav.allWorks')}
+          </Link>
         </div>
         <p className="text-lg font-semibold text-[var(--leaf)] mb-6 text-shadow-white">{t('home.tagline')}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -106,16 +111,6 @@ export default function HomePage() {
           ))}
         </div>
       </main>
-
-      {/* Compact CTA under collections */}
-      <section className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Link href="/products" className="inline-block bg-[var(--gold)] text-black px-8 py-3 font-semibold hover:bg-[var(--gold-dark)] transition-colors">
-            {t('cta.exploreCollections')}
-          </Link>
-        </div>
-      </section>
-
     </div>
   );
 }

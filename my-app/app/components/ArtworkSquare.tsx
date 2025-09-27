@@ -1,32 +1,39 @@
 "use client";
 
-import SafeImage from "./SafeImage";
-
-
 interface ArtworkSquareProps {
   src: string;
   alt: string;
   href?: string;
   priority?: boolean;
   className?: string;
-  matPaddingClass?: string; // e.g., "p-3"; default responsive padding
+  matPaddingClass?: string;
 }
 
-// Renders any image into a square with a wood-like background and a small inset
-// so tall/wide artworks are zoomed out to fit uniformly.
-export default function ArtworkSquare({ src, alt, priority = false, className = "", matPaddingClass = "p-2" }: ArtworkSquareProps) {
+export default function ArtworkSquare({ 
+  src, 
+  alt, 
+  priority = false, 
+  className = "", 
+  matPaddingClass = "p-2" 
+}: ArtworkSquareProps) {
+  // Assurez-vous que le chemin commence par /images
+  const imagePath = src.startsWith('/') ? src : `/images/${src}`;
+  
   return (
     <div className={`relative w-full aspect-square bg-[color:var(--wood,theme(colors.amber.800))] art-wood overflow-hidden ${className}`}>
-      {/* Frame border */}
       <div className={`absolute inset-0 box-border ${matPaddingClass}`}>
-        {/* Inner square where the artwork lives */}
         <div className="relative w-full h-full bg-white shadow-sm">
-          <SafeImage
-            src={src}
+          <img
+            src={imagePath}
             alt={alt}
-            fill
-            priority={priority}
-            className="object-contain"
+            className="object-contain w-full h-full"
+            loading={priority ? 'eager' : 'lazy'}
+            onError={(e) => {
+              // Fallback en cas d'erreur
+              if (e.currentTarget.src !== '/images/placeholder.jpg') {
+                e.currentTarget.src = '/images/placeholder.jpg';
+              }
+            }}
           />
         </div>
       </div>

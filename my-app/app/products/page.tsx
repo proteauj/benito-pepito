@@ -7,8 +7,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useProductTranslations } from '../hooks/useProductTranslations';
 import dynamic from 'next/dynamic';
 import Loading from '@/components/Loading';
-import ProductByCategory from './ProductByCategory';
-import ProductsContent from './ProductsContent';
+import ProductsList from './ProductsList';
+import ProductsLoading from '@/components/ProductsLoading';
 
 interface Product {
   id: string;
@@ -283,14 +283,6 @@ export default function ProductsIndexPage() {
 
   const dynamic = 'force-dynamic';
 
-  function ProductsPage() {
-    return (
-      <Suspense fallback={<Loading />}>
-        <ProductsContent />
-      </Suspense>
-    );
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -370,8 +362,8 @@ export default function ProductsIndexPage() {
         )}
 
         {/* Grid */}
-        <Suspense fallback={<Loading />}>
-          <ProductsContent />
+        <Suspense fallback={<ProductsLoading />}>
+          <ProductsList />
         </Suspense>
 
         {/* Infinite scroll will load automatically when scrolling */}

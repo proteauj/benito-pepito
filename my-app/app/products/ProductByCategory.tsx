@@ -39,7 +39,7 @@ export default function ProductByCategory({ searchParams }: ProductByCategoryPro
       if (category && data[category]) {
         productsList = data[category];
       } else {
-        productsList = Object.values(data).flat();
+        productsList = (Object.values(data) as Product[][]).flat();
       }
       
       setProducts(prev => page === 1 ? productsList : [...prev, ...productsList]);

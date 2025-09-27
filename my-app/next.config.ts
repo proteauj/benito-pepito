@@ -5,13 +5,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   outputFileTracingRoot: path.join(__dirname, ".."),
   images: {
+    // Désactive l'optimisation pour les images locales
     unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
+    // Désactive le cache en développement
+    disableStaticImages: process.env.NODE_ENV === 'development',
   },
   reactStrictMode: true,
   // Désactive le cache des pages statiques

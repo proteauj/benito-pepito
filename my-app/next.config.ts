@@ -1,18 +1,23 @@
 import type { NextConfig } from "next";
 import path from "path";
 
-const nextConfig: NextConfig = {
+// next.config.ts
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    // Désactive l'optimisation pour les images locales
     unoptimized: true,
-    disableStaticImages: true, 
+    disableStaticImages: true,
   },
-  // Important pour éviter les problèmes de cache
   experimental: {
     disableOptimizedLoading: true,
   },
-  webpack: (config) => {
-    // Ajouter des alias pour les chemins d'importation
+  webpack: (config: { module: { rules: any[]; }; resolve: { alias: any; }; }) => {
+    // Désactiver le loader d'image de Next.js
+    config.module.rules = config.module.rules.filter(
+      (rule: { loader: string | string[]; }) => !rule.loader?.includes('next-image-loader')
+    );
+    
+    // Alias pour faciliter les imports
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, "./app"),
@@ -20,8 +25,9 @@ const nextConfig: NextConfig = {
       "@/data": path.resolve(__dirname, "./app/data"),
       "@/i18n": path.resolve(__dirname, "./app/i18n"),
     };
+
     return config;
   },
-};
+}
 
 export default nextConfig;

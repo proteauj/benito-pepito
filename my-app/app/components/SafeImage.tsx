@@ -9,10 +9,6 @@ interface SafeImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>,
   className?: string;
 }
 
-/**
- * Composant Image sécurisé avec gestion des erreurs et fallback
- * Utilise une balise img standard au lieu de next/image
- */
 export default function SafeImage({
   src: originalSrc,
   alt = "",
@@ -20,35 +16,35 @@ export default function SafeImage({
   className = "",
   ...props
 }: SafeImageProps) {
-  const [imgSrc, setImgSrc] = useState(() => {
-    // Si pas de source, utiliser le fallback
+  const [imgSrc, setImgSrc] = useState<string>(() => {
     if (!originalSrc) return fallbackSrc;
-    // Si c'est une URL absolue, l'utiliser telle quelle
-    if (originalSrc.startsWith('http') || originalSrc.startsWith('data:')) {
-      return originalSrc;
-    }
-    // Sinon, ajouter le préfixe /images/ si nécessaire
-    return originalSrc.startsWith('/') ? originalSrc : `/images/${originalSrc}`;
+    return processImagePath(originalSrc);
   });
 
-  // Mettre à jour l'image quand la source change
+  function processImagePath(path: string): string {
+    // Si c'est une URL complète, la retourner telle quelle
+    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) {
+      return path;
+    }
+    
+    // Si le chemin commence par /, le retourner tel quel
+    if (path.startsWith('/')) {
+      return path;
+    }
+    
+    // Sinon, ajouter le préfixe /images/
+    return `/images/${path}`;
+  }
+
   useEffect(() => {
     if (!originalSrc) {
       setImgSrc(fallbackSrc);
       return;
     }
     
-    // Nettoyer le chemin de l'image
-    const cleanSrc = originalSrc.startsWith('/') || 
-                    originalSrc.startsWith('http') || 
-                    originalSrc.startsWith('data:')
-      ? originalSrc 
-      : `/images/${originalSrc}`;
-      
-    setImgSrc(cleanSrc);
+    setImgSrc(processImagePath(originalSrc));
   }, [originalSrc, fallbackSrc]);
 
-  // Gestion des erreurs de chargement
   const handleError = () => {
     console.error(`Image failed to load: ${imgSrc}`);
     if (imgSrc !== fallbackSrc) {
@@ -56,7 +52,6 @@ export default function SafeImage({
     }
   };
 
-  // Si pas de source et pas de fallback, retourner un div vide
   if (!originalSrc && !fallbackSrc) {
     return (
       <div 
@@ -74,7 +69,7 @@ export default function SafeImage({
   return (
     <img
       {...props}
-      src={imgSrc}  // Ici, imgSrc est toujours une string
+      src={imgSrc}
       alt={alt}
       className={`block max-w-full h-auto ${className}`}
       onError={handleError}

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import SafeImage from '@/components/SafeImage';
 import { useCart } from '@/contexts/CartContext';
 import { useI18n } from '@/i18n/I18nProvider';
@@ -70,7 +69,7 @@ export default function CartPage() {
             {items.map((item) => (
               <div key={item.id} className="flex bg-white rounded-lg shadow p-4">
                 <div className="relative w-24 h-24 mr-4">
-                  <SafeImage src={item.image} alt={item.title} fill className="object-cover rounded" />
+                  <SafeImage src={item.image} alt={item.title} className="object-cover rounded" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold">{item.title}</h2>

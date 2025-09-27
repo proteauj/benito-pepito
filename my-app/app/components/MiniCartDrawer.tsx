@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useCart } from '@/contexts/CartContext';
 import { useI18n } from '@/i18n/I18nProvider';
+import SafeImage from './SafeImage';
 
 export default function MiniCartDrawer() {
   const { isOpen, items, total, itemCount, updateQuantity, removeFromCart, closeCart } = useCart();
@@ -42,7 +42,7 @@ export default function MiniCartDrawer() {
             items.map((item) => (
               <div key={item.id} className="flex bg-white border border-[#cfc9c0] p-3">
                 <div className="relative w-20 h-20 mr-3">
-                  <Image src={item.image} alt={item.title} fill className="object-cover" />
+                  <SafeImage src={item.image} alt={item.title} className="object-cover" />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between">

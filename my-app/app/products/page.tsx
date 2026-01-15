@@ -94,7 +94,8 @@ function ProductsContent() {
 
   // 2️⃣ Produits visibles (slice pour infinite scroll)
   const visibleProducts = useMemo(() => {
-    return allFilteredProducts.slice(0, visibleCount);
+    const start = Math.max(0, visibleCount - MAX_RENDERED);
+    return allFilteredProducts.slice(start, visibleCount);
   }, [allFilteredProducts, visibleCount]);
 
   useEffect(() => {
@@ -120,18 +121,6 @@ function ProductsContent() {
       setVisibleCount(v => Math.min(v + PAGE_SIZE, allFilteredProducts.length));
     }
   });
-
-  // 🔹 Regrouper par catégorie pour afficher les titres
-  const productsByCategory = useMemo(() => {
-    return visibleProducts.reduce<Record<string, Product[]>>((acc, product) => {
-      if (!acc[product.category]) acc[product.category] = [];
-      acc[product.category].push(product);
-      return acc;
-    }, {});
-  }, [visibleProducts]);
-
-  // 🔹 Catégories uniques
-  const categories = useMemo(() => ["All", ...Object.keys(data)], [data]);
 
   if (loading) return <ProductsLoading />;
 
@@ -197,7 +186,7 @@ function ProductsContent() {
               <ProductCard
                 key={product.id}
                 product={product}
-                priority={i < PAGE_SIZE} // seulement les premières images de la batch
+                priority={i < PAGE_SIZE} // seules les 12 premières images sont prioritaires
               />
             ))}
           </div>

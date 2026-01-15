@@ -194,7 +194,7 @@ function ProductsContent() {
                     ))}
                   </div>
 
-                  <div className="flex justify-between mt-6">
+                  <div className="flex space-x-4">
                     <button
                       onClick={() => setPage(p => Math.max(p - 1, 1))}
                       disabled={page === 1}

@@ -1,24 +1,22 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
-
-const PAGE_SIZE = 12; // batch d'images à précharger
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 export default function ProductsPage() {
   const { t } = useI18n();
-
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'lastUpdated'>('default');
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // 🔹 Charger les produits
   useEffect(() => {
@@ -28,13 +26,8 @@ export default function ProductsPage() {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
 
-        // ⚡ Type assertion ici
         const result = (await res.json()) as Record<string, Product[]> | Product[];
-
-        // 🔹 Flatten pour toujours avoir Product[]
-        const allProducts: Product[] = Array.isArray(result)
-          ? result
-          : Object.values(result).flat();
+        const allProducts: Product[] = Array.isArray(result) ? result : Object.values(result).flat();
 
         setData(allProducts);
       } catch (e: any) {
@@ -43,13 +36,13 @@ export default function ProductsPage() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  // 🔹 Tri
+  // 🔹 Trier
   const sortedProducts = useMemo(() => {
-    return [...data].sort((a, b) => {
+    const arr = Array.isArray(data) ? data : [];
+    return [...arr].sort((a, b) => {
       switch (sortBy) {
         case 'lastUpdated':
           return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
@@ -63,38 +56,48 @@ export default function ProductsPage() {
     });
   }, [data, sortBy]);
 
-  // 🔹 Filtre par taille
+  // 🔹 Filtrer
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // 🔹 Préload des images
+  // 🔹 Préload des images visibles
   useEffect(() => {
-    filteredProducts.slice(0, visibleCount).forEach(p => {
+    filteredProducts.slice(0, 12).forEach(p => {
       const img = new Image();
       img.src = p.image;
     });
-  }, [filteredProducts, visibleCount]);
+  }, [filteredProducts]);
 
-  // 🔹 Charger plus de produits au scroll
-  const handleLoadMore = () => {
-    setVisibleCount(prev => Math.min(prev + PAGE_SIZE, filteredProducts.length));
+  // 🔹 Virtualisation par **ligne**
+  const getColumns = () => {
+    if (typeof window === 'undefined') return 1;
+    if (window.innerWidth >= 1024) return 4;
+    if (window.innerWidth >= 768) return 3;
+    if (window.innerWidth >= 640) return 2;
+    return 1;
   };
+  const columns = getColumns();
+  const rowCount = Math.ceil(filteredProducts.length / columns);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 420, // hauteur approximative d'une ligne
+    overscan: 4,
+  });
 
   if (loading) return <ProductsLoading />;
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-red-600">{error}</p>
-          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]">
-            {t('actions.backToHome')}
-          </Link>
-        </div>
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-xl text-red-600">{error}</p>
+        <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]">
+          {t('actions.backToHome')}
+        </Link>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
@@ -105,10 +108,7 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <select
             value={sizeFilter}
-            onChange={e => {
-              setSizeFilter(e.target.value as any);
-              setVisibleCount(PAGE_SIZE); // reset scroll batch
-            }}
+            onChange={e => setSizeFilter(e.target.value as any)}
             className="w-full p-3 bg-white text-black border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
           >
             <option value="All">{t('products.all')}</option>
@@ -116,15 +116,11 @@ export default function ProductsPage() {
             <option value="M">M</option>
             <option value="L">L</option>
             <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
           </select>
 
           <select
             value={sortBy}
-            onChange={e => {
-              setSortBy(e.target.value as any);
-              setVisibleCount(PAGE_SIZE); // reset scroll batch
-            }}
+            onChange={e => setSortBy(e.target.value as any)}
             className="w-full p-3 bg-white text-black border border-gray-300 rounded-none"
           >
             <option value="default">{t('sort.default')}</option>
@@ -134,24 +130,34 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* 🔹 Grille responsive */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredProducts.slice(0, visibleCount).map(product => (
-            <ProductCard key={product.id} product={product} priority={false} />
-          ))}
-        </div>
+        {/* 🔹 Grille virtualisée */}
+        <div ref={parentRef} className="h-[80vh] overflow-auto">
+          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+            {virtualizer.getVirtualItems().map(virtualRow => {
+              const start = virtualRow.index * columns;
+              const end = start + columns;
+              const rowProducts = filteredProducts.slice(start, end);
 
-        {/* 🔹 Bouton Charger plus */}
-        {visibleCount < filteredProducts.length && (
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleLoadMore}
-              className="px-6 py-3 bg-[var(--gold)] text-black font-semibold hover:bg-[var(--gold-dark)] rounded"
-            >
-              {t('actions.loadMore')}
-            </button>
+              return (
+                <div
+                  key={virtualRow.index}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6"
+                >
+                  {rowProducts.map((product, i) => (
+                    <ProductCard key={product.id} product={product} priority={i < 12} />
+                  ))}
+                </div>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

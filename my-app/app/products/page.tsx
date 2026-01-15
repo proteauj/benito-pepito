@@ -6,7 +6,8 @@ import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
-import { useVirtualizer } from '@tanstack/react-virtual';
+
+const MAX_VISIBLE = 36;
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -16,7 +17,8 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'lastUpdated'>('default');
 
-  const parentRef = useRef<HTMLDivElement>(null);
+  const [visibleStart, setVisibleStart] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Charger les produits
   useEffect(() => {
@@ -40,8 +42,7 @@ export default function ProductsPage() {
 
   // Trier
   const sortedProducts = useMemo(() => {
-    const arr = Array.isArray(data) ? data : [];
-    return [...arr].sort((a, b) => {
+    return [...data].sort((a, b) => {
       switch (sortBy) {
         case 'lastUpdated':
           return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
@@ -60,32 +61,27 @@ export default function ProductsPage() {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // Préload des images visibles
-  useEffect(() => {
-    filteredProducts.slice(0, 36).forEach(p => {
-      const img = new Image();
-      img.src = p.image;
-    });
-  }, [filteredProducts]);
+  // Produits visibles (fenêtre glissante)
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(visibleStart, visibleStart + MAX_VISIBLE);
+  }, [filteredProducts, visibleStart]);
 
-  // Déterminer le nombre de colonnes selon la largeur
-  const getColumns = () => {
-    if (typeof window === 'undefined') return 1;
-    if (window.innerWidth >= 1024) return 4;
-    if (window.innerWidth >= 768) return 3;
-    if (window.innerWidth >= 640) return 2;
-    return 1;
+  // Détecter scroll pour charger les suivants
+  const onScroll = () => {
+    if (!containerRef.current) return;
+    const scrollTop = containerRef.current.scrollTop;
+    const scrollHeight = containerRef.current.scrollHeight;
+    const clientHeight = containerRef.current.clientHeight;
+
+    if (scrollTop + clientHeight >= scrollHeight - 50) {
+      // avancer la fenêtre
+      setVisibleStart(prev => Math.min(prev + MAX_VISIBLE, Math.max(0, filteredProducts.length - MAX_VISIBLE)));
+    }
+    if (scrollTop <= 0) {
+      // reculer la fenêtre
+      setVisibleStart(prev => Math.max(prev - MAX_VISIBLE, 0));
+    }
   };
-  const columns = getColumns();
-  const rowCount = Math.ceil(filteredProducts.length / columns);
-
-  // Virtualisation par ligne
-  const virtualizer = useVirtualizer({
-    count: rowCount,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 420, // hauteur approximative d'une ligne
-    overscan: 3, // lignes avant/après
-  });
 
   if (loading) return <ProductsLoading />;
   if (error)
@@ -99,6 +95,15 @@ export default function ProductsPage() {
         </div>
       </div>
     );
+
+  // Nombre de colonnes responsive
+  const columns = (() => {
+    if (typeof window === 'undefined') return 1;
+    if (window.innerWidth >= 1024) return 4;
+    if (window.innerWidth >= 768) return 3;
+    if (window.innerWidth >= 640) return 2;
+    return 1;
+  })();
 
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
@@ -131,31 +136,16 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* Grille virtualisée */}
-        <div ref={parentRef} className="h-[80vh] overflow-auto">
-          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-            {virtualizer.getVirtualItems().map(row => {
-              const start = row.index * columns;
-              const end = start + columns;
-              const rowProducts = filteredProducts.slice(start, end);
-
-              return (
-                <div
-                  key={row.index}
-                  style={{
-                    position: 'absolute',
-                    top: row.start,
-                    left: 0,
-                    width: '100%',
-                  }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4 px-2"
-                >
-                  {rowProducts.map(product => (
-                    <ProductCard key={product.id} product={product} priority={start <= 36} />
-                  ))}
-                </div>
-              );
-            })}
+        {/* Grille fenêtre 36 produits */}
+        <div
+          ref={containerRef}
+          onScroll={onScroll}
+          className="h-[80vh] overflow-auto"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {visibleProducts.map(product => (
+              <ProductCard key={product.id} product={product} priority />
+            ))}
           </div>
         </div>
       </div>

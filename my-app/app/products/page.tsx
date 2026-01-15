@@ -176,7 +176,6 @@ function ProductsContent() {
               // Filtrer et trier les produits
               const filteredProducts = sortProducts(products)
                 .filter(product => product.title.toLowerCase().includes(q.toLowerCase()))
-                .slice(0, 12); // Toujours 12 max
 
               // si aucun produit ne correspond, ne pas afficher la catégorie
               if (filteredProducts.length === 0) return null;

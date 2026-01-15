@@ -213,7 +213,7 @@ function ProductsContent() {
 
                     <button
                       onClick={() => setPage(p => p + 1)}
-                      disabled={endIndex >= filteredProducts.length}
+                      disabled={endIndex >= allFilteredProducts.length}
                       className="flex-1 bg-[var(--gold)] text-black py-3 px-6 font-semibold hover:bg-white hover:text-[var(--leaf)] disabled:bg-black/30 disabled:cursor-not-allowed transition-colors"
                     >
                       {t('actions.next')}

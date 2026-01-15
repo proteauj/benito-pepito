@@ -174,17 +174,15 @@ function ProductsContent() {
             .map(([category, products]) => {
 
               // filtrer et trier tous les produits
-              const allFilteredProducts = Object.entries(data)
-                .flatMap(([cat, products]) => 
-                  sortProducts(products)
-                    .filter(product => (category === "All" || product.category === category) &&
-                                      product.title.toLowerCase().includes(q.toLowerCase()))
-                );
+              const allFilteredProducts = Object.values(data).flatMap(products =>
+                sortProducts(products).filter(product =>
+                  product.title.toLowerCase().includes(q.toLowerCase()) &&
+                  (category === "All" || product.category === category)
+                )
+              );
 
               const startIndex = (page - 1) * pageSize;
               const endIndex = startIndex + pageSize;
-
-              // produits à afficher sur la page actuelle
               const paginatedProducts = allFilteredProducts.slice(startIndex, endIndex);
 
               // regroupement par catégorie pour afficher les titres
@@ -192,16 +190,18 @@ function ProductsContent() {
                 if (!acc[product.category]) acc[product.category] = [];
                 acc[product.category].push(product);
                 return acc;
-            }, {});
+              }, {});
+              
               return (
-                <div key={category} id={`category-${category}`} className="space-y-6">
-                  <h2 className="text-2xl font-bold">{category}</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {paginatedProducts.map(product => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-
+                <div>
+                  {Object.entries(productsByCategory).map(([cat, products]) => (
+                    <div key={cat} className="space-y-6">
+                      <h2 className="text-2xl font-bold">{cat}</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {products.map(p => <ProductCard key={p.id} product={p} />)}
+                      </div>
+                    </div>
+                  ))}
                   <div className="flex space-x-4">
                     <button
                       onClick={() => setPage(p => Math.max(p - 1, 1))}

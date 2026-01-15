@@ -118,7 +118,7 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID VIRTUALISÉE */}
-        <div className="flex-1">
+        <div className="flex-1 h-full">
           <VirtuosoGrid
             style={{ height: '100%' }}
             totalCount={filteredProducts.length}

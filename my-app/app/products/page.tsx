@@ -79,15 +79,32 @@ function ProductsContent() {
     }
   }, [searchParams, data]);
 
+  const sortProducts = (products: Product[]) => {
+    return [...products].sort((a, b) => {
+      switch (sortBy) {
+        case "lastUpdated":
+          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+        case "price-asc":
+          return a.price - b.price;
+        case "price-desc":
+          return b.price - a.price;
+        default:
+          return 0;
+      }
+    });
+  };
+
+  // ✅ ENSUITE useMemo
   const allFilteredProducts = useMemo(() => {
     return Object.entries(data)
       .filter(([cat]) => category === "All" || cat === category)
-      .flatMap(([cat, products]) =>
+      .flatMap(([_, products]) =>
         sortProducts(products).filter(product =>
           product.title.toLowerCase().includes(q.toLowerCase())
         )
       );
   }, [data, category, q, sortBy]);
+
 
   useEffect(() => {
     const next = allFilteredProducts.slice(
@@ -132,22 +149,6 @@ function ProductsContent() {
   };
 
   const sentinelRef = useInfiniteScroll(loadMore);
-
-  // Fonction pour trier les produits
-  const sortProducts = (products: Product[]) => {
-    return [...products].sort((a, b) => {
-      switch (sortBy) {
-        case "lastUpdated":
-          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
-        case "price-asc":
-          return a.price - b.price;
-        case "price-desc":
-          return b.price - a.price;
-        default:
-          return 0; // Ordre par défaut
-      }
-    });
-  };
 
   // Obtenir les catégories uniques
   const categories = useMemo(() => {

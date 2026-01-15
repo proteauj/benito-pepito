@@ -8,6 +8,8 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
+const PAGE_SIZE = 36; // nombre max de produits visibles pour le scroll
+
 export default function ProductsPage() {
   const { t } = useI18n();
   const [data, setData] = useState<Product[]>([]);
@@ -28,7 +30,6 @@ export default function ProductsPage() {
 
         const result = (await res.json()) as Record<string, Product[]> | Product[];
         const allProducts: Product[] = Array.isArray(result) ? result : Object.values(result).flat();
-
         setData(allProducts);
       } catch (e: any) {
         setError(e.message || 'Error loading products');
@@ -39,9 +40,10 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
-  // 🔹 Tri des produits
+  // 🔹 Trier
   const sortedProducts = useMemo(() => {
-    return [...data].sort((a, b) => {
+    const arr = Array.isArray(data) ? data : [];
+    return [...arr].sort((a, b) => {
       switch (sortBy) {
         case 'lastUpdated':
           return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
@@ -55,61 +57,39 @@ export default function ProductsPage() {
     });
   }, [data, sortBy]);
 
-  // 🔹 Filtre par taille
+  // 🔹 Filtrer
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // 🔹 Détection du nombre de colonnes pour responsive
-  const getColumns = () => {
-    if (typeof window === 'undefined') return 1;
-    if (window.innerWidth >= 1024) return 4;
-    if (window.innerWidth >= 768) return 3;
-    if (window.innerWidth >= 640) return 2;
-    return 1;
-  };
-  const columns = getColumns();
-  const rowCount = Math.ceil(filteredProducts.length / columns);
+  // 🔹 Préload des images visibles uniquement
+  useEffect(() => {
+    filteredProducts.slice(0, PAGE_SIZE).forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
+  }, [filteredProducts]);
 
-  // 🔹 Virtualisation par ligne
-  const rowVirtualizer = useVirtualizer({
-    count: rowCount,
+  // 🔹 Virtualisation par produit (max 36 visibles)
+  const virtualizer = useVirtualizer({
+    count: Math.min(filteredProducts.length, PAGE_SIZE),
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 420, // hauteur approximative d'une ligne
-    overscan: 3,
+    estimateSize: () => 420, // hauteur approximative de chaque ProductCard
+    overscan: 12,
   });
 
-  // 🔹 Préload images visibles
-  useEffect(() => {
-    const visibleIndexes = rowVirtualizer.getVirtualItems().flatMap(v =>
-      Array.from({ length: columns }, (_, i) => v.index * columns + i)
-    );
-    visibleIndexes.forEach(idx => {
-      const p = filteredProducts[idx];
-      if (p) {
-        const img = new Image();
-        img.src = p.image;
-      }
-    });
-  }, [rowVirtualizer.getVirtualItems(), filteredProducts, columns]);
-
   if (loading) return <ProductsLoading />;
-
-  if (error) {
+  if (error)
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-red-600">{error}</p>
-          <Link
-            href="/"
-            className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]"
-          >
+          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]">
             {t('actions.backToHome')}
           </Link>
         </div>
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
@@ -144,27 +124,21 @@ export default function ProductsPage() {
 
         {/* 🔹 Grille virtualisée */}
         <div ref={parentRef} className="h-[80vh] overflow-auto">
-          <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
-            {rowVirtualizer.getVirtualItems().map(row => {
-              const start = row.index * columns;
-              const end = start + columns;
-              const rowProducts = filteredProducts.slice(start, end);
-
+          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+            {virtualizer.getVirtualItems().map(virtualRow => {
+              const product = filteredProducts[virtualRow.index];
               return (
                 <div
-                  key={row.index}
+                  key={product.id}
                   style={{
                     position: 'absolute',
-                    top: 0,
+                    top: virtualRow.start,
                     left: 0,
                     width: '100%',
-                    transform: `translateY(${row.start}px)`,
                   }}
-                  className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6`}
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6"
                 >
-                  {rowProducts.map((product, i) => (
-                    <ProductCard key={product.id} product={product} priority={i < columns} />
-                  ))}
+                  <ProductCard product={product} priority={virtualRow.index < PAGE_SIZE} />
                 </div>
               );
             })}

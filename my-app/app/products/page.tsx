@@ -7,8 +7,11 @@ import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
+/* ================= CONFIG ================= */
 const VISIBLE = 12;
-const BUFFER = 12; // 12 avant + 12 après = 36 préchargés
+const BUFFER = 12; // avant + après → 36 max dans le DOM
+const ITEM_HEIGHT = 420; // hauteur moyenne d’une card (important)
+/* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -17,8 +20,11 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
-  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
+  const [sizeFilter, setSizeFilter] =
+    useState<Product['size'] | 'All'>('All');
+
+  const [sortBy, setSortBy] =
+    useState<'default' | 'price-asc' | 'price-desc'>('default');
 
   const [start, setStart] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -30,7 +36,10 @@ export default function ProductsPage() {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
 
-        const result = (await res.json()) as Record<string, Product[]> | Product[];
+        const result = (await res.json()) as
+          | Record<string, Product[]>
+          | Product[];
+
         const products = Array.isArray(result)
           ? result
           : Object.values(result).flat();
@@ -55,22 +64,22 @@ export default function ProductsPage() {
 
   /* ---------------- FILTER ---------------- */
   const filtered = useMemo(() => {
-    return sorted.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
+    return sorted.filter(
+      p => sizeFilter === 'All' || p.size === sizeFilter
+    );
   }, [sorted, sizeFilter]);
 
-  /* ---------------- WINDOW ---------------- */
+  /* ---------------- WINDOW (36) ---------------- */
   const windowProducts = useMemo(() => {
     const from = Math.max(0, start - BUFFER);
-    const to = Math.min(filtered.length, start + VISIBLE + BUFFER);
+    const to = Math.min(
+      filtered.length,
+      start + VISIBLE + BUFFER
+    );
     return filtered.slice(from, to);
   }, [filtered, start]);
 
-  /* ---------------- VISIBLE ---------------- */
-  const visibleProducts = useMemo(() => {
-    return filtered.slice(start, start + VISIBLE);
-  }, [filtered, start]);
-
-  /* ---------------- PRELOAD ---------------- */
+  /* ---------------- PRELOAD (36) ---------------- */
   useEffect(() => {
     windowProducts.forEach(p => {
       const img = new Image();
@@ -86,11 +95,14 @@ export default function ProductsPage() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setStart(s =>
-            Math.min(s + VISIBLE, Math.max(0, filtered.length - VISIBLE))
+            Math.min(
+              s + VISIBLE,
+              Math.max(0, filtered.length - VISIBLE)
+            )
           );
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: '300px' }
     );
 
     observer.observe(bottomRef.current);
@@ -103,7 +115,15 @@ export default function ProductsPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600">{error}</p>
+        <div className="text-center">
+          <p className="text-xl text-red-600">{error}</p>
+          <Link
+            href="/"
+            className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold"
+          >
+            {t('actions.backToHome')}
+          </Link>
+        </div>
       </div>
     );
   }
@@ -143,15 +163,24 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {visibleProducts.map(p => (
-            <ProductCard key={p.id} product={p} priority />
+        {/* GRID VIRTUALISÉE */}
+        <div
+          style={{
+            paddingTop: start * ITEM_HEIGHT,
+          }}
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+        >
+          {windowProducts.map(p => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              priority
+            />
           ))}
         </div>
 
         {/* SENTINEL */}
-        <div ref={bottomRef} className="h-1" />
+        <div ref={bottomRef} className="h-10" />
       </div>
     </div>
   );

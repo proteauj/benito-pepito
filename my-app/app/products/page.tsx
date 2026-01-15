@@ -73,21 +73,23 @@ export default function ProductsPage() {
   }, [windowProducts]);
 
   /* ---------------- OBSERVER ---------------- */
-  useEffect(() => {
-    if (!bottomRef.current) return;
+useEffect(() => {
+  if (!bottomRef.current) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setStart(s => Math.min(s + VISIBLE, Math.max(0, filtered.length - VISIBLE)));
-        }
-      },
-      { rootMargin: '300px' }
-    );
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        setStart(s =>
+          Math.min(s + VISIBLE, Math.max(0, filtered.length - VISIBLE))
+        );
+      }
+    },
+    { rootMargin: '200px 0px' } // déclenche un peu avant le bas
+  );
 
-    observer.observe(bottomRef.current);
-    return () => observer.disconnect();
-  }, [filtered.length]);
+  observer.observe(bottomRef.current);
+  return () => observer.disconnect();
+}, [filtered.length]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -146,10 +148,10 @@ export default function ProductsPage() {
           {visibleProducts.map(p => (
             <ProductCard key={p.id} product={p} priority />
           ))}
-        </div>
 
-        {/* SENTINEL */}
-        <div ref={bottomRef} className="h-10" />
+          {/* SENTINEL juste après les 12 visibles */}
+          <div ref={bottomRef} className="h-1" />
+        </div>
       </div>
     </div>
   );

@@ -7,11 +7,8 @@ import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-/* ================= CONFIG ================= */
-const VISIBLE_ROWS = 3; // 3 lignes visibles = 12 cards si 4 cols
-const BUFFER_ROWS = 3;  // 3 lignes avant + 3 lignes après = 36 max
-const ROW_HEIGHT = 420; // hauteur approximative d’une ligne
-/* ========================================== */
+const VISIBLE = 12;
+const BUFFER = 12; // 12 avant + 12 après = 36 max en mémoire
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -23,7 +20,7 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
-  const [start, setStart] = useState(0); // index du premier item visible
+  const [start, setStart] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
@@ -32,10 +29,8 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-
         const result = (await res.json()) as Record<string, Product[]> | Product[];
-        const products = Array.isArray(result) ? result : Object.values(result).flat();
-        setData(products);
+        setData(Array.isArray(result) ? result : Object.values(result).flat());
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -58,40 +53,18 @@ export default function ProductsPage() {
     return sorted.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sorted, sizeFilter]);
 
-  /* ---------------- COLUMNS ---------------- */
-  const getColumns = () => {
-    if (typeof window === 'undefined') return 1;
-    if (window.innerWidth >= 1024) return 4;
-    if (window.innerWidth >= 768) return 3;
-    if (window.innerWidth >= 640) return 2;
-    return 1;
-  };
-  const [columns, setColumns] = useState(getColumns());
-
-  useEffect(() => {
-    const onResize = () => setColumns(getColumns());
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  /* ---------------- WINDOW PRODUCTS ---------------- */
-  const totalRows = Math.ceil(filtered.length / columns);
-  const startRow = Math.floor(start / columns);
-
+  /* ---------------- WINDOW ---------------- */
   const windowProducts = useMemo(() => {
-    const fromRow = Math.max(0, startRow - BUFFER_ROWS);
-    const toRow = Math.min(totalRows, startRow + VISIBLE_ROWS + BUFFER_ROWS);
-
-    const from = fromRow * columns;
-    const to = toRow * columns;
+    const from = Math.max(0, start - BUFFER);
+    const to = Math.min(filtered.length, start + VISIBLE + BUFFER);
     return filtered.slice(from, to);
-  }, [filtered, startRow, columns, totalRows]);
+  }, [filtered, start]);
 
-  const paddingTop = startRow * ROW_HEIGHT;
-  const visibleRowsCount = Math.ceil(windowProducts.length / columns);
-  const paddingBottom = (totalRows - (startRow + visibleRowsCount)) * ROW_HEIGHT;
+  const visibleProducts = useMemo(() => {
+    return filtered.slice(start, start + VISIBLE);
+  }, [filtered, start]);
 
-  /* ---------------- PRELOAD IMAGES ---------------- */
+  /* ---------------- PRELOAD ---------------- */
   useEffect(() => {
     windowProducts.forEach(p => {
       const img = new Image();
@@ -106,12 +79,7 @@ export default function ProductsPage() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setStart(s =>
-            Math.min(
-              s + columns * VISIBLE_ROWS,
-              Math.max(0, filtered.length - columns * VISIBLE_ROWS)
-            )
-          );
+          setStart(s => Math.min(s + VISIBLE, Math.max(0, filtered.length - VISIBLE)));
         }
       },
       { rootMargin: '300px' }
@@ -119,7 +87,7 @@ export default function ProductsPage() {
 
     observer.observe(bottomRef.current);
     return () => observer.disconnect();
-  }, [filtered.length, columns]);
+  }, [filtered.length]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -142,53 +110,46 @@ export default function ProductsPage() {
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="h-screen stoneBg text-[var(--foreground)]">
-      <div className="max-w-7xl mx-auto h-full flex flex-col px-4 sm:px-6 lg:px-8">
+    <div className="stoneBg text-[var(--foreground)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         {/* HEADER */}
-        <div className="py-8 shrink-0">
-          <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
+        <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
-          {/* FILTERS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <select
-              value={sizeFilter}
-              onChange={e => setSizeFilter(e.target.value as any)}
-              className="p-3 border bg-white text-black"
-            >
-              <option value="All">{t('products.allSizes')}</option>
-              <option value="S">S</option>
-              <option value="M">M</option>
-              <option value="L">L</option>
-              <option value="XL">XL</option>
-            </select>
+        {/* FILTERS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <select
+            value={sizeFilter}
+            onChange={e => setSizeFilter(e.target.value as any)}
+            className="p-3 border bg-white text-black"
+          >
+            <option value="All">{t('products.allSizes')}</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
 
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as any)}
-              className="p-3 border bg-white text-black"
-            >
-              <option value="default">{t('sort.default')}</option>
-              <option value="price-asc">{t('sort.priceAsc')}</option>
-              <option value="price-desc">{t('sort.priceDesc')}</option>
-            </select>
-          </div>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as any)}
+            className="p-3 border bg-white text-black"
+          >
+            <option value="default">{t('sort.default')}</option>
+            <option value="price-asc">{t('sort.priceAsc')}</option>
+            <option value="price-desc">{t('sort.priceDesc')}</option>
+          </select>
         </div>
 
-        {/* GRID VIRTUALISÉE */}
-        <div
-          className="flex-1 overflow-y-auto pb-10"
-          style={{ paddingTop, paddingBottom }}
-        >
-          <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6`}>
-            {windowProducts.map(p => (
-              <ProductCard key={p.id} product={p} priority />
-            ))}
-          </div>
-
-          {/* SENTINEL */}
-          <div ref={bottomRef} className="h-10" />
+        {/* GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {visibleProducts.map(p => (
+            <ProductCard key={p.id} product={p} priority />
+          ))}
         </div>
+
+        {/* SENTINEL */}
+        <div ref={bottomRef} className="h-10" />
       </div>
     </div>
   );

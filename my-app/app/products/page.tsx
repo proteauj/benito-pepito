@@ -7,7 +7,8 @@ import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const MAX_VISIBLE = 36; // nombre de produits visibles à la fois
+const VISIBLE_COUNT = 12; // nombre de produits affichés
+const PRELOAD_COUNT = 36;  // produits préchargés (12 avant + 12 visibles + 12 après)
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -16,7 +17,7 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'lastUpdated'>('default');
-  const [visibleStart, setVisibleStart] = useState(0);
+  const [startIndex, setStartIndex] = useState(0); // index du premier produit visible
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -63,27 +64,33 @@ export default function ProductsPage() {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // 🔹 Produits visibles (fenêtre de MAX_VISIBLE)
+  // 🔹 Produits à afficher (12 visibles)
   const visibleProducts = useMemo(() => {
-    return filteredProducts.slice(visibleStart, visibleStart + MAX_VISIBLE);
-  }, [filteredProducts, visibleStart]);
+    return filteredProducts.slice(startIndex, startIndex + VISIBLE_COUNT);
+  }, [filteredProducts, startIndex]);
 
-  // 🔹 Préload images pour les produits visibles
+  // 🔹 Produits à précharger (36 autour de la fenêtre visible)
+  const preloadProducts = useMemo(() => {
+    const start = Math.max(startIndex - VISIBLE_COUNT, 0);
+    const end = Math.min(startIndex + VISIBLE_COUNT * 3, filteredProducts.length);
+    return filteredProducts.slice(start, end);
+  }, [filteredProducts, startIndex]);
+
+  // 🔹 Préload images pour les 36 produits autour de la fenêtre visible
   useEffect(() => {
-    visibleProducts.forEach(p => {
+    preloadProducts.forEach(p => {
       const img = new Image();
       img.src = p.image;
     });
-  }, [visibleProducts]);
+  }, [preloadProducts]);
 
-  // 🔹 Navigation fenêtre précédente/suivante
-  const handleNext = () => {
-    setVisibleStart(prev => Math.min(prev + MAX_VISIBLE, Math.max(0, filteredProducts.length - MAX_VISIBLE)));
-    if (containerRef.current) containerRef.current.scrollTop = 0;
-  };
-  const handlePrev = () => {
-    setVisibleStart(prev => Math.max(prev - MAX_VISIBLE, 0));
-    if (containerRef.current) containerRef.current.scrollTop = 0;
+  // 🔹 Scroll automatique pour changer la fenêtre visible
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    const { scrollTop, clientHeight } = containerRef.current;
+    const itemHeight = containerRef.current.scrollHeight / filteredProducts.length;
+    const newIndex = Math.floor(scrollTop / itemHeight);
+    if (newIndex !== startIndex) setStartIndex(newIndex);
   };
 
   if (loading) return <ProductsLoading />;
@@ -130,31 +137,17 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* 🔹 Grille produits (visible MAX_VISIBLE) */}
-        <div ref={containerRef} className="overflow-auto h-[80vh]">
+        {/* 🔹 Grille produits */}
+        <div
+          ref={containerRef}
+          onScroll={handleScroll}
+          className="overflow-auto h-[80vh]"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {visibleProducts.map(product => (
               <ProductCard key={product.id} product={product} priority />
             ))}
           </div>
-        </div>
-
-        {/* 🔹 Boutons précédent / suivant */}
-        <div className="flex justify-between mt-6">
-          <button
-            onClick={handlePrev}
-            disabled={visibleStart === 0}
-            className="px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
-          >
-            {t('actions.prev')}
-          </button>
-          <button
-            onClick={handleNext}
-            disabled={visibleStart + MAX_VISIBLE >= filteredProducts.length}
-            className="px-4 py-2 bg-[var(--gold)] text-black rounded disabled:opacity-50"
-          >
-            {t('actions.next')}
-          </button>
         </div>
       </div>
     </div>

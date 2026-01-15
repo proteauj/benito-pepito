@@ -195,30 +195,33 @@ function ProductsContent() {
               return (
                 <div>
                   {Object.entries(productsByCategory).map(([cat, products]) => (
-                    <div key={cat} className="space-y-6">
-                      <h2 className="text-2xl font-bold">{cat}</h2>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {products.map(p => <ProductCard key={p.id} product={p} />)}
+                    <div>
+                      <div key={cat} className="space-y-6">
+                        <h2 className="text-2xl font-bold">{cat}</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                          {products.map(p => <ProductCard key={p.id} product={p} />)}
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={() => setPage(p => Math.max(p - 1, 1))}
+                          disabled={page === 1}
+                          className="btn-ghost flex-1 hover:bg-[var(--gold)] hover:text-black transition-colors"
+                        >
+                          {t('actions.back')}
+                        </button>
+
+                        <button
+                          onClick={() => setPage(p => p + 1)}
+                          disabled={endIndex >= allFilteredProducts.length}
+                          className="flex-1 bg-[var(--gold)] text-black py-3 px-6 font-semibold hover:bg-white hover:text-[var(--leaf)] disabled:bg-black/30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {t('actions.next')}
+                        </button>
                       </div>
                     </div>
                   ))}
-                  <div className="flex space-x-4">
-                    <button
-                      onClick={() => setPage(p => Math.max(p - 1, 1))}
-                      disabled={page === 1}
-                      className="btn-ghost flex-1 hover:bg-[var(--gold)] hover:text-black transition-colors"
-                    >
-                      {t('actions.back')}
-                    </button>
-
-                    <button
-                      onClick={() => setPage(p => p + 1)}
-                      disabled={endIndex >= allFilteredProducts.length}
-                      className="flex-1 bg-[var(--gold)] text-black py-3 px-6 font-semibold hover:bg-white hover:text-[var(--leaf)] disabled:bg-black/30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {t('actions.next')}
-                    </button>
-                  </div>
                 </div>
               )
             }

@@ -5,6 +5,7 @@ export interface Product {
   titleFr?: string;
   description: string;
   descriptionFr?: string;
+  size?: string;
   price: number;
   originalPrice?: number;
   image: string;
@@ -17,5 +18,3 @@ export interface Product {
   year: number;
   lastUpdated: string;
 }
-
-export type ProductsByCategory = Record<string, Product[]>;

@@ -67,14 +67,6 @@ function ProductsContent() {
     fetchData();
   }, []);
 
-  // 🔹 Gestion catégorie via URL
-  useEffect(() => {
-    const catFromUrl = searchParams.get('category');
-    if (catFromUrl && data[catFromUrl as keyof typeof data]) {
-      setCategory(catFromUrl as Product["category"]);
-    }
-  }, [searchParams, data]);
-
   // 🔹 Trier les produits
   const sortProducts = (products: Product[]) => {
     return [...products].sort((a, b) => {
@@ -107,19 +99,6 @@ function ProductsContent() {
       img.src = p.image;
     });
   }, [visibleCount, allFilteredProducts]);
-
-  const handleCategoryChange = (newCategory: "All" | Product["category"]) => {
-    setCategory(newCategory);
-
-    const params = new URLSearchParams(searchParams.toString());
-    if (newCategory === "All") {
-      params.delete('category');
-    } else {
-      params.set('category', newCategory);
-    }
-
-    router.push(`/products?${params.toString()}`);
-  };
 
   const visibleProducts = useMemo(() => {
     const start = Math.max(0, visibleCount - MAX_RENDERED);

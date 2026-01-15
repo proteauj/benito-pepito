@@ -6,11 +6,11 @@ import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
-import { VirtuosoGrid } from 'react-virtuoso';
+import { Virtuoso } from 'react-virtuoso';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12; // nombre de produits visibles à l'écran
-const BUFFER = 12;  // nombre de produits préchargés avant/après
+const VISIBLE = 12; // produits visibles
+const BUFFER = 12;  // préchargés avant/après
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -56,7 +56,7 @@ export default function ProductsPage() {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  /* ---------------- PRELOAD IMAGES ---------------- */
+  /* ---------------- PRELOAD ---------------- */
   useEffect(() => {
     filteredProducts.slice(0, BUFFER * 3).forEach(p => {
       const img = new Image();
@@ -64,7 +64,6 @@ export default function ProductsPage() {
     });
   }, [filteredProducts]);
 
-  /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
 
   if (error) {
@@ -83,7 +82,6 @@ export default function ProductsPage() {
     );
   }
 
-  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -117,22 +115,18 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID VIRTUALISÉE */}
-        <VirtuosoGrid
-          totalCount={filteredProducts.length}
+        <Virtuoso
+          data={filteredProducts}
           overscan={BUFFER}
-          listClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-          itemContent={index => {
-            const product = filteredProducts[index];
-
-            // préchargement des images avant/après
-            if (index < BUFFER || index > filteredProducts.length - BUFFER) {
-              const img = new Image();
-              img.src = product.image;
-            }
-
-            return <ProductCard key={product.id} product={product} priority />;
-          }}
+          style={{ height: '80vh' }}
+          itemContent={(index, product) => (
+            <div className="sm:w-1/2 md:w-1/3 lg:w-1/4 p-2 box-border">
+              <ProductCard key={product.id} product={product} priority />
+            </div>
+          )}
+          className="flex flex-wrap -m-2"
         />
+
       </div>
     </div>
   );

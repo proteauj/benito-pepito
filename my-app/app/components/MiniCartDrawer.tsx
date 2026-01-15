@@ -55,8 +55,7 @@ export default function MiniCartDrawer() {
                   <div className="flex justify-between">
                     <div>
                       <h3 className="font-semibold leading-tight">{item.title}</h3>
-                      <p className="text-xs text-[var(--foreground)]/60">{item.artist}</p>
-                      <p className="text-xs text-[var(--foreground)]/60">{item.medium}, {item.year}</p>
+                      <p className="text-xs text-[var(--foreground)]/60">{item.material}, {item.year}</p>
                     </div>
                     <button onClick={() => removeFromCart(item.id)} className="text-[var(--gold)] hover:underline text-sm">{t('actions.remove')}</button>
                   </div>

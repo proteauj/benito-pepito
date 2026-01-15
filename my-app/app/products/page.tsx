@@ -172,19 +172,27 @@ function ProductsContent() {
           {Object.entries(data)
             .filter(([cat]) => category === "All" || cat === category)
             .map(([category, products]) => {
-              // filtrer les produits de cette catégorie par texte
-              // Filtrer et trier les produits
-              const filteredProducts = sortProducts(products)
-                .filter(product => product.title.toLowerCase().includes(q.toLowerCase()))
 
-              // si aucun produit ne correspond, ne pas afficher la catégorie
-              if (filteredProducts.length === 0) return null;
+              // filtrer et trier tous les produits
+              const allFilteredProducts = Object.entries(data)
+                .flatMap(([cat, products]) => 
+                  sortProducts(products)
+                    .filter(product => (category === "All" || product.category === category) &&
+                                      product.title.toLowerCase().includes(q.toLowerCase()))
+                );
 
               const startIndex = (page - 1) * pageSize;
               const endIndex = startIndex + pageSize;
 
-              const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+              // produits à afficher sur la page actuelle
+              const paginatedProducts = allFilteredProducts.slice(startIndex, endIndex);
 
+              // regroupement par catégorie pour afficher les titres
+              const productsByCategory = paginatedProducts.reduce<Record<string, Product[]>>((acc, product) => {
+                if (!acc[product.category]) acc[product.category] = [];
+                acc[product.category].push(product);
+                return acc;
+            }, {});
               return (
                 <div key={category} id={`category-${category}`} className="space-y-6">
                   <h2 className="text-2xl font-bold">{category}</h2>

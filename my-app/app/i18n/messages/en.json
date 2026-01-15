@@ -16,6 +16,7 @@
   "actions.add": "Add",
   "actions.prev": "Prev",
   "actions.next": "Next",
+  "actions.more": "More",
   "status.sold": "Sold",
   "status.available": "Available",
   "product.addToCart": "Add to Cart",

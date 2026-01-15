@@ -18,6 +18,7 @@
   "actions.next": "Suivant",
   "actions.back": "← Retour",
   "actions.remove": "Retirer",
+  "actions.more": "Plus",
   "status.sold": "Vendu",
   "status.available": "Disponible",
   "product.addToCart": "Ajouter au panier",

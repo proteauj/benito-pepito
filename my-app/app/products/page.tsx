@@ -101,8 +101,7 @@ function ProductsContent() {
   }, [visibleCount, allFilteredProducts]);
 
   const visibleProducts = useMemo(() => {
-    const start = Math.max(0, visibleCount - MAX_RENDERED);
-    return allFilteredProducts.slice(start, visibleCount);
+    return allFilteredProducts.slice(0, visibleCount);
   }, [allFilteredProducts, visibleCount]);
 
   // 🔹 Pré-charger la prochaine batch
@@ -192,20 +191,17 @@ function ProductsContent() {
 
         {/* Contenu des produits */}
         <div className="space-y-12">
-          {Object.entries(productsByCategory).map(([cat, products]) => (
-            <div key={cat} className="space-y-6">
-              {products.length > 0 && <h2 className="text-2xl font-bold">{cat}</h2>}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {products.map((product, i) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    priority={i < PAGE_SIZE} // seules les 12 premières images de la batch sont prioritaires
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {visibleProducts.map((product, i) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                priority={i < PAGE_SIZE} // seulement les premières images de la batch
+              />
+            ))}
+          </div>
+
+          {/* Sentinel pour infinite scroll */}
           {visibleCount < allFilteredProducts.length && (
             <div ref={sentinelRef} className="h-20" />
           )}

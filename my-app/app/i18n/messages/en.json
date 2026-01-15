@@ -94,5 +94,6 @@
   "success.paymentVerified": "Payment verified successfully",
   "success.verificationIssue": "Payment verification issue",
   "success.stockNotUpdated": "Stock could not be updated automatically",
-  "products.all": "All"
+  "products.all": "All",
+  "products.allSizes": "All sizes"
 }

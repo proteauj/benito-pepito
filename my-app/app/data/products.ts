@@ -7,9 +7,9 @@ import { Product } from '@/types';
 export const products: Product[] = [
   {
     id: 'pa1',
-    slug: 'phragmites-d-orees',
-    title: "Phragemites d'orées",
-    titleFr: "Phragemites d'orées",
+    slug: 'phragmites-dorees',
+    title: "Phragemites dorées",
+    titleFr: "Phragemites dorées",
     size: 'XXL',
     price: 275,
     image: '/images/paint1.jpeg',
@@ -521,8 +521,8 @@ export const products: Product[] = [
   {
     id: 'pa43',
     slug: 'marguerites-1',
-    title: 'Marguerites',
-    titleFr: 'Marguerites',
+    title: 'Sous un Ciel Bleu',
+    titleFr: 'Sous un Ciel Bleu',
     size: 'S',
     price: 100,
     image: '/images/paint43.png',
@@ -533,8 +533,8 @@ export const products: Product[] = [
   {
     id: 'pa44',
     slug: 'marguerites-2',
-    title: 'Marguerites',
-    titleFr: 'Marguerites',
+    title: 'Vague à l\'Âme',
+    titleFr: 'Vague à l\'Âme',
     size: 'L',
     price: 175,
     image: '/images/paint44.png',

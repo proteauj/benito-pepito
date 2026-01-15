@@ -32,7 +32,7 @@ export default function ProductCard({ product, className = '', priority = false 
         </div>
 
         <div className="p-3">
-          <h3 className="text-sm font-medium line-clamp-2">{product.title}</h3>
+          <h3 className="text-sm font-medium line-clamp-2">{product.id}-{product.title}</h3>
           <p className="font-semibold mt-1">${product.price}</p>
         </div>
       </Link>

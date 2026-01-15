@@ -1,7 +1,7 @@
 // app/products/page.tsx
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState, useRef } from 'react';
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useI18n } from '@/i18n/I18nProvider';
@@ -9,6 +9,29 @@ import { useProductTranslations } from '@/hooks/useProductTranslations';
 import ProductsLoading from '@/components/ProductsLoading';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
+
+function useInfiniteScroll(callback: () => void) {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) callback();
+      },
+      {
+        rootMargin: '300px', // déclenche avant d'arriver en bas
+      }
+    );
+
+    observer.observe(ref.current);
+
+    return () => observer.disconnect();
+  }, [callback]);
+
+  return ref;
+}
 
 function ProductsContent() {
   const { t } = useI18n();
@@ -21,12 +44,10 @@ function ProductsContent() {
   const [q, setQ] = useState("");
   const [category, setCategory] = useState<"All" | Product["category"]>("All");
   const [sortBy, setSortBy] = useState<"default" | "lastUpdated" | "price-asc" | "price-desc">("default");
-  const [displayCount, setDisplayCount] = useState(12);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [userSelectedCategory, setUserSelectedCategory] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
-  const [page, setPage] = useState(1);
-  const pageSize = 12;
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Chargement des données
   useEffect(() => {
@@ -58,6 +79,28 @@ function ProductsContent() {
     }
   }, [searchParams, data]);
 
+  const allFilteredProducts = useMemo(() => {
+    return Object.entries(data)
+      .filter(([cat]) => category === "All" || cat === category)
+      .flatMap(([cat, products]) =>
+        sortProducts(products).filter(product =>
+          product.title.toLowerCase().includes(q.toLowerCase())
+        )
+      );
+  }, [data, category, q, sortBy]);
+
+  useEffect(() => {
+    const next = allFilteredProducts.slice(
+      visibleCount,
+      visibleCount + PAGE_SIZE
+    );
+
+    next.forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
+  }, [visibleCount, allFilteredProducts]);
+
   // Fonction pour gérer le changement de catégorie
   const handleCategoryChange = (newCategory: "All" | Product["category"]) => {
     setCategory(newCategory);
@@ -71,6 +114,24 @@ function ProductsContent() {
     }
     router.push(`/products?${params.toString()}`);
   };
+
+  const visibleProducts = allFilteredProducts.slice(0, visibleCount);
+    // regroupement par catégorie pour afficher les titres
+    const productsByCategory = useMemo(() => {
+      return visibleProducts.reduce<Record<string, Product[]>>((acc, product) => {
+        if (!acc[product.category]) acc[product.category] = [];
+        acc[product.category].push(product);
+        return acc;
+      }, {});
+    }, [visibleProducts]);
+
+  const loadMore = () => {
+    setVisibleCount(v =>
+      Math.min(v + PAGE_SIZE, allFilteredProducts.length)
+    );
+  };
+
+  const sentinelRef = useInfiniteScroll(loadMore);
 
   // Fonction pour trier les produits
   const sortProducts = (products: Product[]) => {
@@ -92,11 +153,6 @@ function ProductsContent() {
   const categories = useMemo(() => {
     return ["All", ...Object.keys(data)];
   }, [data]);
-
-  // Charger plus de produits
-  const loadMore = () => {
-    setDisplayCount(prev => prev + pageSize);
-  };
 
   if (loading) {
     return <ProductsLoading />;
@@ -169,63 +225,23 @@ function ProductsContent() {
 
         {/* Contenu des produits */}
         <div className="space-y-12">
-          {Object.entries(data)
-            .filter(([cat]) => category === "All" || cat === category)
-            .map(([category, products]) => {
-
-              // filtrer et trier tous les produits
-              const allFilteredProducts = Object.values(data).flatMap(products =>
-                sortProducts(products).filter(product =>
-                  product.title.toLowerCase().includes(q.toLowerCase()) &&
-                  (category === "All" || product.category === category)
-                )
-              );
-
-              const startIndex = (page - 1) * pageSize;
-              const endIndex = startIndex + pageSize;
-              const paginatedProducts = allFilteredProducts.slice(startIndex, endIndex);
-
-              // regroupement par catégorie pour afficher les titres
-              const productsByCategory = paginatedProducts.reduce<Record<string, Product[]>>((acc, product) => {
-                if (!acc[product.category]) acc[product.category] = [];
-                acc[product.category].push(product);
-                return acc;
-              }, {});
-              
-              return (
-                <div>
-                  {Object.entries(productsByCategory).map(([cat, products]) => (
-                    <div>
-                      <div key={cat} className="space-y-6">
-                        <h2 className="text-2xl font-bold">{cat}</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                          {products.map(p => <ProductCard key={p.id} product={p} />)}
-                        </div>
-                      </div>
-
-                      <div className="flex space-x-4">
-                        <button
-                          onClick={() => setPage(p => Math.max(p - 1, 1))}
-                          disabled={page === 1}
-                          className="btn-ghost flex-1 hover:bg-[var(--gold)] hover:text-black transition-colors"
-                        >
-                          {t('actions.back')}
-                        </button>
-
-                        <button
-                          onClick={() => setPage(p => p + 1)}
-                          disabled={endIndex >= allFilteredProducts.length}
-                          className="flex-1 bg-[var(--gold)] text-black py-3 px-6 font-semibold hover:bg-white hover:text-[var(--leaf)] disabled:bg-black/30 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {t('actions.next')}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+          <div>
+            {Object.entries(productsByCategory).map(([cat, products]) => (
+              <div>
+                <div key={cat} className="space-y-6">
+                  <h2 className="text-2xl font-bold">{cat}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {products.map(product => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
                 </div>
-              )
-            }
-          )}
+              </div>
+            ))}
+            {visibleCount < allFilteredProducts.length && (
+              <div ref={sentinelRef} className="h-20" />
+            )}
+          </div>
         </div>
       </div>
     </div>

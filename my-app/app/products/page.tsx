@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { VirtuosoGrid } from 'react-virtuoso';
 import Link from 'next/link';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
-import { VirtuosoGrid } from 'react-virtuoso';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12; // produits visibles
-const BUFFER = 24;  // buffer avant/après
+const VISIBLE = 12; // visibles à l'écran
+const BUFFER = 12;  // avant/après
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -84,59 +84,51 @@ export default function ProductsPage() {
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="stoneBg text-[var(--foreground)] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col h-full">
+    <div className="h-screen stoneBg text-[var(--foreground)]">
+      <div className="max-w-7xl mx-auto h-full flex flex-col px-4 sm:px-6 lg:px-8">
 
-        <div className="stoneBg text-[var(--foreground)] h-screen flex flex-col">
-          {/* HEADER */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 shrink-0">
-            <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
-            {/* FILTERS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <select
-                value={sizeFilter}
-                onChange={e => setSizeFilter(e.target.value as any)}
-                className="p-3 border bg-white text-black"
-              >
-                <option value="All">{t('products.allSizes')}</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-              </select>
+        {/* HEADER */}
+        <div className="py-8 shrink-0">
+          <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value as any)}
-                className="p-3 border bg-white text-black"
-              >
-                <option value="default">{t('sort.default')}</option>
-                <option value="price-asc">{t('sort.priceAsc')}</option>
-                <option value="price-desc">{t('sort.priceDesc')}</option>
-              </select>
-            </div>
+          {/* FILTERS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <select
+              value={sizeFilter}
+              onChange={e => setSizeFilter(e.target.value as any)}
+              className="p-3 border bg-white text-black"
+            >
+              <option value="All">{t('products.allSizes')}</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as any)}
+              className="p-3 border bg-white text-black"
+            >
+              <option value="default">{t('sort.default')}</option>
+              <option value="price-asc">{t('sort.priceAsc')}</option>
+              <option value="price-desc">{t('sort.priceDesc')}</option>
+            </select>
           </div>
+        </div>
 
-          {/* VIRTUAL GRID */}
-          <div className="flex-1 min-h-0">
-            <VirtuosoGrid
-              style={{ height: '100%' }} // 👈 impératif
-              totalCount={filteredProducts.length}
-              overscan={12}
-              components={{
-                List: (props) => (
-                  <div
-                    {...props}
-                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-                  />
-                )
-              }}
-              itemContent={(index) => {
-                const product = filteredProducts[index];
-                return <ProductCard key={product.id} product={product} priority />;
-              }}
-            />
-          </div>
+        {/* GRID VIRTUALISÉE */}
+        <div className="flex-1 min-h-0">
+          <VirtuosoGrid
+            style={{ height: '100%' }}
+            totalCount={filteredProducts.length}
+            overscan={BUFFER}
+            listClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            itemContent={index => {
+              const product = filteredProducts[index];
+              return <ProductCard key={product.id} product={product} priority={index < VISIBLE} />;
+            }}
+          />
         </div>
       </div>
     </div>

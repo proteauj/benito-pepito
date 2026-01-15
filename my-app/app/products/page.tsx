@@ -94,7 +94,6 @@ function ProductsContent() {
     });
   };
 
-  // ✅ ENSUITE useMemo
   const allFilteredProducts = useMemo(() => {
     return Object.entries(data)
       .filter(([cat]) => category === "All" || cat === category)
@@ -105,6 +104,20 @@ function ProductsContent() {
       );
   }, [data, category, q, sortBy]);
 
+  const MAX_RENDERED = PAGE_SIZE * 3; // 36 images max dans le DOM
+
+  const visibleProducts = useMemo(() => {
+    const start = Math.max(0, visibleCount - MAX_RENDERED);
+    return allFilteredProducts.slice(start, visibleCount);
+  }, [allFilteredProducts, visibleCount]);
+
+  const productsByCategory = useMemo(() => {
+    return visibleProducts.reduce<Record<string, Product[]>>((acc, product) => {
+      if (!acc[product.category]) acc[product.category] = [];
+      acc[product.category].push(product);
+      return acc;
+    }, {});
+  }, [visibleProducts]);
 
   useEffect(() => {
     const next = allFilteredProducts.slice(
@@ -131,16 +144,6 @@ function ProductsContent() {
     }
     router.push(`/products?${params.toString()}`);
   };
-
-  const visibleProducts = allFilteredProducts.slice(0, visibleCount);
-    // regroupement par catégorie pour afficher les titres
-    const productsByCategory = useMemo(() => {
-      return visibleProducts.reduce<Record<string, Product[]>>((acc, product) => {
-        if (!acc[product.category]) acc[product.category] = [];
-        acc[product.category].push(product);
-        return acc;
-      }, {});
-    }, [visibleProducts]);
 
   const loadMore = () => {
     setVisibleCount(v =>

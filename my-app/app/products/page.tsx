@@ -39,7 +39,8 @@ export default function ProductsPage() {
 
   // 🔹 Tri des produits
   const sortedProducts = useMemo(() => {
-    return [...data].sort((a, b) => {
+    const productsArray = Array.isArray(data) ? data : []; // ← s'assure que c'est un tableau
+    return [...productsArray].sort((a, b) => {
       switch (sortBy) {
         case 'lastUpdated':
           return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
@@ -52,6 +53,7 @@ export default function ProductsPage() {
       }
     });
   }, [data, sortBy]);
+
 
   // 🔹 Filtre par taille
   const filteredProducts = useMemo(() => {

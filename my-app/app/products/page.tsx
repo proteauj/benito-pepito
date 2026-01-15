@@ -9,8 +9,8 @@ import ProductsLoading from '@/components/ProductsLoading';
 import { VirtuosoGrid } from 'react-virtuoso';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12;       // nombre de produits visibles à l’écran
-const BUFFER = 24;        // buffer avant + après → max 36 produits en DOM
+const VISIBLE = 12; // produits visibles
+const BUFFER = 24;  // buffer avant/après
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -122,8 +122,10 @@ export default function ProductsPage() {
           <VirtuosoGrid
             style={{ height: '100%' }}
             totalCount={filteredProducts.length}
-            overscan={BUFFER} // buffer avant/après
-            listClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            overscan={BUFFER}
+            components={{
+              List: (props) => <div {...props} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" />
+            }}
             itemContent={(index) => {
               const product = filteredProducts[index];
               return <ProductCard key={product.id} product={product} priority />;

@@ -8,10 +8,11 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-const PAGE_PRIORITY = 12; // Top 12 images à précharger en priorité
+const PAGE_SIZE = 12; // nombre de cartes à précharger
 
 export default function ProductsPage() {
   const { t } = useI18n();
+
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +21,7 @@ export default function ProductsPage() {
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // 🔹 Charger les produits
+  // Charger les produits
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -40,7 +41,7 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
-  // 🔹 Trier les produits
+  // Trier
   const sortedProducts = useMemo(() => {
     const arr = Array.isArray(data) ? data : [];
     return [...arr].sort((a, b) => {
@@ -57,12 +58,20 @@ export default function ProductsPage() {
     });
   }, [data, sortBy]);
 
-  // 🔹 Filtrer par taille
+  // Filtrer
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // 🔹 Déterminer le nombre de colonnes dynamiquement
+  // Préload des images visibles
+  useEffect(() => {
+    filteredProducts.slice(0, PAGE_SIZE).forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
+  }, [filteredProducts]);
+
+  // Virtualisation de la grille
   const getColumns = () => {
     if (typeof window === 'undefined') return 1;
     if (window.innerWidth >= 1024) return 4;
@@ -70,46 +79,18 @@ export default function ProductsPage() {
     if (window.innerWidth >= 640) return 2;
     return 1;
   };
-  const [columns, setColumns] = useState(getColumns());
-
-  useEffect(() => {
-    const handleResize = () => setColumns(getColumns());
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const rowCount = Math.ceil(filteredProducts.length / columns);
-
-  // 🔹 Virtualisation par ligne
+  const columns = getColumns();
+  const rowHeight = 420; // hauteur approximative d'une carte
   const virtualizer = useVirtualizer({
-    count: rowCount,
+    count: filteredProducts.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 420, // hauteur approximative d’une ligne complète
-    overscan: 4,
+    estimateSize: () => rowHeight,
+    overscan: 12, // buffer au-dessus et en-dessous
   });
-
-  // 🔹 Préload des images visibles seulement
-  useEffect(() => {
-    const items = virtualizer.getVirtualItems();
-    if (!items.length) return;
-
-    const firstVisible = items[0].index;
-    const lastVisible = items[items.length - 1].index;
-
-    const start = firstVisible * columns;
-    const end = (lastVisible + 1) * columns;
-
-    filteredProducts.slice(start, end).forEach((p, i) => {
-      const img = new Image();
-      img.src = p.image;
-      // Priorité uniquement pour top PAGE_PRIORITY produits
-      if (start + i < PAGE_PRIORITY) img.decode?.();
-    });
-  }, [virtualizer.getVirtualItems(), filteredProducts, columns]);
 
   if (loading) return <ProductsLoading />;
 
-  if (error)
+  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -120,13 +101,18 @@ export default function ProductsPage() {
         </div>
       </div>
     );
+  }
+
+  // Largeur de chaque colonne
+  const parentWidth = parentRef.current?.clientWidth ?? 300;
+  const itemWidth = parentWidth / columns;
 
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-4xl font-bold mb-8">{t('headings.allArtworks')}</h1>
 
-        {/* 🔹 Filtres */}
+        {/* Filtres */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <select
             value={sizeFilter}
@@ -152,29 +138,25 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* 🔹 Grille virtualisée */}
-        <div ref={parentRef} className="h-[80vh] overflow-auto">
-          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-            {virtualizer.getVirtualItems().map(virtualRow => {
-              const start = virtualRow.index * columns;
-              const end = start + columns;
-              const rowProducts = filteredProducts.slice(start, end);
+        {/* Grille virtualisée */}
+        <div ref={parentRef} className="h-[80vh] overflow-auto relative">
+          <div style={{ height: Math.ceil(filteredProducts.length / columns) * rowHeight, position: 'relative' }}>
+            {virtualizer.getVirtualItems().map((v) => {
+              const product = filteredProducts[v.index];
+              const row = Math.floor(v.index / columns);
+              const col = v.index % columns;
 
               return (
                 <div
-                  key={virtualRow.index}
+                  key={product.id}
                   style={{
                     position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    transform: `translateY(${virtualRow.start}px)`,
+                    top: row * rowHeight,
+                    left: col * itemWidth,
+                    width: itemWidth,
                   }}
-                  className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6`}
                 >
-                  {rowProducts.map((product, i) => (
-                    <ProductCard key={product.id} product={product} priority={start + i < PAGE_PRIORITY} />
-                  ))}
+                  <ProductCard product={product} priority={v.index < PAGE_SIZE} />
                 </div>
               );
             })}

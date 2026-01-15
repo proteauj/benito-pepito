@@ -8,8 +8,6 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-const PAGE_SIZE = 36; // nombre max de produits visibles pour le scroll
-
 export default function ProductsPage() {
   const { t } = useI18n();
   const [data, setData] = useState<Product[]>([]);
@@ -20,7 +18,7 @@ export default function ProductsPage() {
 
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // 🔹 Charger les produits
+  // Charger les produits
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -40,7 +38,7 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
-  // 🔹 Trier
+  // Trier
   const sortedProducts = useMemo(() => {
     const arr = Array.isArray(data) ? data : [];
     return [...arr].sort((a, b) => {
@@ -57,25 +55,36 @@ export default function ProductsPage() {
     });
   }, [data, sortBy]);
 
-  // 🔹 Filtrer
+  // Filtrer
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // 🔹 Préload des images visibles uniquement
+  // Préload des images visibles
   useEffect(() => {
-    filteredProducts.slice(0, PAGE_SIZE).forEach(p => {
+    filteredProducts.slice(0, 36).forEach(p => {
       const img = new Image();
       img.src = p.image;
     });
   }, [filteredProducts]);
 
-  // 🔹 Virtualisation par produit (max 36 visibles)
+  // Déterminer le nombre de colonnes selon la largeur
+  const getColumns = () => {
+    if (typeof window === 'undefined') return 1;
+    if (window.innerWidth >= 1024) return 4;
+    if (window.innerWidth >= 768) return 3;
+    if (window.innerWidth >= 640) return 2;
+    return 1;
+  };
+  const columns = getColumns();
+  const rowCount = Math.ceil(filteredProducts.length / columns);
+
+  // Virtualisation par ligne
   const virtualizer = useVirtualizer({
-    count: Math.min(filteredProducts.length, PAGE_SIZE),
+    count: rowCount,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 420, // hauteur approximative de chaque ProductCard
-    overscan: 12,
+    estimateSize: () => 420, // hauteur approximative d'une ligne
+    overscan: 3, // lignes avant/après
   });
 
   if (loading) return <ProductsLoading />;
@@ -96,7 +105,7 @@ export default function ProductsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-4xl font-bold mb-8">{t('headings.allArtworks')}</h1>
 
-        {/* 🔹 Filtres */}
+        {/* Filtres */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <select
             value={sizeFilter}
@@ -122,23 +131,28 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* 🔹 Grille virtualisée */}
+        {/* Grille virtualisée */}
         <div ref={parentRef} className="h-[80vh] overflow-auto">
           <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-            {virtualizer.getVirtualItems().map(virtualRow => {
-              const product = filteredProducts[virtualRow.index];
+            {virtualizer.getVirtualItems().map(row => {
+              const start = row.index * columns;
+              const end = start + columns;
+              const rowProducts = filteredProducts.slice(start, end);
+
               return (
                 <div
-                  key={product.id}
+                  key={row.index}
                   style={{
                     position: 'absolute',
-                    top: virtualRow.start,
+                    top: row.start,
                     left: 0,
                     width: '100%',
                   }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6"
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4 px-2"
                 >
-                  <ProductCard product={product} priority={virtualRow.index < PAGE_SIZE} />
+                  {rowProducts.map(product => (
+                    <ProductCard key={product.id} product={product} priority={start <= 36} />
+                  ))}
                 </div>
               );
             })}

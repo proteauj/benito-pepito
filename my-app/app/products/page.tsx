@@ -83,7 +83,7 @@ function ProductsContent() {
     });
   };
 
-  // 🔹 Produits filtrés
+  // 1️⃣ Produits filtrés et triés sur **tous** les produits
   const allFilteredProducts = useMemo(() => {
     return Object.values(data)
       .flatMap(products => sortProducts(products))
@@ -92,6 +92,11 @@ function ProductsContent() {
       );
   }, [data, sizeFilter, sortBy]);
 
+  // 2️⃣ Produits visibles (slice pour infinite scroll)
+  const visibleProducts = useMemo(() => {
+    return allFilteredProducts.slice(0, visibleCount);
+  }, [allFilteredProducts, visibleCount]);
+
   useEffect(() => {
     const nextBatch = allFilteredProducts.slice(visibleCount, visibleCount + PAGE_SIZE);
     nextBatch.forEach(p => {
@@ -99,10 +104,6 @@ function ProductsContent() {
       img.src = p.image;
     });
   }, [visibleCount, allFilteredProducts]);
-
-  const visibleProducts = useMemo(() => {
-    return allFilteredProducts.slice(0, visibleCount);
-  }, [allFilteredProducts, visibleCount]);
 
   // 🔹 Pré-charger la prochaine batch
   useEffect(() => {

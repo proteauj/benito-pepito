@@ -25,6 +25,7 @@ function ProductsContent() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [userSelectedCategory, setUserSelectedCategory] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const [page, setPage] = useState(1);
   const pageSize = 12;
 
   // Chargement des données
@@ -173,16 +174,18 @@ function ProductsContent() {
             .map(([category, products]) => {
               // filtrer les produits de cette catégorie par texte
               // Filtrer et trier les produits
-              const filteredProducts = sortProducts(products).filter(product =>
-                product.title.toLowerCase().includes(q.toLowerCase())
-              );
+              const filteredProducts = sortProducts(products)
+                .filter(product => product.title.toLowerCase().includes(q.toLowerCase()))
+                .slice(0, 12); // Toujours 12 max
 
               // si aucun produit ne correspond, ne pas afficher la catégorie
               if (filteredProducts.length === 0) return null;
 
-              // Pagination
-              const paginatedProducts = filteredProducts.slice(0, displayCount);
-              
+              const startIndex = (page - 1) * pageSize;
+              const endIndex = startIndex + pageSize;
+
+              const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
               return (
                 <div key={category} id={`category-${category}`} className="space-y-6">
                   <h2 className="text-2xl font-bold">{category}</h2>
@@ -192,17 +195,23 @@ function ProductsContent() {
                     ))}
                   </div>
 
-                  {/* Bouton “Load more” */}
-                  {displayCount < filteredProducts.length && (
-                    <div className="flex justify-center mt-4">
-                      <button
-                        onClick={() => setDisplayCount(prev => prev + pageSize)}
-                        className="px-6 py-2 bg-[var(--leaf)] text-white rounded hover:bg-[var(--leaf-dark)]"
-                      >
-                        {t('actions.more')}
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex justify-between mt-6">
+                    <button
+                      onClick={() => setPage(p => Math.max(p - 1, 1))}
+                      disabled={page === 1}
+                      className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                    >
+                      {t('actions.back')}
+                    </button>
+
+                    <button
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={endIndex >= filteredProducts.length}
+                      className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                    >
+                      {t('actions.next')}
+                    </button>
+                  </div>
                 </div>
               )
             }

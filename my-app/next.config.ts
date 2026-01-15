@@ -11,6 +11,7 @@ const nextConfig = {
   experimental: {
     disableOptimizedLoading: true,
   },
+  turbopack: {},
   webpack: (config: { module: { rules: any[]; }; resolve: { alias: any; }; }) => {
     // Désactiver le loader d'image de Next.js
     config.module.rules = config.module.rules.filter(

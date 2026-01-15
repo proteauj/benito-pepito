@@ -28,6 +28,7 @@ export default function ProductsPage() {
         if (!res.ok) throw new Error('Failed to fetch products');
         const result: Product[] = await res.json();
         setData(result);
+        console.log('Data fetched:', data);
       } catch (e: any) {
         setError(e.message || 'Error loading products');
       } finally {

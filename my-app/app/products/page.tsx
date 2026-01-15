@@ -1,30 +1,35 @@
 'use client';
 
 import { Suspense, useEffect, useMemo, useState, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import Link from 'next/link';
 import { useI18n } from '@/i18n/I18nProvider';
-import ProductsLoading from '@/components/ProductsLoading';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
+import ProductsLoading from '@/components/ProductsLoading';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
-export default function ProductsContent() {
+const PAGE_SIZE = 12; // pour preload images en batch
+
+export default function ProductsPage() {
   const { t } = useI18n();
+
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
-  const [sortBy, setSortBy] = useState<'default' | 'lastUpdated' | 'price-asc' | 'price-desc'>('default');
+  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'lastUpdated'>('default');
 
-  // 🔹 Charger les données
+  // Charger les produits
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-        const result = await res.json();
+        const result: Product[] = await res.json();
         setData(result);
       } catch (e: any) {
-        console.error(e);
+        setError(e.message || 'Error loading products');
       } finally {
         setLoading(false);
       }
@@ -32,109 +37,122 @@ export default function ProductsContent() {
     fetchData();
   }, []);
 
-  // 🔹 Trier et filtrer tous les produits
-  const filteredProducts = useMemo(() => {
-    let prods = [...data];
-    if (sizeFilter !== 'All') {
-      prods = prods.filter(p => p.size === sizeFilter);
-    }
-    switch (sortBy) {
-      case 'lastUpdated':
-        prods.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
-        break;
-      case 'price-asc':
-        prods.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        prods.sort((a, b) => b.price - a.price);
-        break;
-    }
-    return prods;
-  }, [data, sizeFilter, sortBy]);
-
-  // 🔹 Virtualisation
-  const parentRef = useRef<HTMLDivElement>(null);
-  const COLUMN_COUNT = 4; // max 4 colonnes sur desktop
-  const rowCount = Math.ceil(filteredProducts.length / COLUMN_COUNT);
-
-  const rowVirtualizer = useVirtualizer({
-    count: rowCount,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 350, // hauteur approximative d'une ligne
-    overscan: 5, // lignes préchargées avant/après
-  });
-
-  // 🔹 Précharger les images des lignes virtuelles
-  useEffect(() => {
-    rowVirtualizer.getVirtualItems().forEach(row => {
-      const startIndex = row.index * COLUMN_COUNT;
-      const endIndex = Math.min(startIndex + COLUMN_COUNT, filteredProducts.length);
-      const items = filteredProducts.slice(startIndex, endIndex);
-      items.forEach(product => {
-        const img = new Image();
-        img.src = product.image;
-      });
+  // Tri
+  const sortedProducts = useMemo(() => {
+    return [...data].sort((a, b) => {
+      switch (sortBy) {
+        case 'lastUpdated':
+          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+        case 'price-asc':
+          return a.price - b.price;
+        case 'price-desc':
+          return b.price - a.price;
+        default:
+          return 0;
+      }
     });
-  }, [filteredProducts, rowVirtualizer.getVirtualItems()]);
+  }, [data, sortBy]);
+
+  // Filtre par taille
+  const filteredProducts = useMemo(() => {
+    return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
+  }, [sortedProducts, sizeFilter]);
+
+  // Préload des images par batch
+  useEffect(() => {
+    const preloadImages = () => {
+      filteredProducts.slice(0, PAGE_SIZE).forEach(p => {
+        const img = new Image();
+        img.src = p.image;
+      });
+    };
+    preloadImages();
+  }, [filteredProducts]);
+
+  // Virtualisation
+  const parentRef = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: filteredProducts.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 400, // hauteur approx d'une carte produit
+    overscan: 4,
+  });
 
   if (loading) return <ProductsLoading />;
 
-  return (
-    <div className="min-h-screen stoneBg text-[var(--foreground)] px-4 sm:px-6 lg:px-8 py-10">
-      <h1 className="text-4xl font-bold mb-8">{t('headings.allArtworks')}</h1>
-
-      {/* Filtres */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <select
-          value={sizeFilter}
-          onChange={e => setSizeFilter(e.target.value as any)}
-          className="w-full p-3 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-        >
-          <option value="All">{t('products.all')}</option>
-          <option value="S">S</option>
-          <option value="M">M</option>
-          <option value="L">L</option>
-          <option value="XL">XL</option>
-        </select>
-
-        <select
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value as any)}
-          className="w-full p-3 border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-        >
-          <option value="default">{t('sort.default')}</option>
-          <option value="lastUpdated">{t('sort.lastUpdatedDesc')}</option>
-          <option value="price-asc">{t('sort.priceAsc')}</option>
-          <option value="price-desc">{t('sort.priceDesc')}</option>
-        </select>
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-red-600">{error}</p>
+          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]">
+            {t('actions.backToHome')}
+          </Link>
+        </div>
       </div>
+    );
+  }
 
-      {/* Grille virtualisée */}
-      <div ref={parentRef} className="relative h-[calc(100vh-200px)] overflow-auto">
-        <div
-          style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
-          }}
-        >
-          {rowVirtualizer.getVirtualItems().map(row => {
-            const startIndex = row.index * COLUMN_COUNT;
-            const endIndex = Math.min(startIndex + COLUMN_COUNT, filteredProducts.length);
-            const items = filteredProducts.slice(startIndex, endIndex);
+  return (
+    <div className="min-h-screen stoneBg text-[var(--foreground)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <h1 className="text-4xl font-bold mb-8">{t('headings.allArtworks')}</h1>
 
-            return (
-              <div
-                key={row.index}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 absolute w-full"
-                style={{ top: 0, transform: `translateY(${row.start}px)` }}
-              >
-                {items.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            );
-          })}
+        {/* Filtre taille */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="relative">
+            <select
+              value={sizeFilter}
+              onChange={e => setSizeFilter(e.target.value as any)}
+              className="w-full p-3 bg-white text-black border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+            >
+              <option value="All">{t('products.all')}</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+          </div>
+
+          {/* Tri */}
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as any)}
+              className="w-full p-3 bg-white text-black border border-gray-300 rounded-none"
+            >
+              <option value="default">{t('sort.default')}</option>
+              <option value="lastUpdated">{t('sort.lastUpdatedDesc')}</option>
+              <option value="price-asc">{t('sort.priceAsc')}</option>
+              <option value="price-desc">{t('sort.priceDesc')}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Grille virtualisée */}
+        <div ref={parentRef} className="h-[80vh] overflow-auto">
+          <div
+            style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}
+          >
+            {rowVirtualizer.getVirtualItems().map(virtualRow => {
+              const product = filteredProducts[virtualRow.index];
+              return (
+                <div
+                  key={product.id}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6"
+                >
+                  <ProductCard product={product} priority={virtualRow.index < PAGE_SIZE} />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

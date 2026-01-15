@@ -8,7 +8,7 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-const PAGE_SIZE = 12; // pour preload images en batch
+const PAGE_SIZE = 12; // batch d'images à précharger
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -19,7 +19,7 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'lastUpdated'>('default');
 
-  // Charger les produits
+  // 🔹 Charger les produits
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -37,7 +37,7 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
-  // Tri
+  // 🔹 Tri des produits
   const sortedProducts = useMemo(() => {
     return [...data].sort((a, b) => {
       switch (sortBy) {
@@ -53,28 +53,25 @@ export default function ProductsPage() {
     });
   }, [data, sortBy]);
 
-  // Filtre par taille
+  // 🔹 Filtre par taille
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // Préload des images par batch
+  // 🔹 Préload des images visibles uniquement
   useEffect(() => {
-    const preloadImages = () => {
-      filteredProducts.slice(0, PAGE_SIZE).forEach(p => {
-        const img = new Image();
-        img.src = p.image;
-      });
-    };
-    preloadImages();
+    filteredProducts.slice(0, PAGE_SIZE).forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
   }, [filteredProducts]);
 
-  // Virtualisation
+  // 🔹 Virtualisation
   const parentRef = useRef<HTMLDivElement>(null);
-  const rowVirtualizer = useVirtualizer({
+  const virtualizer = useVirtualizer({
     count: filteredProducts.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 400, // hauteur approx d'une carte produit
+    estimateSize: () => 400, // hauteur approximative d'une carte produit
     overscan: 4,
   });
 
@@ -98,43 +95,36 @@ export default function ProductsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-4xl font-bold mb-8">{t('headings.allArtworks')}</h1>
 
-        {/* Filtre taille */}
+        {/* 🔹 Filtres */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="relative">
-            <select
-              value={sizeFilter}
-              onChange={e => setSizeFilter(e.target.value as any)}
-              className="w-full p-3 bg-white text-black border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-            >
-              <option value="All">{t('products.all')}</option>
-              <option value="S">S</option>
-              <option value="M">M</option>
-              <option value="L">L</option>
-              <option value="XL">XL</option>
-            </select>
-          </div>
+          <select
+            value={sizeFilter}
+            onChange={e => setSizeFilter(e.target.value as any)}
+            className="w-full p-3 bg-white text-black border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+          >
+            <option value="All">{t('products.all')}</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
 
-          {/* Tri */}
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as any)}
-              className="w-full p-3 bg-white text-black border border-gray-300 rounded-none"
-            >
-              <option value="default">{t('sort.default')}</option>
-              <option value="lastUpdated">{t('sort.lastUpdatedDesc')}</option>
-              <option value="price-asc">{t('sort.priceAsc')}</option>
-              <option value="price-desc">{t('sort.priceDesc')}</option>
-            </select>
-          </div>
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as any)}
+            className="w-full p-3 bg-white text-black border border-gray-300 rounded-none"
+          >
+            <option value="default">{t('sort.default')}</option>
+            <option value="lastUpdated">{t('sort.lastUpdatedDesc')}</option>
+            <option value="price-asc">{t('sort.priceAsc')}</option>
+            <option value="price-desc">{t('sort.priceDesc')}</option>
+          </select>
         </div>
 
-        {/* Grille virtualisée */}
+        {/* 🔹 Grille virtualisée */}
         <div ref={parentRef} className="h-[80vh] overflow-auto">
-          <div
-            style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}
-          >
-            {rowVirtualizer.getVirtualItems().map(virtualRow => {
+          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+            {virtualizer.getVirtualItems().map(virtualRow => {
               const product = filteredProducts[virtualRow.index];
               return (
                 <div

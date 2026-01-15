@@ -46,6 +46,7 @@ function ProductsContent() {
   const [category, setCategory] = useState<"All" | Product["category"]>("All");
   const [sortBy, setSortBy] = useState<"default" | "lastUpdated" | "price-asc" | "price-desc">("default");
   const PAGE_SIZE = 12;
+  const MAX_RENDERED = 36; // 3 pages
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -91,6 +92,25 @@ function ProductsContent() {
     });
   };
 
+  // 🔹 Produits filtrés
+  const allFilteredProducts = useMemo(() => {
+    return Object.entries(data)
+      .filter(([cat]) => category === "All" || cat === category)
+      .flatMap(([_, products]) =>
+        sortProducts(products).filter(p =>
+          p.title.toLowerCase().includes(q.toLowerCase())
+        )
+      );
+  }, [data, category, q, sortBy]);
+
+  useEffect(() => {
+    const nextBatch = allFilteredProducts.slice(visibleCount, visibleCount + PAGE_SIZE);
+    nextBatch.forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
+  }, [visibleCount, allFilteredProducts]);
+
   const handleCategoryChange = (newCategory: "All" | Product["category"]) => {
     setCategory(newCategory);
 
@@ -104,20 +124,9 @@ function ProductsContent() {
     router.push(`/products?${params.toString()}`);
   };
 
-  // 🔹 Produits filtrés
-  const allFilteredProducts = useMemo(() => {
-    return Object.entries(data)
-      .filter(([cat]) => category === "All" || cat === category)
-      .flatMap(([_, products]) =>
-        sortProducts(products).filter(p =>
-          p.title.toLowerCase().includes(q.toLowerCase())
-        )
-      );
-  }, [data, category, q, sortBy]);
-
-  // 🔹 Produits visibles (infinite scroll)
   const visibleProducts = useMemo(() => {
-    return allFilteredProducts.slice(0, visibleCount);
+    const start = Math.max(0, visibleCount - MAX_RENDERED);
+    return allFilteredProducts.slice(start, visibleCount);
   }, [allFilteredProducts, visibleCount]);
 
   // 🔹 Pré-charger la prochaine batch

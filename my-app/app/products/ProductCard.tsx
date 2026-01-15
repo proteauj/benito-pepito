@@ -23,13 +23,9 @@ export default function ProductCard({ product, className = '', priority = false 
             <Image
               src={product.image}
               alt={product.title}
-              fill
-              loading={priority ? 'eager' : 'lazy'}
-              priority={priority}
-              sizes="(max-width: 640px) 50vw,
-                     (max-width: 1024px) 33vw,
-                     25vw"
-              className="object-contain sm:object-cover transition-transform duration-300 group-hover:scale-105"
+              width={400} height={500} // ratio 4/5
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           </div>
         </div>

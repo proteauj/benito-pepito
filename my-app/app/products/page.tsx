@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
+import { VirtuosoGrid } from 'react-virtuoso';
 
 /* ================= CONFIG ================= */
 const VISIBLE = 12; // nombre de produits visibles à l'écran
-const BUFFER = 12;  // 12 avant + 12 après → 36 max
+const BUFFER = 12;  // nombre de produits préchargés avant/après
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -21,10 +22,6 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-
-  const [start, setStart] = useState(0); // index du premier produit visible
-
-  const lastItemRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -59,39 +56,13 @@ export default function ProductsPage() {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  /* ---------------- WINDOW PRODUCTS ---------------- */
-  const windowProducts = useMemo(() => {
-    const from = Math.max(0, start - BUFFER);
-    const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
-    return filteredProducts.slice(from, to);
-  }, [filteredProducts, start]);
-
   /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
-    windowProducts.forEach(p => {
+    filteredProducts.slice(0, BUFFER * 3).forEach(p => {
       const img = new Image();
       img.src = p.image;
     });
-  }, [windowProducts]);
-
-  /* ---------------- OBSERVER ---------------- */
-  useEffect(() => {
-    if (!lastItemRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          // passer aux 12 suivants si possible
-          setStart(prev => Math.min(prev + VISIBLE, Math.max(0, filteredProducts.length - VISIBLE)));
-        }
-      },
-      { rootMargin: '200px' }
-    );
-
-    observer.observe(lastItemRef.current);
-
-    return () => observer.disconnect();
-  }, [filteredProducts.length, windowProducts]);
+  }, [filteredProducts]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -114,7 +85,7 @@ export default function ProductsPage() {
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="stoneBg text-[var(--foreground)]">
+    <div className="stoneBg text-[var(--foreground)] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         {/* HEADER */}
@@ -145,22 +116,23 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {windowProducts.map((product, idx) => {
-            // dernier élément visible → ref pour observer
-            const isLastVisible = idx === Math.min(windowProducts.length, VISIBLE + BUFFER) - 1;
-            return (
-              <div
-                key={product.id}
-                ref={isLastVisible ? lastItemRef : null}
-              >
-                <ProductCard product={product} priority />
-              </div>
-            );
-          })}
-        </div>
+        {/* GRID VIRTUALISÉE */}
+        <VirtuosoGrid
+          totalCount={filteredProducts.length}
+          overscan={BUFFER}
+          listClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          itemContent={index => {
+            const product = filteredProducts[index];
 
+            // préchargement des images avant/après
+            if (index < BUFFER || index > filteredProducts.length - BUFFER) {
+              const img = new Image();
+              img.src = product.image;
+            }
+
+            return <ProductCard key={product.id} product={product} priority />;
+          }}
+        />
       </div>
     </div>
   );

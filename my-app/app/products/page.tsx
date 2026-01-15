@@ -58,11 +58,15 @@ export default function ProductsPage() {
 
   // 🔹 Filtre par taille
   const filteredProducts = useMemo(() => {
+    console.log('Sorted products:', sortedProducts);
+
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
   // 🔹 Préload des images visibles uniquement
   useEffect(() => {
+    console.log('Filtered products:', filteredProducts);
+
     filteredProducts.slice(0, PAGE_SIZE).forEach(p => {
       const img = new Image();
       img.src = p.image;

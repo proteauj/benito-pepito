@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { VirtuosoGrid } from 'react-virtuoso';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
@@ -9,8 +8,9 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12; // visibles à l'écran
-const BUFFER = 12;  // avant/après
+const VISIBLE = 12; // produits visibles à l'écran
+const BUFFER = 12;  // 12 avant + 12 après → max 36 dans le DOM
+const ROW_HEIGHT = 420; // hauteur approximative d’une ligne
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -22,6 +22,9 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
+
+  const [startIndex, setStartIndex] = useState(0); // premier produit visible
+  const containerRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -55,13 +58,51 @@ export default function ProductsPage() {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  /* ---------------- PRELOAD IMAGES ---------------- */
+  /* ---------------- COLUMNS ---------------- */
+  const getColumns = () => {
+    if (typeof window === 'undefined') return 1;
+    if (window.innerWidth >= 1024) return 4;
+    if (window.innerWidth >= 768) return 3;
+    if (window.innerWidth >= 640) return 2;
+    return 1;
+  };
+  const [columns, setColumns] = useState(getColumns());
+
   useEffect(() => {
-    filteredProducts.slice(0, VISIBLE + BUFFER).forEach(p => {
+    const onResize = () => setColumns(getColumns());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  /* ---------------- VIRTUAL WINDOW ---------------- */
+  const totalRows = Math.ceil(filteredProducts.length / columns);
+  const startRow = Math.floor(startIndex / columns);
+  const windowStartRow = Math.max(0, startRow - BUFFER / columns);
+  const windowEndRow = Math.min(totalRows, startRow + VISIBLE / columns + BUFFER / columns);
+  const windowProducts = filteredProducts.slice(
+    windowStartRow * columns,
+    windowEndRow * columns
+  );
+
+  const paddingTop = windowStartRow * ROW_HEIGHT;
+  const paddingBottom = (totalRows - windowEndRow) * ROW_HEIGHT;
+
+  /* ---------------- PRELOAD ---------------- */
+  useEffect(() => {
+    windowProducts.forEach(p => {
       const img = new Image();
       img.src = p.image;
     });
-  }, [filteredProducts]);
+  }, [windowProducts]);
+
+  /* ---------------- SCROLL HANDLER ---------------- */
+  const onScroll = () => {
+    if (!containerRef.current) return;
+    const scrollTop = containerRef.current.scrollTop;
+    const rowIndex = Math.floor(scrollTop / ROW_HEIGHT);
+    const newStart = rowIndex * columns;
+    if (newStart !== startIndex) setStartIndex(newStart);
+  };
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -84,8 +125,8 @@ export default function ProductsPage() {
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="h-screen stoneBg text-[var(--foreground)]">
-      <div className="max-w-7xl mx-auto h-full flex flex-col px-4 sm:px-6 lg:px-8">
+    <div className="h-screen stoneBg text-[var(--foreground)] flex flex-col">
+      <div className="max-w-7xl mx-auto flex flex-col h-full px-4 sm:px-6 lg:px-8">
 
         {/* HEADER */}
         <div className="py-8 shrink-0">
@@ -118,17 +159,16 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID VIRTUALISÉE */}
-        <div className="flex-1 min-h-0">
-          <VirtuosoGrid
-            style={{ height: '100%' }}
-            totalCount={filteredProducts.length}
-            overscan={BUFFER}
-            listClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-            itemContent={index => {
-              const product = filteredProducts[index];
-              return <ProductCard key={product.id} product={product} priority={index < VISIBLE} />;
-            }}
-          />
+        <div
+          className="flex-1 overflow-y-auto pb-4"
+          ref={containerRef}
+          onScroll={onScroll}
+        >
+          <div style={{ paddingTop, paddingBottom }} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {windowProducts.map(p => (
+              <ProductCard key={p.id} product={p} priority />
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const MAX_VISIBLE = 36;
+const MAX_VISIBLE = 36; // nombre de produits visibles à la fois
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -16,11 +16,11 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'lastUpdated'>('default');
-
   const [visibleStart, setVisibleStart] = useState(0);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Charger les produits
+  // 🔹 Charger les produits
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,6 +30,7 @@ export default function ProductsPage() {
 
         const result = (await res.json()) as Record<string, Product[]> | Product[];
         const allProducts: Product[] = Array.isArray(result) ? result : Object.values(result).flat();
+
         setData(allProducts);
       } catch (e: any) {
         setError(e.message || 'Error loading products');
@@ -40,9 +41,10 @@ export default function ProductsPage() {
     fetchData();
   }, []);
 
-  // Trier
+  // 🔹 Trier
   const sortedProducts = useMemo(() => {
-    return [...data].sort((a, b) => {
+    const arr = Array.isArray(data) ? data : [];
+    return [...arr].sort((a, b) => {
       switch (sortBy) {
         case 'lastUpdated':
           return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
@@ -56,61 +58,53 @@ export default function ProductsPage() {
     });
   }, [data, sortBy]);
 
-  // Filtrer
+  // 🔹 Filtrer
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // Produits visibles (fenêtre glissante)
+  // 🔹 Produits visibles (fenêtre de MAX_VISIBLE)
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(visibleStart, visibleStart + MAX_VISIBLE);
   }, [filteredProducts, visibleStart]);
 
-  // Détecter scroll pour charger les suivants
-  const onScroll = () => {
-    if (!containerRef.current) return;
-    const scrollTop = containerRef.current.scrollTop;
-    const scrollHeight = containerRef.current.scrollHeight;
-    const clientHeight = containerRef.current.clientHeight;
+  // 🔹 Préload images pour les produits visibles
+  useEffect(() => {
+    visibleProducts.forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
+  }, [visibleProducts]);
 
-    if (scrollTop + clientHeight >= scrollHeight - 50) {
-      // avancer la fenêtre
-      setVisibleStart(prev => Math.min(prev + MAX_VISIBLE, Math.max(0, filteredProducts.length - MAX_VISIBLE)));
-    }
-    if (scrollTop <= 0) {
-      // reculer la fenêtre
-      setVisibleStart(prev => Math.max(prev - MAX_VISIBLE, 0));
-    }
+  // 🔹 Navigation fenêtre précédente/suivante
+  const handleNext = () => {
+    setVisibleStart(prev => Math.min(prev + MAX_VISIBLE, Math.max(0, filteredProducts.length - MAX_VISIBLE)));
+    if (containerRef.current) containerRef.current.scrollTop = 0;
+  };
+  const handlePrev = () => {
+    setVisibleStart(prev => Math.max(prev - MAX_VISIBLE, 0));
+    if (containerRef.current) containerRef.current.scrollTop = 0;
   };
 
   if (loading) return <ProductsLoading />;
-  if (error)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-red-600">{error}</p>
-          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]">
-            {t('actions.backToHome')}
-          </Link>
-        </div>
-      </div>
-    );
 
-  // Nombre de colonnes responsive
-  const columns = (() => {
-    if (typeof window === 'undefined') return 1;
-    if (window.innerWidth >= 1024) return 4;
-    if (window.innerWidth >= 768) return 3;
-    if (window.innerWidth >= 640) return 2;
-    return 1;
-  })();
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-xl text-red-600">{error}</p>
+        <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold hover:bg-[var(--gold-dark)]">
+          {t('actions.backToHome')}
+        </Link>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-4xl font-bold mb-8">{t('headings.allArtworks')}</h1>
 
-        {/* Filtres */}
+        {/* 🔹 Filtres */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <select
             value={sizeFilter}
@@ -136,17 +130,31 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* Grille fenêtre 36 produits */}
-        <div
-          ref={containerRef}
-          onScroll={onScroll}
-          className="h-[80vh] overflow-auto"
-        >
+        {/* 🔹 Grille produits (visible MAX_VISIBLE) */}
+        <div ref={containerRef} className="overflow-auto h-[80vh]">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {visibleProducts.map(product => (
               <ProductCard key={product.id} product={product} priority />
             ))}
           </div>
+        </div>
+
+        {/* 🔹 Boutons précédent / suivant */}
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={handlePrev}
+            disabled={visibleStart === 0}
+            className="px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
+          >
+            {t('actions.prev')}
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={visibleStart + MAX_VISIBLE >= filteredProducts.length}
+            className="px-4 py-2 bg-[var(--gold)] text-black rounded disabled:opacity-50"
+          >
+            {t('actions.next')}
+          </button>
         </div>
       </div>
     </div>

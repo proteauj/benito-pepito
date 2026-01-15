@@ -14,7 +14,7 @@ function SuccessContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+      <div className="bg-white p-8 rounded-sm shadow-lg max-w-md w-full text-center">
         <div className="text-green-500 text-6xl mb-4">✓</div>
         <h1 className="text-2xl font-bold mb-2">{t('success.title')}</h1>
         <p className="mb-6 text-gray-600">

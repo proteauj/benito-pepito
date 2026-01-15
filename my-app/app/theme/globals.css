@@ -55,22 +55,26 @@
 
 :root {
   /* Stone-like light background and black text */
-  --background: #e9e5df; /* warm stone */
+  --background: #F5F5F5; /* warm stone */
   --foreground: #111111; /* mostly black text */
-  --gold: #D4AF37; /* metallic gold */
-  --gold-dark: #c49a2e;
-  --leaf: #0b8a5a; /* richer emerald */
-  --leaf-dark: #066a46; /* deeper emerald */
+  --gold: #C6A664; /* metallic gold */
+  --gold-dark: #E0C98D;
+  --leaf: #046B56; /* richer emerald */
+  --leaf-dark: #0E3C2D; /* deeper emerald */
   --wood: #7a5a3a; /* wood tone fallback */
 }
 
-/* Local font: Mouly */
-@font-face {
-  font-family: 'Mouly';
+  /* font-family: 'Mouly';
   src: url('/mouly/Mouly D.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: swap; */
+
+/* Local font: Mouly */
+@font-face {
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 @theme inline {
@@ -101,17 +105,18 @@ body {
   background-blend-mode: normal; /* keep texture visible */
   color: var(--foreground);
   /* Use system serif font instead of Nooa */
-  font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.075rem; /* larger for Mouly readability */
   line-height: 1.6; /* a bit more leading for clarity */
 }
 
 /* Utility: Apply stone background anywhere */
 .stoneBg {
-  background: var(--background);
-  background-image:
-    linear-gradient(0deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-    url('/stoneBg.jpeg');
+  background-image: linear-gradient(
+  0deg,
+  rgba(250, 249, 247, 0.7),   /* blanc cassé plus chaud */
+  rgba(250, 249, 247, 0.7)
+),
+url('/stoneBg.jpeg');
   /* gradient covers; texture spans full width and only repeats vertically */
   background-size: cover, 100% auto;
   background-repeat: no-repeat, repeat-y;
@@ -211,10 +216,9 @@ body {
 /* (Removed .stone-overlay DOM class; using body::before instead) */
 
 h1, h2, h3 {
-  letter-spacing: 0.02em; /* elegant tracking */
-  line-height: 1.15;
-  font-weight: 800; /* stronger heading weight */
-  font-family: 'Mouly', Arial, Helvetica, sans-serif;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 /* Ghost button with bigger gold border */
@@ -284,6 +288,9 @@ a.btn,
   color: var(--gold);
   text-decoration: underline;
   text-underline-offset: 3px;
+  background: linear-gradient(90deg, #C6A664, #F9E6B3, #C6A664);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .gold-link:hover {
   background: white;
@@ -373,4 +380,23 @@ a.btn,
 }
 .indicator:hover {
   background-color: rgba(255, 255, 255, 0.8);
+}
+.box-border {
+  border: 2px solid #C6A664;
+  border-width: medium;
+}
+
+img:hover {
+  transform: scale(1.02);
+  transition: transform 0.6s ease, filter 0.6s ease;
+  filter: brightness(1.1);
+}
+
+.group.relative.bg-white.border.border-gray-200.rounded-sm.overflow-hidden.shadow-sm.hover\:shadow-md.transition-shadow.duration-200 {
+  border: 2px solid #C6A664;
+  border-width: medium;
+}
+.relative.w-full.aspect-square.p-2 {
+  border: 2px solid #C6A664;
+  border-width: medium;
 }

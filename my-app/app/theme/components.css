@@ -46,7 +46,7 @@
 
 /* notice */
 .notice {
-  @apply mb-6 rounded-lg border px-8 py-6;
+  @apply mb-6 rounded-sm border px-8 py-6;
 
   &.note {
     @apply text-[#1B83E2];
@@ -180,7 +180,7 @@
 }
 
 .modal-content {
-  @apply relative top-1/2 z-50 mx-auto max-w-[90%] translate-y-14 rounded-lg bg-body p-8 dark:bg-darkmode-body;
+  @apply relative top-1/2 z-50 mx-auto max-w-[90%] translate-y-14 rounded-sm bg-body p-8 dark:bg-darkmode-body;
 }
 
 .modal-close {
@@ -218,13 +218,13 @@
   @apply prose-img:max-w-full prose-img:rounded;
   @apply prose-hr:border-border prose-hr:dark:border-darkmode-border;
   @apply prose-p:text-base prose-p:text-text prose-p:dark:text-darkmode-text;
-  @apply prose-blockquote:rounded-lg prose-blockquote:border prose-blockquote:border-l-[10px] prose-blockquote:border-primary prose-blockquote:bg-light prose-blockquote:px-8 prose-blockquote:py-10 prose-blockquote:font-secondary prose-blockquote:text-2xl prose-blockquote:not-italic prose-blockquote:text-text-dark prose-blockquote:dark:border-darkmode-primary prose-blockquote:dark:bg-darkmode-light prose-blockquote:dark:text-darkmode-text-light;
-  @apply prose-pre:rounded-lg prose-pre:bg-light prose-pre:dark:bg-darkmode-light;
+  @apply prose-blockquote:rounded-sm prose-blockquote:border prose-blockquote:border-l-[10px] prose-blockquote:border-primary prose-blockquote:bg-light prose-blockquote:px-8 prose-blockquote:py-10 prose-blockquote:font-secondary prose-blockquote:text-2xl prose-blockquote:not-italic prose-blockquote:text-text-dark prose-blockquote:dark:border-darkmode-primary prose-blockquote:dark:bg-darkmode-light prose-blockquote:dark:text-darkmode-text-light;
+  @apply prose-pre:rounded-sm prose-pre:bg-light prose-pre:dark:bg-darkmode-light;
   @apply prose-code:px-1 prose-code:text-primary prose-code:dark:text-darkmode-primary;
   @apply prose-strong:text-text-dark prose-strong:dark:text-darkmode-text;
   @apply prose-a:text-text prose-a:underline prose-a:hover:text-primary prose-a:dark:text-darkmode-text prose-a:hover:dark:text-darkmode-primary;
   @apply prose-li:text-text prose-li:dark:text-darkmode-text;
-  @apply prose-table:relative prose-table:overflow-hidden prose-table:rounded-lg before:prose-table:absolute before:prose-table:left-0 before:prose-table:top-0 before:prose-table:h-full before:prose-table:w-full before:prose-table:rounded-[inherit] before:prose-table:border before:prose-table:content-[""] before:prose-table:dark:border-darkmode-border;
+  @apply prose-table:relative prose-table:overflow-hidden prose-table:rounded-sm before:prose-table:absolute before:prose-table:left-0 before:prose-table:top-0 before:prose-table:h-full before:prose-table:w-full before:prose-table:rounded-[inherit] before:prose-table:border before:prose-table:content-[""] before:prose-table:dark:border-darkmode-border;
   @apply prose-thead:border-border prose-thead:bg-light prose-thead:dark:border-darkmode-border prose-thead:dark:bg-darkmode-light;
   @apply prose-th:relative prose-th:z-10 prose-th:px-4 prose-th:py-[18px] prose-th:text-text-dark prose-th:dark:text-darkmode-text;
   @apply prose-tr:border-border prose-tr:dark:border-darkmode-border;

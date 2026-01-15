@@ -102,7 +102,7 @@ Details: ${data.details || 'No details available'}`);
             value={productIds}
             onChange={(e) => setProductIds(e.target.value)}
             placeholder="pa5, sc1, pt2"
-            className="w-full px-4 py-2 border border-[#cfc9c0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--leaf)] h-20 resize-none"
+            className="w-full px-4 py-2 border border-[#cfc9c0] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--leaf)] h-20 resize-none"
           />
           <p className="text-xs text-black/50 mt-1">
             Exemple: pa5 (pour "Cement on cardboard")
@@ -129,7 +129,7 @@ Details: ${data.details || 'No details available'}`);
 
         {result && (
           <div className="mb-6">
-            <div className="p-4 bg-gray-100 rounded-lg">
+            <div className="p-4 bg-gray-100 rounded-sm">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-semibold text-black">Résultat :</h3>
                 <button
@@ -146,7 +146,7 @@ Details: ${data.details || 'No details available'}`);
           </div>
         )}
 
-        <div className="text-left bg-blue-50 border border-blue-200 p-4 rounded-lg">
+        <div className="text-left bg-blue-50 border border-blue-200 p-4 rounded-sm">
           <h3 className="font-semibold text-blue-800 mb-2">💡 Comment utiliser :</h3>
           <ol className="text-blue-700 text-sm space-y-1">
             <li>1. Entrez les IDs des produits qui étaient dans le panier</li>

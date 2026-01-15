@@ -8,8 +8,8 @@
 .rounded {
   @apply rounded-[6px];
 }
-.rounded-lg {
-  @apply rounded-[12px];
+.rounded-sm {
+  @apply rounded-[1px];
 }
 .rounded-xl {
   @apply rounded-[16px];

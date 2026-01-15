@@ -26,7 +26,7 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
   }, [product.id]);
 
   return (
-    <div className={`group relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}>
+    <div className={`group relative bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}>
       <Link 
         href={`/product/${product.slug}`}
         className="block"

@@ -145,7 +145,7 @@ export default function ProductPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-red-600">{t('errors.productNotFound')}</p>
-          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-2 rounded-lg hover:bg-[var(--gold-dark)]">
+          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-2 rounded-sm hover:bg-[var(--gold-dark)]">
             {t('actions.backToHome')}
           </Link>
         </div>

@@ -46,7 +46,7 @@ export default function CartPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <h1 className="text-3xl font-bold mb-4">{t('cart.emptyTitle')}</h1>
           <p className="text-black/70 mb-8">{t('cart.emptySubtitle')}</p>
-          <Link href="/" className="inline-block bg-[var(--gold)] text-black px-6 py-3 rounded-lg font-semibold hover:bg-[var(--gold-dark)]">
+          <Link href="/" className="inline-block bg-[var(--gold)] text-black px-6 py-3 rounded-sm font-semibold hover:bg-[var(--gold-dark)]">
             {t('cart.emptyCta')}
           </Link>
         </div>
@@ -67,7 +67,7 @@ export default function CartPage() {
           {/* Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
-              <div key={item.id} className="flex bg-white rounded-lg shadow p-4">
+              <div key={item.id} className="flex bg-white rounded-sm shadow p-4">
                 <div className="relative w-24 h-24 mr-4">
                   <SafeImage src={item.image} alt={item.title} className="object-cover rounded" />
                 </div>
@@ -98,7 +98,7 @@ export default function CartPage() {
           </div>
 
           {/* Summary */}
-          <div className="bg-white rounded-lg shadow p-6 h-fit">
+          <div className="bg-white rounded-sm shadow p-6 h-fit">
             <h3 className="text-xl font-semibold mb-4">{t('cart.orderSummary')}</h3>
             <div className="flex justify-between mb-2">
               <span>{t('cart.items')}</span>
@@ -111,13 +111,13 @@ export default function CartPage() {
             <button
               onClick={handleCheckout}
               disabled={loading}
-              className="w-full bg-[var(--gold)] text-black py-3 rounded-lg font-semibold hover:bg-[var(--gold-dark)] disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full bg-[var(--gold)] text-black py-3 rounded-sm font-semibold hover:bg-[var(--gold-dark)] disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {loading ? t('cart.processing') : t('cart.checkout')}
             </button>
             <button
               onClick={clearCart}
-              className="w-full mt-3 border border-[#cfc9c0] text-black py-3 rounded-lg font-semibold hover:bg-white"
+              className="w-full mt-3 border border-[#cfc9c0] text-black py-3 rounded-sm font-semibold hover:bg-white"
             >
               {t('cart.clear')}
             </button>

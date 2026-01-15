@@ -53,7 +53,7 @@ export default function CategorySlideshow({ category, products }: CategorySlides
     <div className="mb-12 w-full max-w-full overflow-hidden">
       <h2 className="text-3xl font-bold text-black mb-6 px-4 sm:px-0">{t(`category.${category}`)}</h2>
       
-      <div className="relative bg-white border border-[#cfc9c0] overflow-hidden mx-auto w-full max-w-full rounded-lg">
+      <div className="relative bg-white border border-[#cfc9c0] overflow-hidden mx-auto w-full max-w-full rounded-sm">
         <div className="relative w-full aspect-square p-2">
           <Link 
             href={`/product/${currentProduct.slug}`}

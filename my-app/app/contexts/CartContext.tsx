@@ -1,22 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  images: string[];
-  category: string;
-  inStock: boolean;
-  artist: string;
-  medium: string;
-  year: number;
-}
+import { Product } from '@/types';
 
 interface CartItem extends Product {
   quantity: number;

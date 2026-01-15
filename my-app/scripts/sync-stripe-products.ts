@@ -45,8 +45,7 @@ async function syncStripeProducts() {
           await stripe.products.update(stripeProduct.id, {
             metadata: {
               productId: product.id,
-              category: product.category,
-              description: product.description,
+              category: product.category
             }
           });
 

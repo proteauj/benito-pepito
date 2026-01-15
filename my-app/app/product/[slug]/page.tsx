@@ -7,22 +7,7 @@ import Link from 'next/link';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useCart } from '../../contexts/CartContext';
 import { useProductTranslations } from '../../hooks/useProductTranslations';
-
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  images: string[];
-  category: string;
-  inStock: boolean;
-  artist: string;
-  medium: string;
-  year: number;
-}
+import { Product } from '@/types';
 
 export default function ProductPage() {
   const params = useParams();
@@ -69,7 +54,7 @@ export default function ProductPage() {
 
     const shareData = {
       title: product.title,
-      text: `${product.title} - ${product.description}`,
+      text: `${product.title} - ${product.material}`,
       url: window.location.href,
     };
 
@@ -184,7 +169,7 @@ export default function ProductPage() {
           <div>
             <div className="mb-4 relative">
               <ArtworkSquare
-                src={product?.images[selectedImageIndex] as string}
+                src={product?.image as string}
                 alt={product?.title || 'Artwork'}
               />
               {!product.inStock && (
@@ -208,11 +193,6 @@ export default function ProductPage() {
             <div className="mb-6">
               <div className="text-4xl font-bold text-black">
                 ${product.price.toFixed(2)}
-                {product.originalPrice && (
-                  <span className="text-lg text-black/50 line-through ml-3">
-                    ${product.originalPrice.toFixed(2)}
-                  </span>
-                )}
               </div>
             </div>
 

@@ -3,18 +3,13 @@ export interface Product {
   slug: string;
   title: string;
   titleFr?: string;
-  description: string;
-  descriptionFr?: string;
   size?: string;
+  dimensions?: string;
   price: number;
-  originalPrice?: number;
   image: string;
-  images: string[];
-  category: "Sculpture" | "Painting" | "Home & Garden";
+  category: 'Sculpture' | 'Painting' | 'Home & Garden';
+  material?: string;
+  materialFr?: string;
   inStock: boolean;
-  artist: string;
-  medium: string;
-  mediumFr?: string;
   year: number;
-  lastUpdated: string;
 }

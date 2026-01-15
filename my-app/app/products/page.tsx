@@ -47,8 +47,6 @@ export default function ProductsPage() {
     const arr = Array.isArray(data) ? data : [];
     return [...arr].sort((a, b) => {
       switch (sortBy) {
-        case 'lastUpdated':
-          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
         case 'price-asc':
           return a.price - b.price;
         case 'price-desc':

@@ -1,18 +1,4 @@
-export interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  titleFr?: string;
-  size?: string;
-  dimensions?: string;
-  price: number;
-  image: string;
-  category: 'Sculpture' | 'Painting' | 'Home & Garden';
-  material?: string;
-  materialFr?: string;
-  inStock: boolean;
-  year: number;
-}
+import { Product } from '@/types';
 
 //XS-50, S-75, M-125, L-175, XL-225, XXL-275
 

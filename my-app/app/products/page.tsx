@@ -79,6 +79,13 @@ export default function ProductsPage() {
     return filtered.slice(from, to);
   }, [filtered, start]);
 
+  const total = filtered.length;
+  const windowSize = windowProducts.length;
+
+  const paddingTop = start * ITEM_HEIGHT;
+  const paddingBottom =
+    (total - (start + windowSize)) * ITEM_HEIGHT;
+
   /* ---------------- PRELOAD (36) ---------------- */
   useEffect(() => {
     windowProducts.forEach(p => {
@@ -164,9 +171,10 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID VIRTUALISÉE */}
-        <div
+       <div
           style={{
-            paddingTop: start * ITEM_HEIGHT,
+            paddingTop,
+            paddingBottom,
           }}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
         >

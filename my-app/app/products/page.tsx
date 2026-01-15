@@ -38,47 +38,44 @@ function ProductsContent() {
   const { getTranslatedText } = useProductTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
+
   const [data, setData] = useState<Record<string, Product[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [category, setCategory] = useState<"All" | Product["category"]>("All");
   const [sortBy, setSortBy] = useState<"default" | "lastUpdated" | "price-asc" | "price-desc">("default");
-  const [userSelectedCategory, setUserSelectedCategory] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
   const PAGE_SIZE = 12;
+
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  // Chargement des données
+  // 🔹 Charger les données
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products');
-        if (!response.ok) throw new Error("Failed to fetch products");
-        const result = await response.json();
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const result = await res.json();
         setData(result);
       } catch (e: any) {
-        console.error("Error loading products:", e);
         setError(e.message || "Error loading products");
       } finally {
         setLoading(false);
-        setHasMounted(true);
       }
     };
-
     fetchData();
   }, []);
 
-  // Gestion des paramètres d'URL
+  // 🔹 Gestion catégorie via URL
   useEffect(() => {
-    const categoryFromUrl = searchParams.get('category');
-    if (categoryFromUrl && data[categoryFromUrl as keyof typeof data]) {
-      setCategory(categoryFromUrl as Product["category"]);
-      setUserSelectedCategory(true);
+    const catFromUrl = searchParams.get('category');
+    if (catFromUrl && data[catFromUrl as keyof typeof data]) {
+      setCategory(catFromUrl as Product["category"]);
     }
   }, [searchParams, data]);
 
+  // 🔹 Trier les produits
   const sortProducts = (products: Product[]) => {
     return [...products].sort((a, b) => {
       switch (sortBy) {
@@ -94,23 +91,52 @@ function ProductsContent() {
     });
   };
 
+  const handleCategoryChange = (newCategory: "All" | Product["category"]) => {
+    setCategory(newCategory);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (newCategory === "All") {
+      params.delete('category');
+    } else {
+      params.set('category', newCategory);
+    }
+
+    router.push(`/products?${params.toString()}`);
+  };
+
+  // 🔹 Produits filtrés
   const allFilteredProducts = useMemo(() => {
     return Object.entries(data)
       .filter(([cat]) => category === "All" || cat === category)
       .flatMap(([_, products]) =>
-        sortProducts(products).filter(product =>
-          product.title.toLowerCase().includes(q.toLowerCase())
+        sortProducts(products).filter(p =>
+          p.title.toLowerCase().includes(q.toLowerCase())
         )
       );
   }, [data, category, q, sortBy]);
 
-  const MAX_RENDERED = PAGE_SIZE * 3; // 36 images max dans le DOM
-
+  // 🔹 Produits visibles (infinite scroll)
   const visibleProducts = useMemo(() => {
-    const start = Math.max(0, visibleCount - MAX_RENDERED);
-    return allFilteredProducts.slice(start, visibleCount);
+    return allFilteredProducts.slice(0, visibleCount);
   }, [allFilteredProducts, visibleCount]);
 
+  // 🔹 Pré-charger la prochaine batch
+  useEffect(() => {
+    const nextBatch = allFilteredProducts.slice(visibleCount, visibleCount + PAGE_SIZE);
+    nextBatch.forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
+  }, [visibleCount, allFilteredProducts]);
+
+  // 🔹 Infinite scroll avec IntersectionObserver
+  const sentinelRef = useInfiniteScroll(() => {
+    if (visibleCount < allFilteredProducts.length) {
+      setVisibleCount(v => Math.min(v + PAGE_SIZE, allFilteredProducts.length));
+    }
+  });
+
+  // 🔹 Regrouper par catégorie pour afficher les titres
   const productsByCategory = useMemo(() => {
     return visibleProducts.reduce<Record<string, Product[]>>((acc, product) => {
       if (!acc[product.category]) acc[product.category] = [];
@@ -119,48 +145,10 @@ function ProductsContent() {
     }, {});
   }, [visibleProducts]);
 
-  useEffect(() => {
-    const next = allFilteredProducts.slice(
-      visibleCount,
-      visibleCount + PAGE_SIZE
-    );
+  // 🔹 Catégories uniques
+  const categories = useMemo(() => ["All", ...Object.keys(data)], [data]);
 
-    next.forEach(p => {
-      const img = new Image();
-      img.src = p.image;
-    });
-  }, [visibleCount, allFilteredProducts]);
-
-  // Fonction pour gérer le changement de catégorie
-  const handleCategoryChange = (newCategory: "All" | Product["category"]) => {
-    setCategory(newCategory);
-    setUserSelectedCategory(newCategory !== "All");
-
-    const params = new URLSearchParams(searchParams.toString());
-    if (newCategory === "All") {
-      params.delete('category');
-    } else {
-      params.set('category', newCategory);
-    }
-    router.push(`/products?${params.toString()}`);
-  };
-
-  const loadMore = () => {
-    setVisibleCount(v =>
-      Math.min(v + PAGE_SIZE, allFilteredProducts.length)
-    );
-  };
-
-  const sentinelRef = useInfiniteScroll(loadMore);
-
-  // Obtenir les catégories uniques
-  const categories = useMemo(() => {
-    return ["All", ...Object.keys(data)];
-  }, [data]);
-
-  if (loading) {
-    return <ProductsLoading />;
-  }
+  if (loading) return <ProductsLoading />;
 
   if (error) {
     return (
@@ -229,23 +217,23 @@ function ProductsContent() {
 
         {/* Contenu des produits */}
         <div className="space-y-12">
-          <div>
-            {Object.entries(productsByCategory).map(([cat, products]) => (
-              <div>
-                <div key={cat} className="space-y-6">
-                  <h2 className="text-2xl font-bold">{cat}</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {visibleProducts.map(product => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-                </div>
+          {Object.entries(productsByCategory).map(([cat, products]) => (
+            <div key={cat} className="space-y-6">
+              {products.length > 0 && <h2 className="text-2xl font-bold">{cat}</h2>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {products.map((product, i) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    priority={i < PAGE_SIZE} // priorité pour les premières images du lot
+                  />
+                ))}
               </div>
-            ))}
-            {visibleCount < allFilteredProducts.length && (
-              <div ref={sentinelRef} className="h-20" />
-            )}
-          </div>
+            </div>
+          ))}
+          {visibleCount < allFilteredProducts.length && (
+            <div ref={sentinelRef} className="h-20" />
+          )}
         </div>
       </div>
     </div>

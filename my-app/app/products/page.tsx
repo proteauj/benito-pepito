@@ -169,20 +169,30 @@ function ProductsContent() {
         {/* Contenu des produits */}
         <div className="space-y-12">
           {Object.entries(data)
-            .filter(([cat]) => category === "All" || cat === category)
-            .map(([category, products]) => (
-              <div key={category} id={`category-${category}`} className="space-y-6">
-                <h2 className="text-2xl font-bold">{category}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {sortProducts(products).map((product) => (
-                    <ProductCard 
-                      key={product.id} 
-                      product={product} 
-                    />
-                  ))}
+            .filter(([cat, product]) => category === "All" || cat === category || product.title.toLowerCase().includes(q.toLowerCase()))
+            .map(([category, products]) => {
+              // filtrer les produits de cette catégorie par texte
+              const filteredProducts = sortProducts(products).filter(product =>
+                product.title.toLowerCase().includes(q.toLowerCase())
+              );
+              // si aucun produit ne correspond, ne pas afficher la catégorie
+              if (filteredProducts.length === 0) return null;
+              
+              return (
+                <div key={category} id={`category-${category}`} className="space-y-6">
+                  <h2 className="text-2xl font-bold">{category}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {sortProducts(products).map((product) => (
+                      <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            }
+          )}
         </div>
       </div>
     </div>

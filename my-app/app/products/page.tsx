@@ -134,28 +134,32 @@ export default function ProductsPage() {
         <div ref={parentRef} className="h-[80vh] overflow-auto">
           <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
             {virtualizer.getVirtualItems().map(virtualRow => {
-              const start = virtualRow.index * columns;
-              const end = start + columns;
-              const rowProducts = filteredProducts.slice(start, end);
+            const start = virtualRow.index * columns;
+            const end = start + columns;
+            const rowProducts = filteredProducts.slice(start, end);
 
-              return (
-                <div
-                  key={virtualRow.index}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    transform: `translateY(${virtualRow.start}px)`,
-                  }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6"
-                >
-                  {rowProducts.map((product, i) => (
-                    <ProductCard key={product.id} product={product} priority={i < 12} />
-                  ))}
-                </div>
-              );
-            })}
+            return (
+              <div
+                key={virtualRow.index}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualRow.start}px)`,
+                }}
+                className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-2 mb-6`}
+              >
+                {rowProducts.map((product, i) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    priority={start + i < 12} // seulement les 12 premières images du dataset
+                  />
+                ))}
+              </div>
+            );
+          })}
           </div>
         </div>
       </div>

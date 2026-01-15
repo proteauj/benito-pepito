@@ -42,11 +42,10 @@ function ProductsContent() {
   const [data, setData] = useState<Record<string, Product[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [q, setQ] = useState("");
-  const [category, setCategory] = useState<"All" | Product["category"]>("All");
   const [sortBy, setSortBy] = useState<"default" | "lastUpdated" | "price-asc" | "price-desc">("default");
   const PAGE_SIZE = 12;
   const MAX_RENDERED = 36; // 3 pages
+  const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -94,14 +93,12 @@ function ProductsContent() {
 
   // 🔹 Produits filtrés
   const allFilteredProducts = useMemo(() => {
-    return Object.entries(data)
-      .filter(([cat]) => category === "All" || cat === category)
-      .flatMap(([_, products]) =>
-        sortProducts(products).filter(p =>
-          p.title.toLowerCase().includes(q.toLowerCase())
-        )
+    return Object.values(data)
+      .flatMap(products => sortProducts(products))
+      .filter(product => 
+        sizeFilter === 'All' || product.size === sizeFilter
       );
-  }, [data, category, q, sortBy]);
+  }, [data, sizeFilter, sortBy]);
 
   useEffect(() => {
     const nextBatch = allFilteredProducts.slice(visibleCount, visibleCount + PAGE_SIZE);
@@ -182,28 +179,18 @@ function ProductsContent() {
 
         {/* Barre de recherche et filtres */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {/* Barre de recherche */}
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t('search.placeholder')}
-            className="p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
-          />
-
-          {/* Filtre par catégorie */}
           <div className="relative">
             <select
-              value={category}
-              onChange={(e) => handleCategoryChange(e.target.value as any)}
-              className="w-full p-3 bg-white text-black border border-[color-mix(in_oklab,var(--leaf)_35%,transparent)] rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
+              value={sizeFilter}
+              onChange={(e) => setSizeFilter(e.target.value as any)}
+              className="w-full p-3 bg-white text-black border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-[var(--leaf)]/40"
             >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{t(`category.${cat}`)}</option>
-              ))}
+              <option value="All">{t('products.all')}</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
             </select>
-            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--leaf)]" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.112l3.71-2.88a.75.75 0 11.92 1.18l-4.2 3.26a.75.75 0 01-.92 0l-4.2-3.26a.75.75 0 01-.12-1.11z" clipRule="evenodd" />
-            </svg>
           </div>
 
           {/* Filtre de tri */}
@@ -234,7 +221,7 @@ function ProductsContent() {
                   <ProductCard
                     key={product.id}
                     product={product}
-                    priority={i < PAGE_SIZE} // priorité pour les premières images du lot
+                    priority={i < PAGE_SIZE} // seules les 12 premières images de la batch sont prioritaires
                   />
                 ))}
               </div>

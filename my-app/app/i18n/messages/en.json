@@ -93,5 +93,6 @@
   "success.message": "Thank you! Your order has been placed successfully.",
   "success.paymentVerified": "Payment verified successfully",
   "success.verificationIssue": "Payment verification issue",
-  "success.stockNotUpdated": "Stock could not be updated automatically"
+  "success.stockNotUpdated": "Stock could not be updated automatically",
+  "products.all": "All"
 }

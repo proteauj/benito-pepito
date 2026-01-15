@@ -7,8 +7,10 @@ import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const VISIBLE = 12;
-const BUFFER = 12; // 12 avant + 12 après = 36 max en mémoire
+/* ================= CONFIG ================= */
+const VISIBLE = 12; // nombre de produits visibles à l'écran
+const BUFFER = 12;  // 12 avant + 12 après → 36 max
+/* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -20,8 +22,9 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
-  const [start, setStart] = useState(0);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [start, setStart] = useState(0); // index du premier produit visible
+
+  const lastItemRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -29,8 +32,11 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
+
         const result = (await res.json()) as Record<string, Product[]> | Product[];
-        setData(Array.isArray(result) ? result : Object.values(result).flat());
+        const products = Array.isArray(result) ? result : Object.values(result).flat();
+
+        setData(products);
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -40,7 +46,7 @@ export default function ProductsPage() {
   }, []);
 
   /* ---------------- SORT ---------------- */
-  const sorted = useMemo(() => {
+  const sortedProducts = useMemo(() => {
     return [...data].sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
       if (sortBy === 'price-desc') return b.price - a.price;
@@ -49,22 +55,18 @@ export default function ProductsPage() {
   }, [data, sortBy]);
 
   /* ---------------- FILTER ---------------- */
-  const filtered = useMemo(() => {
-    return sorted.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
-  }, [sorted, sizeFilter]);
+  const filteredProducts = useMemo(() => {
+    return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
+  }, [sortedProducts, sizeFilter]);
 
-  /* ---------------- WINDOW ---------------- */
+  /* ---------------- WINDOW PRODUCTS ---------------- */
   const windowProducts = useMemo(() => {
     const from = Math.max(0, start - BUFFER);
-    const to = Math.min(filtered.length, start + VISIBLE + BUFFER);
-    return filtered.slice(from, to);
-  }, [filtered, start]);
+    const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
+    return filteredProducts.slice(from, to);
+  }, [filteredProducts, start]);
 
-  const visibleProducts = useMemo(() => {
-    return filtered.slice(start, start + VISIBLE);
-  }, [filtered, start]);
-
-  /* ---------------- PRELOAD ---------------- */
+  /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
     windowProducts.forEach(p => {
       const img = new Image();
@@ -73,23 +75,23 @@ export default function ProductsPage() {
   }, [windowProducts]);
 
   /* ---------------- OBSERVER ---------------- */
-useEffect(() => {
-  if (!bottomRef.current) return;
+  useEffect(() => {
+    if (!lastItemRef.current) return;
 
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      if (entry.isIntersecting) {
-        setStart(s =>
-          Math.min(s + VISIBLE, Math.max(0, filtered.length - VISIBLE))
-        );
-      }
-    },
-    { rootMargin: '200px 0px' } // déclenche un peu avant le bas
-  );
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // passer aux 12 suivants si possible
+          setStart(prev => Math.min(prev + VISIBLE, Math.max(0, filteredProducts.length - VISIBLE)));
+        }
+      },
+      { rootMargin: '200px' }
+    );
 
-  observer.observe(bottomRef.current);
-  return () => observer.disconnect();
-}, [filtered.length]);
+    observer.observe(lastItemRef.current);
+
+    return () => observer.disconnect();
+  }, [filteredProducts.length, windowProducts]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -145,13 +147,20 @@ useEffect(() => {
 
         {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {visibleProducts.map(p => (
-            <ProductCard key={p.id} product={p} priority />
-          ))}
-
-          {/* SENTINEL juste après les 12 visibles */}
-          <div ref={bottomRef} className="h-1" />
+          {windowProducts.map((product, idx) => {
+            // dernier élément visible → ref pour observer
+            const isLastVisible = idx === Math.min(windowProducts.length, VISIBLE + BUFFER) - 1;
+            return (
+              <div
+                key={product.id}
+                ref={isLastVisible ? lastItemRef : null}
+              >
+                <ProductCard product={product} priority />
+              </div>
+            );
+          })}
         </div>
+
       </div>
     </div>
   );

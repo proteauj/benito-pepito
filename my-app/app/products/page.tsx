@@ -26,15 +26,20 @@ export default function ProductsPage() {
         setLoading(true);
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-        const result: Product[] = await res.json();
-        setData(result);
-        console.log('Data fetched:', data);
+        const result: Record<string, Product[]> = await res.json();
+
+        // Transformer l'objet en tableau plat de produits
+        const productsArray: Product[] = Object.values(result).flat();
+
+        setData(productsArray);
+        console.log('Fetched products:', productsArray);
       } catch (e: any) {
         setError(e.message || 'Error loading products');
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 

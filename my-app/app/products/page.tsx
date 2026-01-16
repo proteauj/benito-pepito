@@ -1,62 +1,57 @@
-'use client';
-
-import { useMemo } from 'react';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { Grid } from 'react-virtualized';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Virtual, Grid } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/grid';
-import 'swiper/css/virtual';
-import { Product } from '../../lib/db/types';
 
-interface ProductsPageProps {
+interface Product {
+  id: string;
+  title: string;
+  imageThumbnail: string;
+  price: number;
+}
+
+interface ProductsGridProps {
   products: Product[];
 }
 
-export default function ProductsPage({ products }: ProductsPageProps) {
+export default function ProductsGrid({ products }: ProductsGridProps) {
   const router = useRouter();
 
-  const swiperParams = useMemo(() => ({
-    direction: 'vertical' as const,
-    slidesPerView: 4,
-    spaceBetween: 20,
-    grid: { rows: 1 },
-    virtual: true,
-    modules: [Grid, Virtual],
-    style: { height: '80vh' },
-  }), []);
+  const columnCount = 4;
+  const rowCount = Math.ceil(products.length / columnCount);
 
   return (
-    <div className="stoneBg text-[var(--foreground)] px-4 py-10 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold mb-6">Toutes les œuvres</h1>
+    <AutoSizer>
+      {({ width, height }) => (
+        <Grid
+          columnCount={columnCount}
+          rowCount={rowCount}
+          columnWidth={width / columnCount}
+          rowHeight={420}
+          width={width}
+          height={height}
+          cellRenderer={({ columnIndex, rowIndex, style }) => {
+            const product = products[rowIndex * columnCount + columnIndex];
+            if (!product) return null;
 
-      <Swiper {...swiperParams}>
-        {products.map((product, index) => (
-          <SwiperSlide key={product.id} virtualIndex={index}>
-            <div
-              className="cursor-pointer"
-              onClick={() => router.push(`/products/${product.id}`)}
-            >
-              <div className="relative w-full h-[420px]">
-                <Image
+            return (
+              <div
+                key={product.id}
+                style={style}
+                className="p-2 cursor-pointer"
+                onClick={() => router.push(`/products/${product.id}`)}
+              >
+                <img
                   src={product.imageThumbnail}
                   alt={product.title}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  sizes="(max-width: 768px) 100vw, 25vw"
-                  priority={index < 4} // précharge les premières images
+                  className="object-contain w-full h-[300px]"
                 />
+                <h2 className="font-semibold text-lg mt-2">{product.title}</h2>
+                <p className="font-bold">${product.price}</p>
               </div>
-              <div className="p-4">
-                <h2 className="font-semibold text-lg">{product.title}</h2>
-                <p className="text-gray-600">{product.size}</p>
-                <p className="mt-2 font-bold">${product.price}</p>
-              </div>
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
+            );
+          }}
+        />
+      )}
+    </AutoSizer>
   );
 }

@@ -2,20 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '../../lib/db/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const BUFFER_ROWS = 2;       // lignes tampon avant/après
-const VISIBLE_ROWS = 3;      // nombre de lignes visibles
-const ROW_HEIGHT = 420 + 100; // hauteur max d'une ligne (image + description)
-const COLS = 4;              // nombre de colonnes max
+const VISIBLE = 12;
+const BUFFER = 12;
+const ITEM_HEIGHT = 420; // hauteur d'une carte product
 
 export default function ProductsPage() {
   const { t } = useI18n();
-  const router = useRouter();
 
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,10 +21,9 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-  const [startRow, setStartRow] = useState(0);
+  const [start, setStart] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const lastItemRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -63,24 +59,12 @@ export default function ProductsPage() {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  /* ---------------- ROW CALCULATIONS ---------------- */
-  const totalRows = Math.ceil(filteredProducts.length / COLS);
-
+  /* ---------------- WINDOW PRODUCTS ---------------- */
   const windowProducts = useMemo(() => {
-    const fromRow = Math.max(0, startRow - BUFFER_ROWS);
-    const toRow = Math.min(totalRows, startRow + VISIBLE_ROWS + BUFFER_ROWS);
-
-    const startIdx = fromRow * COLS;
-    const endIdx = Math.min(filteredProducts.length, toRow * COLS);
-
-    return filteredProducts.slice(startIdx, endIdx);
-  }, [filteredProducts, startRow, totalRows]);
-
-  const topSpacerHeight = Math.max(0, (Math.max(0, startRow - BUFFER_ROWS) * ROW_HEIGHT));
-  const bottomSpacerHeight = Math.max(
-    0,
-    (totalRows - Math.min(totalRows, startRow + VISIBLE_ROWS + BUFFER_ROWS)) * ROW_HEIGHT
-  );
+    const from = Math.max(0, start - BUFFER);
+    const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
+    return filteredProducts.slice(from, to);
+  }, [filteredProducts, start]);
 
   /* ---------------- PRELOAD THUMBNAILS ---------------- */
   useEffect(() => {
@@ -98,36 +82,21 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
-  /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
-  const resetStart = () => {
-    if (!containerRef.current) {
-      setStartRow(0);
-      return;
-    }
+  /* ---------------- SCROLL BIDIRECTIONNEL ---------------- */
+  const handleScroll = () => {
+    if (!containerRef.current) return;
     const scrollTop = containerRef.current.scrollTop;
-    const newStartRow = Math.floor(scrollTop / ROW_HEIGHT);
-    setStartRow(newStartRow);
+    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
+    if (newStart !== start) setStart(newStart);
   };
 
-  /* ---------------- INFINITE SCROLL ---------------- */
-  useEffect(() => {
-    if (!lastItemRef.current) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setStartRow(prev => {
-            const next = prev + VISIBLE_ROWS;
-            return Math.min(next, Math.max(0, totalRows - VISIBLE_ROWS));
-          });
-        }
-      },
-      { rootMargin: '200px', threshold: 0.1, root: containerRef.current }
-    );
-
-    observer.observe(lastItemRef.current);
-    return () => observer.disconnect();
-  }, [windowProducts, totalRows]);
+  /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
+  const resetStart = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+    setStart(0);
+  };
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -149,6 +118,9 @@ export default function ProductsPage() {
   }
 
   /* ---------------- RENDER ---------------- */
+  const topSpacerHeight = start * ITEM_HEIGHT;
+  const bottomSpacerHeight = Math.max(0, (filteredProducts.length - (start + windowProducts.length)) * ITEM_HEIGHT);
+
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -191,10 +163,13 @@ export default function ProductsPage() {
         <div
           ref={containerRef}
           style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
+          onScroll={handleScroll}
         >
-          {/* Overlay loading */}
+          {/* Overlay loading non bloquant */}
           {filterLoading && (
-            <div className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none">
+            <div
+              className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none"
+            >
               <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
             </div>
           )}
@@ -204,19 +179,11 @@ export default function ProductsPage() {
 
           {/* Produits visibles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {windowProducts.map((product, idx) => {
-              const isLastVisible = idx === windowProducts.length - 1;
-
-              return (
-                <div
-                  key={product.id}
-                  ref={isLastVisible ? lastItemRef : null}
-                  onClick={() => router.push(`/product/${product.id}`)}
-                >
-                  <ProductCard product={product} priority={startRow === 0} />
-                </div>
-              );
-            })}
+            {windowProducts.map((product) => (
+              <div key={product.id}>
+                <ProductCard product={product} priority={start === 0} />
+              </div>
+            ))}
           </div>
 
           {/* Spacer après */}

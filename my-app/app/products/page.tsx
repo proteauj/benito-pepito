@@ -2,15 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '../../lib/db/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const VISIBLE = 12;
-const BUFFER = 12;
-const ITEM_HEIGHT = 440; // inclut image + info
+const VISIBLE = 12; // nombre d'éléments visibles
+const BUFFER = 12;  // éléments tampon avant/après
+const ITEM_HEIGHT = 420; // hauteur approximative d'une ProductCard
 
 export default function ProductsPage() {
+  const { t } = useI18n();
+
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
@@ -20,10 +23,10 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [start, setStart] = useState(0);
 
-  const containerRef = useRef<HTMLDivElement>(null);
   const lastItemRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // ---------------- FETCH PRODUCTS ----------------
+  /* ---------------- FETCH ---------------- */
   useEffect(() => {
     (async () => {
       try {
@@ -43,7 +46,7 @@ export default function ProductsPage() {
     })();
   }, []);
 
-  // ---------------- SORT ----------------
+  /* ---------------- SORT ---------------- */
   const sortedProducts = useMemo(() => {
     return [...data].sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
@@ -52,64 +55,64 @@ export default function ProductsPage() {
     });
   }, [data, sortBy]);
 
-  // ---------------- FILTER ----------------
+  /* ---------------- FILTER ---------------- */
   const filteredProducts = useMemo(() => {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  // ---------------- WINDOW PRODUCTS ----------------
+  /* ---------------- WINDOW PRODUCTS ---------------- */
   const windowProducts = useMemo(() => {
     const from = Math.max(0, start - BUFFER);
     const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  // ---------------- PRELOAD THUMBNAILS PAR LIGNE ----------------
+  /* ---------------- PRELOAD THUMBNAILS ---------------- */
   useEffect(() => {
     if (!windowProducts.length) return;
     setFilterLoading(true);
 
-    const promises = windowProducts.map(p => {
-      return new Promise<void>(resolve => {
-        const img = new Image();
-        img.src = p.imageThumbnail;
-        img.onload = img.onerror = () => resolve();
-      });
+    let loadedCount = 0;
+    windowProducts.forEach(p => {
+      const img = new Image();
+      img.src = p.imageThumbnail;
+      img.onload = img.onerror = () => {
+        loadedCount++;
+        if (loadedCount === windowProducts.length) setFilterLoading(false);
+      };
     });
-
-    Promise.all(promises).then(() => setFilterLoading(false));
   }, [windowProducts]);
 
-  // ---------------- RESET START ----------------
+  /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
   const resetStart = () => {
-    if (!containerRef.current) return setStart(0);
+    if (!containerRef.current) {
+      setStart(0);
+      return;
+    }
     const scrollTop = containerRef.current.scrollTop;
-    setStart(Math.floor(scrollTop / ITEM_HEIGHT));
+    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
+    setStart(newStart);
   };
 
-  // ---------------- INFINITE SCROLL BIDIRECTIONNEL ----------------
+  /* ---------------- INFINITE SCROLL BIDIRECTIONNEL ---------------- */
   useEffect(() => {
     if (!containerRef.current) return;
 
     const observer = new IntersectionObserver(
       entries => {
-        if (!containerRef.current) return;
-        const scrollTop = containerRef.current.scrollTop;
-
-        // détecte scroll bas
-        if (entries[0].isIntersecting && scrollTop + containerRef.current.clientHeight >= containerRef.current.scrollHeight - 100) {
-          setStart(prev => Math.min(prev + VISIBLE, Math.max(0, filteredProducts.length - VISIBLE)));
+        if (entries[0].isIntersecting) {
+          // Quand le dernier élément visible est atteint, on charge la suite
+          setStart(prev => Math.min(prev + VISIBLE, filteredProducts.length - 1));
         }
       },
       { root: containerRef.current, rootMargin: '200px' }
     );
 
     if (lastItemRef.current) observer.observe(lastItemRef.current);
-
     return () => observer.disconnect();
   }, [windowProducts, filteredProducts.length]);
 
-  // ---------------- STATES ----------------
+  /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
 
   if (error) {
@@ -117,60 +120,94 @@ export default function ProductsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-red-600">{error}</p>
-          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold">
-            Back to Home
+          <Link
+            href="/"
+            className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold"
+          >
+            {t('actions.backToHome')}
           </Link>
         </div>
       </div>
     );
   }
 
-  const topSpacerHeight = start * ITEM_HEIGHT;
-  const bottomSpacerHeight = Math.max(0, (filteredProducts.length - (start + windowProducts.length)) * ITEM_HEIGHT);
+  /* ---------------- SPACERS ---------------- */
+  const topSpacerHeight = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
+  const bottomSpacerHeight = Math.max(
+    0,
+    (filteredProducts.length - (start - BUFFER + windowProducts.length)) * ITEM_HEIGHT
+  );
 
+  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-4xl font-bold mb-6">All Artworks</h1>
+        {/* HEADER */}
+        <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
         {/* FILTERS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <select value={sizeFilter} onChange={e => { setSizeFilter(e.target.value as any); resetStart(); }} className="p-3 border bg-white text-black">
-            <option value="All">All Sizes</option>
+          <select
+            value={sizeFilter}
+            onChange={e => {
+              setSizeFilter(e.target.value as any);
+              resetStart();
+            }}
+            className="p-3 border bg-white text-black"
+          >
+            <option value="All">{t('products.allSizes')}</option>
             <option value="S">S</option>
             <option value="M">M</option>
             <option value="L">L</option>
             <option value="XL">XL</option>
           </select>
 
-          <select value={sortBy} onChange={e => { setSortBy(e.target.value as any); resetStart(); }} className="p-3 border bg-white text-black">
-            <option value="default">Default</option>
-            <option value="price-asc">Price Asc</option>
-            <option value="price-desc">Price Desc</option>
+          <select
+            value={sortBy}
+            onChange={e => {
+              setSortBy(e.target.value as any);
+              resetStart();
+            }}
+            className="p-3 border bg-white text-black"
+          >
+            <option value="default">{t('sort.default')}</option>
+            <option value="price-asc">{t('sort.priceAsc')}</option>
+            <option value="price-desc">{t('sort.priceDesc')}</option>
           </select>
         </div>
 
         {/* GRID VIRTUELLE */}
-        <div ref={containerRef} style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}>
+        <div
+          ref={containerRef}
+          style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
+        >
+          {/* Overlay loading non bloquant */}
           {filterLoading && (
-            <div className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none">
-              <span className="text-xl font-semibold animate-pulse">Loading...</span>
+            <div
+              className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none"
+            >
+              <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
             </div>
           )}
 
+          {/* Spacer avant */}
           <div style={{ height: topSpacerHeight }} />
 
+          {/* Produits visibles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {windowProducts.map((product, idx) => {
               const isLastVisible = idx === windowProducts.length - 1;
               return (
                 <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
-                  <ProductCard product={product} priority={start === 0} />
+                  <Link href={`/products/${product.id}`}>
+                    <ProductCard product={product} priority={start === 0} />
+                  </Link>
                 </div>
               );
             })}
           </div>
 
+          {/* Spacer après */}
           <div style={{ height: bottomSpacerHeight }} />
         </div>
       </div>

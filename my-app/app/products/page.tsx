@@ -12,6 +12,7 @@ import 'swiper/css/grid';
 import 'swiper/css/lazy';
 import 'swiper/css/virtual';
 
+import ProductCard from './ProductCard';
 import type { SwiperOptions } from 'swiper/types';
 
 const swiperParams: SwiperOptions = {
@@ -61,26 +62,7 @@ export default function ProductsPage() {
 
       <Swiper {...swiperParams}>
         {products.map((product, index) => (
-          <SwiperSlide key={product.id} virtualIndex={index}>
-            <div
-              className="cursor-pointer"
-              onClick={() => router.push(`/products/${product.id}`)}
-            >
-              <div className="relative w-full h-[420px]">
-                <img
-                  data-src={product.imageThumbnail}
-                  alt={product.title}
-                  className="swiper-lazy object-contain w-full h-full"
-                />
-                <div className="swiper-lazy-preloader"></div>
-              </div>
-              <div className="p-4">
-                <h2 className="font-semibold text-lg">{product.title}</h2>
-                <p className="text-gray-600">{product.size}</p>
-                <p className="mt-2 font-bold">${product.price}</p>
-              </div>
-            </div>
-          </SwiperSlide>
+          <ProductCard key={product.id} product={product} />
         ))}
       </Swiper>
     </div>

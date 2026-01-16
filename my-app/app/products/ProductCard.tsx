@@ -9,7 +9,8 @@ import React from 'react';
 interface ProductCardProps {
   product: Product;
   className?: string;
-  priority?: boolean; // uniquement pour les premières images
+  priority?: boolean;
+  onClick?: () => void; // ✅ AJOUT
 }
 
 function ProductCard({ product, className = '', priority = false }: ProductCardProps) {

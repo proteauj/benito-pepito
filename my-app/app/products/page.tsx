@@ -21,10 +21,10 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-  const [start, setStart] = useState(0); // Index du premier produit visible
+  const [start, setStart] = useState(0);
   const isTicking = useRef(false);
 
-  /* ---------------- FETCH PRODUCTS ---------------- */
+  /* ---------------- FETCH ---------------- */
   useEffect(() => {
     (async () => {
       try {
@@ -33,7 +33,7 @@ export default function ProductsPage() {
         const result = await res.json();
 
         let products: Product[] = [];
-        if (Array.isArray(result)) products = result as Product[];
+        if (Array.isArray(result)) products = result;
         else if (result && typeof result === 'object') products = Object.values(result).flat() as Product[];
 
         setData(products);
@@ -64,21 +64,10 @@ export default function ProductsPage() {
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  /* ---------------- PRELOAD IMAGES ---------------- */
-  useEffect(() => {
-    windowProducts.forEach(p => {
-      if (p.imageThumbnail) {
-        const img = new (window as any).Image();
-        img.src = p.imageThumbnail;
-      }
-    });
-  }, [windowProducts]);
-
   /* ---------------- SCROLL HANDLER ---------------- */
   useEffect(() => {
     const onScroll = () => {
       if (isTicking.current) return;
-
       window.requestAnimationFrame(() => {
         const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
         if (scrollTop + clientHeight >= scrollHeight - 200 && start + VISIBLE < filteredProducts.length) {
@@ -86,32 +75,27 @@ export default function ProductsPage() {
         }
         isTicking.current = false;
       });
-
       isTicking.current = true;
     };
-
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, [start, filteredProducts.length]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-xl text-red-600">{error}</p>
-          <Link
-            href="/"
-            className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold"
-          >
-            {t('actions.backToHome')}
-          </Link>
-        </div>
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <p className="text-xl text-red-600">{error}</p>
+        <Link
+          href="/"
+          className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold"
+        >
+          {t('actions.backToHome')}
+        </Link>
       </div>
-    );
-  }
+    </div>
+  );
 
   /* ---------------- RENDER ---------------- */
   return (
@@ -160,11 +144,7 @@ export default function ProductsPage() {
                   alt={product.title}
                   width={300}
                   height={300}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    objectFit: 'contain',
-                  }}
+                  style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                   placeholder="blur"
                   blurDataURL={product.imageThumbnail || product.image}
                   loading="lazy"
@@ -173,12 +153,21 @@ export default function ProductsPage() {
 
               {/* TITRE + PRIX */}
               <div className="p-2 flex flex-col">
-                <h2 className="text-lg font-semibold line-clamp-2">{product.title}</h2>
-                <p className="text-sm mt-1">{product.price}</p>
+                <h2 className="text-lg font-semibold">{product.title}</h2>
+                <p className="text-sm mt-1">{product.price} €</p>
               </div>
             </div>
           ))}
         </div>
+
+        {/* SECTION DESCRIPTION */}
+        <div className="mt-6 p-4 bg-white rounded">
+          <h2 className="text-2xl font-bold mb-2">Description</h2>
+          <p>
+            Cette section s’ajuste automatiquement à la hauteur de son contenu et au nombre de produits affichés.
+          </p>
+        </div>
+
       </div>
     </div>
   );

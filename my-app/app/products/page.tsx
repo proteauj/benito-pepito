@@ -7,8 +7,9 @@ import { Product } from '../../lib/db/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const VISIBLE = 12;
-const BUFFER = 12;
+const VISIBLE = 12; // Produits visibles
+const BUFFER = 12;  // Buffer pour DOM virtuel
+const ITEM_HEIGHT = 420; // Approximation pour spacers
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -22,7 +23,6 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [start, setStart] = useState(0);
 
-  const lastItemRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
@@ -33,6 +33,7 @@ export default function ProductsPage() {
         if (!res.ok) throw new Error('Failed to fetch products');
 
         const result = (await res.json()) as Product[] | Record<string, Product[]>;
+
         if (Array.isArray(result)) setData(result);
         else if (result && Object.values(result).length > 0) setData(Object.values(result).flat());
         else setError('No products found');
@@ -72,7 +73,7 @@ export default function ProductsPage() {
 
     let loadedCount = 0;
     windowProducts.forEach(p => {
-      const img = new Image();
+      const img = document.createElement('img');
       img.src = p.imageThumbnail || p.image;
       img.onload = img.onerror = () => {
         loadedCount++;
@@ -81,28 +82,19 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
-  /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
-  const resetStart = () => {
-    setStart(0);
-    if (containerRef.current) containerRef.current.scrollTop = 0;
-  };
-
-  /* ---------------- INFINITE SCROLL ---------------- */
+  /* ---------------- SCROLL HANDLER ---------------- */
   useEffect(() => {
-    if (!lastItemRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setStart(prev => Math.min(prev + VISIBLE, Math.max(0, filteredProducts.length - VISIBLE)));
-        }
-      },
-      { root: containerRef.current, rootMargin: '200px' }
-    );
+    const handleScroll = () => {
+      const newStart = Math.floor(container.scrollTop / ITEM_HEIGHT);
+      setStart(newStart);
+    };
 
-    observer.observe(lastItemRef.current);
-    return () => observer.disconnect();
-  }, [windowProducts, filteredProducts.length]);
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -123,6 +115,14 @@ export default function ProductsPage() {
     );
   }
 
+  /* ---------------- SPACERS ---------------- */
+  const from = Math.max(0, start - BUFFER);
+  const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
+
+  const topSpacerHeight = from * ITEM_HEIGHT;
+  const bottomSpacerHeight = Math.max(0, (filteredProducts.length - to) * ITEM_HEIGHT);
+
+  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -133,10 +133,7 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <select
             value={sizeFilter}
-            onChange={e => {
-              setSizeFilter(e.target.value as any);
-              resetStart();
-            }}
+            onChange={e => setSizeFilter(e.target.value as any)}
             className="p-3 border bg-white text-black"
           >
             <option value="All">{t('products.allSizes')}</option>
@@ -148,10 +145,7 @@ export default function ProductsPage() {
 
           <select
             value={sortBy}
-            onChange={e => {
-              setSortBy(e.target.value as any);
-              resetStart();
-            }}
+            onChange={e => setSortBy(e.target.value as any)}
             className="p-3 border bg-white text-black"
           >
             <option value="default">{t('sort.default')}</option>
@@ -165,6 +159,7 @@ export default function ProductsPage() {
           ref={containerRef}
           style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
         >
+          {/* Overlay loading non bloquant */}
           {filterLoading && (
             <div
               className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none"
@@ -173,17 +168,15 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {/* Produits visibles */}
+          <div style={{ height: topSpacerHeight }} />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {windowProducts.map((product, idx) => {
-              const isLastVisible = idx === windowProducts.length - 1;
-              return (
-                <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
-                  <ProductCard product={product} />
-                </div>
-              );
-            })}
+            {windowProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
+
+          <div style={{ height: bottomSpacerHeight }} />
         </div>
       </div>
     </div>

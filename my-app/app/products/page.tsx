@@ -9,7 +9,7 @@ import ProductsLoading from '@/components/ProductsLoading';
 
 const VISIBLE = 12;
 const BUFFER = 12;
-const ITEM_HEIGHT = 420; // approximation OK pour le spacer
+const ITEM_HEIGHT = 420;
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -33,9 +33,11 @@ export default function ProductsPage() {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
 
-        const result = await res.json();
+        const result = (await res.json()) as Product[] | Record<string, Product[]>;
+
         if (Array.isArray(result)) setData(result);
-        else setData(Object.values(result).flat() as Product[]);
+        else if (result && Object.values(result).length > 0) setData(Object.values(result).flat());
+        else setError('No products found');
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -55,12 +57,10 @@ export default function ProductsPage() {
 
   /* ---------------- FILTER ---------------- */
   const filteredProducts = useMemo(() => {
-    return sortedProducts.filter(
-      p => sizeFilter === 'All' || p.size === sizeFilter
-    );
+    return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  /* ---------------- WINDOW ---------------- */
+  /* ---------------- WINDOW PRODUCTS ---------------- */
   const windowProducts = useMemo(() => {
     const from = Math.max(0, start - BUFFER);
     const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
@@ -72,25 +72,26 @@ export default function ProductsPage() {
     if (!windowProducts.length) return;
     setFilterLoading(true);
 
-    let loaded = 0;
+    let loadedCount = 0;
     windowProducts.forEach(p => {
-      const img = document.createElement('img');
-      img.src = p.imageThumbnail || p.image;
+      const img = new Image();
+      img.src = p.imageThumbnail; // uniquement les miniatures
       img.onload = img.onerror = () => {
-        loaded++;
-        if (loaded === windowProducts.length) {
-          setFilterLoading(false);
-        }
+        loadedCount++;
+        if (loadedCount === windowProducts.length) setFilterLoading(false);
       };
     });
   }, [windowProducts]);
 
-  /* ---------------- RESET ---------------- */
+  /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
   const resetStart = () => {
-    setStart(0);
-    if (containerRef.current) {
-      containerRef.current.scrollTop = 0;
+    if (!containerRef.current) {
+      setStart(0);
+      return;
     }
+    const scrollTop = containerRef.current.scrollTop;
+    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
+    setStart(newStart);
   };
 
   /* ---------------- INFINITE SCROLL ---------------- */
@@ -100,39 +101,47 @@ export default function ProductsPage() {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          setStart(prev =>
-            Math.min(
-              prev + VISIBLE,
-              Math.max(0, filteredProducts.length - VISIBLE)
-            )
-          );
+          setStart(prev => {
+            const nextStart = prev + VISIBLE;
+            return Math.min(nextStart, Math.max(0, filteredProducts.length - VISIBLE));
+          });
         }
       },
-      { root: containerRef.current, rootMargin: '200px' }
+      { rootMargin: '200px' }
     );
 
     observer.observe(lastItemRef.current);
     return () => observer.disconnect();
   }, [windowProducts, filteredProducts.length]);
 
+  /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600">{error}</p>
+        <div className="text-center">
+          <p className="text-xl text-red-600">{error}</p>
+          <Link
+            href="/"
+            className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold"
+          >
+            {t('actions.backToHome')}
+          </Link>
+        </div>
       </div>
     );
   }
 
+  /* ---------------- RENDER ---------------- */
   const topSpacerHeight = start * ITEM_HEIGHT;
-  const bottomSpacerHeight =
-    Math.max(0, (filteredProducts.length - (start + windowProducts.length)) * ITEM_HEIGHT);
+  const bottomSpacerHeight = Math.max(0, (filteredProducts.length - (start + windowProducts.length)) * ITEM_HEIGHT);
 
   return (
-    <div className="stoneBg">
-      <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="stoneBg text-[var(--foreground)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
+        {/* HEADER */}
         <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
         {/* FILTERS */}
@@ -166,32 +175,39 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* GRID */}
+        {/* GRID VIRTUELLE */}
         <div
           ref={containerRef}
-          style={{ maxHeight: '80vh', overflowY: 'auto' }}
+          style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
         >
-          {/* {filterLoading && (
-            <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-50">
-              <span className="animate-pulse">{t('loading')}</span>
+          {/* Overlay loading non bloquant */}
+          {filterLoading && (
+            <div
+              className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none"
+            >
+              <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
             </div>
-          )} */}
+          )}
 
+          {/* Spacer avant */}
           <div style={{ height: topSpacerHeight }} />
 
+          {/* Produits visibles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {windowProducts.map((product, idx) => (
-              <div
-                key={product.id}
-                ref={idx === windowProducts.length - 1 ? lastItemRef : null}
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
+            {windowProducts.map((product, idx) => {
+              const isLastVisible = idx === windowProducts.length - 1;
+              return (
+                <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
+                  <ProductCard product={product} priority={start === 0} />
+                </div>
+              );
+            })}
           </div>
 
+          {/* Spacer après */}
           <div style={{ height: bottomSpacerHeight }} />
         </div>
+
       </div>
     </div>
   );

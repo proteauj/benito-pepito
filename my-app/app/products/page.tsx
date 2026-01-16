@@ -21,7 +21,7 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-  const [start, setStart] = useState(0); // Index du premier produit visible
+  const [start, setStart] = useState(0);
 
   const isTicking = useRef(false);
 
@@ -79,6 +79,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const onScroll = () => {
       if (isTicking.current) return;
+
       window.requestAnimationFrame(() => {
         const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
 
@@ -94,6 +95,7 @@ export default function ProductsPage() {
 
         isTicking.current = false;
       });
+
       isTicking.current = true;
     };
 
@@ -121,8 +123,9 @@ export default function ProductsPage() {
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="min-h-screen stoneBg text-[var(--foreground)]">
+    <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
         {/* HEADER */}
         <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
@@ -134,10 +137,12 @@ export default function ProductsPage() {
             className="p-3 border bg-white text-black"
           >
             <option value="All">{t('products.allSizes')}</option>
+            <option value="XS">XS</option>
             <option value="S">S</option>
             <option value="M">M</option>
             <option value="L">L</option>
             <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
           </select>
 
           <select
@@ -152,23 +157,26 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 min-h-[100vh]">
           {windowProducts.map(product => (
-            <div key={product.id} className="card flex flex-col">
+            <div key={product.id} className="flex flex-col bg-white rounded shadow">
               <Image
-                src={product.imageThumbnail}
+                src={product.imageThumbnail || product.image}
                 alt={product.title}
                 width={300}
-                height={0} // hauteur auto
+                height={0}
                 style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
                 placeholder="blur"
-                blurDataURL={product.imageThumbnail}
+                blurDataURL={product.imageThumbnail || product.image}
               />
-              <h2 className="mt-2 font-semibold">{product.title}</h2>
-              <p>{product.price} $</p>
+              <div className="p-3">
+                <h2 className="font-semibold">{product.title}</h2>
+                <p>{product.price}</p>
+              </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );

@@ -37,13 +37,9 @@ export default function ProductsPage() {
 
         const result = (await res.json()) as Product[] | Record<string, Product[]>;
 
-        if (Array.isArray(result)) {
-          setData(result);
-        } else if (result && Object.values(result).length > 0) {
-          setData(Object.values(result).flat());
-        } else {
-          setError('No products found');
-        }
+        if (Array.isArray(result)) setData(result);
+        else if (result && Object.values(result).length > 0) setData(Object.values(result).flat());
+        else setError('No products found');
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -82,17 +78,9 @@ export default function ProductsPage() {
     windowProducts.forEach(p => {
       const img = new Image();
       img.src = p.image;
-      img.onload = () => {
+      img.onload = img.onerror = () => {
         loadedCount++;
-        if (loadedCount === windowProducts.length) {
-          setFilterLoading(false);
-        }
-      };
-      img.onerror = () => {
-        loadedCount++;
-        if (loadedCount === windowProducts.length) {
-          setFilterLoading(false);
-        }
+        if (loadedCount === windowProducts.length) setFilterLoading(false);
       };
     });
   }, [windowProducts]);
@@ -148,8 +136,6 @@ export default function ProductsPage() {
   }
 
   /* ---------------- RENDER ---------------- */
-  const totalHeight = filteredProducts.length * ITEM_HEIGHT;
-  const containerHeight = Math.max(totalHeight, window.innerHeight + 1);
   const paddingTop = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
 
   return (
@@ -193,17 +179,17 @@ export default function ProductsPage() {
         {/* GRID VIRTUELLE */}
         <div
           ref={containerRef}
-          style={{ position: 'relative', height: containerHeight, overflowY: 'auto' }}
+          style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
         >
+          {/* Overlay de loading */}
           {filterLoading && (
-            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-white/50 z-10">
-              <span className="text-xl font-semibold animate-pulse">
-                {t('loading')}
-              </span>
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
+              <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
             </div>
           )}
 
-          <div style={{ position: 'absolute', top: paddingTop, width: '100%' }}>
+          {/* Padding-top pour virtualisation */}
+          <div style={{ paddingTop }}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {windowProducts.map((product, idx) => {
                 const isLastVisible = idx === windowProducts.length - 1;

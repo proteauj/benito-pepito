@@ -1,8 +1,17 @@
-'use client'; // important pour App Router + composants clients
+'use client';
 
-import { AutoSizer } from 'react-virtualized-auto-sizer';
-import { Grid } from 'react-virtualized';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+
+const AutoSizer = dynamic(
+  () => import('react-virtualized-auto-sizer').then(mod => mod.AutoSizer),
+  { ssr: false }
+);
+
+const Grid = dynamic(
+  () => import('react-virtualized').then(mod => mod.Grid),
+  { ssr: false }
+);
 
 interface Product {
   id: string;

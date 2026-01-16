@@ -1,6 +1,7 @@
 import { Product } from '../../lib/db/types';
 
 export default function ProductCard({ product }: { product: Product }) {
+  console.log(product.image, product.imageThumbnail);
   return (
     <div className="bg-white rounded shadow overflow-hidden flex flex-col">
       {/* IMAGE */}

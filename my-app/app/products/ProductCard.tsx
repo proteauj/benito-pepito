@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import Link from 'next/link';
 import { Product } from '../../lib/db/types';
 
 interface Props {
@@ -10,43 +10,30 @@ interface Props {
 }
 
 export default function ProductCard({ product, priority }: Props) {
-  const [showFull, setShowFull] = useState(false);
-
   return (
-    <div
-      className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-      onClick={() => setShowFull(true)}
-    >
-      {/* Image */}
-      <div className="relative w-full h-[420px]">
-        <Image
-          src={product.imageThumbnail}
-          alt={product.title}
-          fill
-          style={{ objectFit: 'cover' }}
-          sizes="(max-width: 768px) 100vw, 25vw"
-          placeholder="blur"
-          blurDataURL={product.imageThumbnail}
-        />
-
-        {/* Full-size au clic */}
-        {showFull && (
+    <Link href={`/products/${product.id}`} className="block">
+      <div className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+        {/* Image */}
+        <div className="relative w-full">
           <Image
-            src={product.image}
+            src={product.imageThumbnail}
             alt={product.title}
-            fill
-            style={{ objectFit: 'cover' }}
-            priority
+            width={300}      // largeur adaptée
+            height={300}     // hauteur minimum
+            style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+            placeholder="blur"
+            blurDataURL={product.imageThumbnail}
+            priority={priority}
           />
-        )}
-      </div>
+        </div>
 
-      {/* Description adaptative */}
-      <div className="p-4">
-        <h2 className="font-semibold text-lg">{product.title}</h2>
-        <p className="text-gray-600">{product.size}</p>
-        <p className="mt-2 font-bold">${product.price}</p>
+        {/* Description */}
+        <div className="p-4">
+          <h2 className="font-semibold text-lg">{product.title}</h2>
+          <p className="text-gray-600">{product.size}</p>
+          <p className="mt-2 font-bold">${product.price}</p>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -9,8 +9,7 @@ import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
 const VISIBLE = 12;  // Nombre de produits visibles à l'écran
-const BUFFER = 12;   // Buffer avant + après (36 max dans le DOM)
-const ITEM_HEIGHT = 420;   // Hauteur approximative d’une carte
+const BUFFER = 12;   // Buffer avant + après
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -24,8 +23,7 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [start, setStart] = useState(0); // Index du premier produit visible
 
-  const lastItemRef = useRef<HTMLDivElement>(null); // Référence pour observer le dernier produit visible
-  const isTicking = useRef(false); // Pour éviter les appels multiples du `setStart`
+  const lastItemRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -33,14 +31,13 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-        
+
         const result = (await res.json()) as Product[] | Record<string, Product[]>;
-        
-        // Gestion des produits en fonction de la réponse API
+
         if (Array.isArray(result)) {
-          setData(result); // Si result est un tableau
+          setData(result);
         } else if (result && Object.values(result).length > 0) {
-          setData(Object.values(result).flat()); // Si result est un objet contenant des tableaux
+          setData(Object.values(result).flat());
         } else {
           setError('No products found');
         }
@@ -73,7 +70,7 @@ export default function ProductsPage() {
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  /* ---------------- PRELOAD ---------------- */
+  /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
     windowProducts.forEach(p => {
       const img = new Image();
@@ -81,28 +78,23 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
-  /* ---------------- SCROLL HANDLER ---------------- */
+  /* ---------------- INFINITE SCROLL ---------------- */
   useEffect(() => {
-    const onScroll = () => {
-      if (isTicking.current) return;
+    if (!lastItemRef.current) return;
 
-      window.requestAnimationFrame(() => {
-        const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
-
-        // Charger les éléments suivants si l'on est proche du bas de la page
-        if (scrollTop + clientHeight >= scrollHeight - 200 && start + VISIBLE < filteredProducts.length) {
-          setStart(prevStart => Math.min(prevStart + VISIBLE, filteredProducts.length));
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          setStart(prev => Math.min(prev + VISIBLE, filteredProducts.length));
         }
+      },
+      { rootMargin: '200px' }
+    );
 
-        isTicking.current = false;
-      });
+    observer.observe(lastItemRef.current);
 
-      isTicking.current = true;
-    };
-
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [start, filteredProducts.length]);
+    return () => observer.disconnect();
+  }, [windowProducts, filteredProducts.length]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -135,7 +127,10 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <select
             value={sizeFilter}
-            onChange={e => setSizeFilter(e.target.value as any)}
+            onChange={e => {
+              setSizeFilter(e.target.value as any);
+              setStart(0); // reset scroll
+            }}
             className="p-3 border bg-white text-black"
           >
             <option value="All">{t('products.allSizes')}</option>
@@ -147,7 +142,10 @@ export default function ProductsPage() {
 
           <select
             value={sortBy}
-            onChange={e => setSortBy(e.target.value as any)}
+            onChange={e => {
+              setSortBy(e.target.value as any);
+              setStart(0); // reset scroll
+            }}
             className="p-3 border bg-white text-black"
           >
             <option value="default">{t('sort.default')}</option>

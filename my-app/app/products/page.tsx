@@ -8,8 +8,8 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE_COUNT = 12;  // Nombre de produits visibles à l'écran
-const BUFFER = 12;         // Buffer avant + après (36 max)
+const VISIBLE = 12;  // Nombre de produits visibles à l'écran
+const BUFFER = 12;   // Buffer avant + après (36 max dans le DOM)
 const ITEM_HEIGHT = 420;   // Hauteur approximative d’une carte
 /* ========================================== */
 
@@ -24,7 +24,7 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [start, setStart] = useState(0); // Index du premier produit visible
 
-  const lastItemRef = useRef<HTMLDivElement>(null); // Pour observer le dernier élément
+  const lastItemRef = useRef<HTMLDivElement>(null); // Référence pour observer le dernier produit visible
   const isTicking = useRef(false); // Pour éviter les appels multiples du `setStart`
 
   /* ---------------- FETCH ---------------- */
@@ -69,7 +69,7 @@ export default function ProductsPage() {
   /* ---------------- WINDOW PRODUCTS ---------------- */
   const windowProducts = useMemo(() => {
     const from = Math.max(0, start - BUFFER);
-    const to = Math.min(filteredProducts.length, start + VISIBLE_COUNT + BUFFER);
+    const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
@@ -90,8 +90,8 @@ export default function ProductsPage() {
         const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
 
         // Charger les éléments suivants si l'on est proche du bas de la page
-        if (scrollTop + clientHeight >= scrollHeight - 200 && start + VISIBLE_COUNT < filteredProducts.length) {
-          setStart(prevStart => Math.min(prevStart + VISIBLE_COUNT, filteredProducts.length));
+        if (scrollTop + clientHeight >= scrollHeight - 200 && start + VISIBLE < filteredProducts.length) {
+          setStart(prevStart => Math.min(prevStart + VISIBLE, filteredProducts.length));
         }
 
         isTicking.current = false;

@@ -171,11 +171,11 @@ export default function ProductsPage() {
           ref={containerRef}
           style={{ maxHeight: '80vh', overflowY: 'auto' }}
         >
-          {filterLoading && (
+          {/* {filterLoading && (
             <div className="fixed inset-0 bg-white/50 flex items-center justify-center z-50">
               <span className="animate-pulse">{t('loading')}</span>
             </div>
-          )}
+          )} */}
 
           <div style={{ height: topSpacerHeight }} />
 

@@ -1,215 +1,81 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '../../lib/db/types';
-import ProductCard from './ProductCard';
-import ProductsLoading from '@/components/ProductsLoading';
+import SwiperCore from 'swiper';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/grid';
+import 'swiper/css/virtual';
+import 'swiper/css/lazy';
+import { Grid, Virtual, Lazy } from 'swiper/modules';
 
-const VISIBLE = 12; // nombre d'éléments visibles
-const BUFFER = 12;  // éléments tampon avant/après
-const ITEM_HEIGHT = 420; // hauteur approximative d'une ProductCard
+import type { SwiperOptions } from 'swiper/types';
+
+const swiperParams: SwiperOptions = {
+  direction: 'vertical',
+  slidesPerView: 4,
+  spaceBetween: 20,
+  grid: { rows: 1, fill: 'row' },
+  virtual: true,
+  modules: [Grid, Virtual, Lazy],
+  // @ts-ignore Lazy n'est pas dans SwiperOptions, on l'ignore pour TypeScript
+  lazy: { loadPrevNext: true },
+};
+
+// on active les modules
+SwiperCore.use([Virtual, Lazy, Grid]);
 
 export default function ProductsPage() {
   const { t } = useI18n();
-
-  const [data, setData] = useState<Product[]>([]);
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
-  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-  const [start, setStart] = useState(0);
-
-  const lastItemRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  /* ---------------- FETCH ---------------- */
   useEffect(() => {
-    (async () => {
+    async function fetchProducts() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-
-        const result = (await res.json()) as Product[] | Record<string, Product[]>;
-
-        if (Array.isArray(result)) setData(result);
-        else if (result && Object.values(result).length > 0) setData(Object.values(result).flat());
-        else setError('No products found');
+        const data = (await res.json()) as Product[] | Record<string, Product[]>;
+        setProducts(Array.isArray(data) ? data : Object.values(data).flat());
       } catch (e: any) {
         setError(e.message);
       } finally {
         setLoading(false);
       }
-    })();
+    }
+    fetchProducts();
   }, []);
 
-  /* ---------------- SORT ---------------- */
-  const sortedProducts = useMemo(() => {
-    return [...data].sort((a, b) => {
-      if (sortBy === 'price-asc') return a.price - b.price;
-      if (sortBy === 'price-desc') return b.price - a.price;
-      return 0;
-    });
-  }, [data, sortBy]);
+  if (loading) return <p className="text-center mt-20">{t('loading')}...</p>;
+  if (error) return <p className="text-red-600 text-center mt-20">{error}</p>;
 
-  /* ---------------- FILTER ---------------- */
-  const filteredProducts = useMemo(() => {
-    return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
-  }, [sortedProducts, sizeFilter]);
-
-  /* ---------------- WINDOW PRODUCTS ---------------- */
-  const windowProducts = useMemo(() => {
-    const from = Math.max(0, start - BUFFER);
-    const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
-    return filteredProducts.slice(from, to);
-  }, [filteredProducts, start]);
-
-  /* ---------------- PRELOAD THUMBNAILS ---------------- */
-  useEffect(() => {
-    if (!windowProducts.length) return;
-    setFilterLoading(true);
-
-    let loadedCount = 0;
-    windowProducts.forEach(p => {
-      const img = new Image();
-      img.src = p.imageThumbnail;
-      img.onload = img.onerror = () => {
-        loadedCount++;
-        if (loadedCount === windowProducts.length) setFilterLoading(false);
-      };
-    });
-  }, [windowProducts]);
-
-  /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
-  const resetStart = () => {
-    if (!containerRef.current) {
-      setStart(0);
-      return;
-    }
-    const scrollTop = containerRef.current.scrollTop;
-    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
-    setStart(newStart);
+  const handleClick = (product: Product) => {
+    router.push(`/products/${product.slug || product.id}`);
   };
 
-  /* ---------------- INFINITE SCROLL BIDIRECTIONNEL ---------------- */
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          // Quand le dernier élément visible est atteint, on charge la suite
-          setStart(prev => Math.min(prev + VISIBLE, filteredProducts.length - 1));
-        }
-      },
-      { root: containerRef.current, rootMargin: '200px' }
-    );
-
-    if (lastItemRef.current) observer.observe(lastItemRef.current);
-    return () => observer.disconnect();
-  }, [windowProducts, filteredProducts.length]);
-
-  /* ---------------- STATES ---------------- */
-  if (loading) return <ProductsLoading />;
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-red-600">{error}</p>
-          <Link
-            href="/"
-            className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold"
-          >
-            {t('actions.backToHome')}
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  /* ---------------- SPACERS ---------------- */
-  const topSpacerHeight = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
-  const bottomSpacerHeight = Math.max(
-    0,
-    (filteredProducts.length - (start - BUFFER + windowProducts.length)) * ITEM_HEIGHT
-  );
-
-  /* ---------------- RENDER ---------------- */
   return (
-    <div className="stoneBg text-[var(--foreground)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* HEADER */}
+    <div className="stoneBg min-h-screen text-[var(--foreground)] py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
-        {/* FILTERS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <select
-            value={sizeFilter}
-            onChange={e => {
-              setSizeFilter(e.target.value as any);
-              resetStart();
-            }}
-            className="p-3 border bg-white text-black"
-          >
-            <option value="All">{t('products.allSizes')}</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-          </select>
+        <Swiper  {...swiperParams}>
+          {products.map((product, index) => (
+            <SwiperSlide key={product.id} virtualIndex={index}>
+              <img
+                data-src={product.imageThumbnail}
+                alt={product.title}
+                className="swiper-lazy object-contain w-full h-full"
+              />
+              <div className="swiper-lazy-preloader"></div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-          <select
-            value={sortBy}
-            onChange={e => {
-              setSortBy(e.target.value as any);
-              resetStart();
-            }}
-            className="p-3 border bg-white text-black"
-          >
-            <option value="default">{t('sort.default')}</option>
-            <option value="price-asc">{t('sort.priceAsc')}</option>
-            <option value="price-desc">{t('sort.priceDesc')}</option>
-          </select>
-        </div>
-
-        {/* GRID VIRTUELLE */}
-        <div
-          ref={containerRef}
-          style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
-        >
-          {/* Overlay loading non bloquant */}
-          {filterLoading && (
-            <div
-              className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none"
-            >
-              <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
-            </div>
-          )}
-
-          {/* Spacer avant */}
-          <div style={{ height: topSpacerHeight }} />
-
-          {/* Produits visibles */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {windowProducts.map((product, idx) => {
-              const isLastVisible = idx === windowProducts.length - 1;
-              return (
-                <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
-                  <Link href={`/products/${product.id}`}>
-                    <ProductCard product={product} priority={start === 0} />
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Spacer après */}
-          <div style={{ height: bottomSpacerHeight }} />
-        </div>
       </div>
     </div>
   );

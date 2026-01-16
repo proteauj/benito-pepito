@@ -1,7 +1,7 @@
 declare module 'react-virtualized-auto-sizer' {
   import * as React from 'react';
 
-  interface AutoSizerProps {
+  export interface AutoSizerProps {
     children: (size: { width: number; height: number }) => React.ReactNode;
     disableHeight?: boolean;
     disableWidth?: boolean;
@@ -9,6 +9,5 @@ declare module 'react-virtualized-auto-sizer' {
     defaultWidth?: number;
   }
 
-  const AutoSizer: React.FC<AutoSizerProps>;
-  export default AutoSizer;
+  export const AutoSizer: React.FC<AutoSizerProps>;
 }

@@ -1,4 +1,6 @@
-import AutoSizer from 'react-virtualized-auto-sizer';
+'use client'; // important pour App Router + composants clients
+
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { Grid } from 'react-virtualized';
 import { useRouter } from 'next/navigation';
 

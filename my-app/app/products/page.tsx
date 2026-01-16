@@ -8,17 +8,17 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12;
-const BUFFER = 12;
-const ITEM_HEIGHT = 420;
+const VISIBLE = 12;       // Nombre de produits visibles à l'écran
+const BUFFER = 12;        // Buffer avant/après
+const ITEM_HEIGHT = 420;  // Hauteur approximative d'une carte
 /* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
 
   const [data, setData] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filterLoading, setFilterLoading] = useState(false);
+  const [loading, setLoading] = useState(true);          // Chargement initial
+  const [filterLoading, setFilterLoading] = useState(false); // Chargement après filtre/tri
   const [error, setError] = useState<string | null>(null);
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
@@ -34,6 +34,7 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
+
         const result = (await res.json()) as Product[] | Record<string, Product[]>;
 
         if (Array.isArray(result)) setData(result);
@@ -135,12 +136,14 @@ export default function ProductsPage() {
   }
 
   /* ---------------- RENDER ---------------- */
-  const paddingTop = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
+  const topSpacerHeight = start * ITEM_HEIGHT;
+  const bottomSpacerHeight = Math.max(0, (filteredProducts.length - (start + windowProducts.length)) * ITEM_HEIGHT);
 
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
+        {/* HEADER */}
         <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
         {/* FILTERS */}
@@ -179,28 +182,32 @@ export default function ProductsPage() {
           ref={containerRef}
           style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
         >
-          {/* Overlay de loading non bloquant */}
+          {/* Overlay loading non bloquant */}
           {filterLoading && (
             <div
-              className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 pointer-events-none"
+              className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none"
             >
               <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
             </div>
           )}
 
-          {/* Padding-top pour virtualisation */}
-          <div style={{ paddingTop }}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {windowProducts.map((product, idx) => {
-                const isLastVisible = idx === windowProducts.length - 1;
-                return (
-                  <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
-                    <ProductCard product={product} priority />
-                  </div>
-                );
-              })}
-            </div>
+          {/* Spacer avant */}
+          <div style={{ height: topSpacerHeight }} />
+
+          {/* Produits visibles */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {windowProducts.map((product, idx) => {
+              const isLastVisible = idx === windowProducts.length - 1;
+              return (
+                <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
+                  <ProductCard product={product} priority />
+                </div>
+              );
+            })}
           </div>
+
+          {/* Spacer après */}
+          <div style={{ height: bottomSpacerHeight }} />
         </div>
 
       </div>

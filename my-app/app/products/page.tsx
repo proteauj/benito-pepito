@@ -12,18 +12,22 @@ export default function ProductsPage() {
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
+  // Fetch products
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
+
         const result = await res.json();
         let products: Product[] = [];
         if (Array.isArray(result)) products = result as Product[];
         else if (result && typeof result === 'object') products = Object.values(result).flat() as Product[];
+
         setData(products);
       } catch (e: any) {
         setError(e.message);
@@ -33,6 +37,7 @@ export default function ProductsPage() {
     })();
   }, []);
 
+  // Filter + Sort
   const filteredProducts = useMemo(() => {
     return data
       .filter(p => sizeFilter === 'All' || p.size === sizeFilter)
@@ -44,21 +49,24 @@ export default function ProductsPage() {
   }, [data, sizeFilter, sortBy]);
 
   if (loading) return <ProductsLoading />;
-  if (error) return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <p className="text-xl text-red-600">{error}</p>
-        <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold">
-          {t('actions.backToHome')}
-        </Link>
+
+  if (error)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-xl text-red-600">{error}</p>
+          <Link href="/" className="mt-4 inline-block bg-[var(--gold)] text-black px-6 py-3 font-semibold">
+            {t('actions.backToHome')}
+          </Link>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
+        {/* Header */}
         <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
         {/* Filters */}

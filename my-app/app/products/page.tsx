@@ -115,6 +115,14 @@ export default function ProductsPage() {
     return () => observer.disconnect();
   }, [windowProducts, filteredProducts.length]);
 
+  /* ---------------- SCROLL HANDLER ---------------- */
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    const scrollTop = containerRef.current.scrollTop;
+    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
+    setStart(newStart);
+  };
+
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
 
@@ -182,6 +190,7 @@ export default function ProductsPage() {
         <div
           ref={containerRef}
           style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
+          onScroll={handleScroll} // <-- ajoute le scroll handler
         >
           {/* Overlay loading */}
           {filterLoading && (

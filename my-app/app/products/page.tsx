@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useI18n } from '@/i18n/I18nProvider';
-import { Product } from '../../lib/db/types';
+import { Product } from '@/types';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
@@ -85,7 +85,7 @@ export default function ProductsPage() {
 
         // Scroll vers le bas
         if (scrollTop + clientHeight >= scrollHeight - 200 && start + VISIBLE < filteredProducts.length) {
-          setStart(prev => Math.min(prev + VISIBLE, filteredProducts.length));
+          setStart(prev => Math.min(prev + VISIBLE, filteredProducts.length - VISIBLE));
         }
 
         // Scroll vers le haut
@@ -137,12 +137,10 @@ export default function ProductsPage() {
             className="p-3 border bg-white text-black"
           >
             <option value="All">{t('products.allSizes')}</option>
-            <option value="XS">XS</option>
             <option value="S">S</option>
             <option value="M">M</option>
             <option value="L">L</option>
             <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
           </select>
 
           <select
@@ -157,9 +155,12 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 min-h-[100vh]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {windowProducts.map(product => (
-            <div key={product.id} className="flex flex-col bg-white rounded shadow">
+            <div
+              key={product.id}
+              className="flex flex-col bg-white rounded shadow overflow-hidden"
+            >
               <Image
                 src={product.imageThumbnail || product.image}
                 alt={product.title}
@@ -170,13 +171,12 @@ export default function ProductsPage() {
                 blurDataURL={product.imageThumbnail || product.image}
               />
               <div className="p-3">
-                <h2 className="font-semibold">{product.title}</h2>
-                <p>{product.price}</p>
+                <h2 className="font-semibold text-lg">{product.title}</h2>
+                <p className="text-sm mt-1">{product.price}</p>
               </div>
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

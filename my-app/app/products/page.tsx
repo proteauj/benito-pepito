@@ -8,8 +8,9 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12;  // Nombre de produits visibles à l'écran
-const BUFFER = 12;   // Buffer avant + après
+const VISIBLE = 12;       // Nombre de produits visibles à l'écran
+const BUFFER = 12;        // Buffer avant/après
+const ITEM_HEIGHT = 420;  // Hauteur approximative d'une carte
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -116,8 +117,11 @@ export default function ProductsPage() {
   }
 
   /* ---------------- RENDER ---------------- */
+  const totalHeight = filteredProducts.length * ITEM_HEIGHT;
+  const paddingTop = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
+
   return (
-    <div className="min-h-screen stoneBg text-[var(--foreground)]">
+    <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         {/* HEADER */}
@@ -155,16 +159,21 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {windowProducts.map((product, idx) => {
-            const isLastVisible = idx === windowProducts.length - 1;
-            return (
-              <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
-                <ProductCard product={product} priority />
-              </div>
-            );
-          })}
+        <div style={{ position: 'relative', height: totalHeight }}>
+          <div style={{ position: 'absolute', top: paddingTop, width: '100%' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {windowProducts.map((product, idx) => {
+                const isLastVisible = idx === windowProducts.length - 1;
+                return (
+                  <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
+                    <ProductCard product={product} priority />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   );

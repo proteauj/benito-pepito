@@ -1,54 +1,33 @@
+// ProductCard.tsx
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
-import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 
-interface ProductCardProps {
+interface Props {
   product: Product;
-  className?: string;
-  priority?: boolean;
-  onClick?: () => void;
+  priority?: boolean; // pour prefetch les images au-dessus du fold
 }
 
-export default function ProductCard({
-  product,
-  className = '',
-  priority = false,
-  onClick,
-}: ProductCardProps) {
-  const { t } = useI18n();
-
+export default function ProductCard({ product, priority }: Props) {
   return (
-    <div
-      onClick={onClick}
-      className={`group relative bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer ${className}`}
-    >
-      <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative w-full bg-gray-50 overflow-hidden">
-          <div className="relative w-full aspect-[4/5] sm:aspect-square">
-            <Image
-              src={product.image}
-              alt={product.title}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="object-contain sm:object-cover transition-transform duration-300 group-hover:scale-105"
-              loading={priority ? 'eager' : 'lazy'}
-              quality={60}
-            />
-          </div>
-        </div>
-
-        <div className="p-3">
-          <h3 className="text-sm font-medium line-clamp-2">
-            {product.title}
-          </h3>
-          <p className="font-semibold mt-1">
-            ${product.price}
-          </p>
-        </div>
-      </Link>
+    <div className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-200">
+      <div className="relative w-full h-[420px]">
+        <Image
+          src={product.image}
+          alt={product.title}
+          fill
+          style={{ objectFit: 'cover' }}
+          placeholder="blur"
+          blurDataURL="/placeholder.png" // image très légère pour le blur
+          priority={priority}
+        />
+      </div>
+      <div className="p-4">
+        <h2 className="font-semibold text-lg">{product.title}</h2>
+        <p className="text-gray-600">{product.size}</p>
+        <p className="mt-2 font-bold">${product.price}</p>
+      </div>
     </div>
   );
 }

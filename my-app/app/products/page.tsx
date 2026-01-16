@@ -81,22 +81,23 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
-  /* ---------------- VIRTUAL SCROLL ---------------- */
-  const handleScroll = (e: any) => {
-    const top = e.target.scrollTop;
-    const maxScroll = e.target.scrollHeight - e.target.clientHeight;
-    if (top === maxScroll) {
-      setStart(prev => Math.min(prev + VISIBLE_COUNT, filteredProducts.length));
-    }
-    setScrollTop(top);
-  };
-
-  /* ---------------- SAVING SCROLL POSITION ---------------- */
+  /* ---------------- SCROLL HANDLER ---------------- */
   useEffect(() => {
-    if (scrollTop && typeof window !== 'undefined') {
-      sessionStorage.setItem('scrollTop', scrollTop.toString());
-    }
-  }, [scrollTop]);
+    const onScroll = () => {
+      if (scrollTop === undefined) return;
+      const totalHeight = lastItemRef.current?.offsetTop || 0;
+      const clientHeight = document.documentElement.clientHeight;
+
+      if (window.scrollY + clientHeight >= totalHeight - 200) {
+        setStart(prevStart => Math.min(prevStart + VISIBLE_COUNT, filteredProducts.length));
+      }
+      setScrollTop(window.scrollY);
+    };
+
+    window.addEventListener('scroll', onScroll);
+
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [scrollTop, filteredProducts.length]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -151,17 +152,10 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID VIRTUALISÉE */}
-        <div
-          className="overflow-auto h-[70vh]"
-          onScroll={handleScroll}
-          style={{ paddingTop: start * ITEM_HEIGHT, paddingBottom: (filteredProducts.length - start - VISIBLE_COUNT) * ITEM_HEIGHT }}
-        >
+        <div className="overflow-auto h-[70vh]" style={{ paddingTop: start * ITEM_HEIGHT }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {windowProducts.map((product, idx) => (
-              <div
-                key={product.id}
-                ref={idx === windowProducts.length - 1 ? lastItemRef : null}
-              >
+              <div key={product.id} ref={idx === windowProducts.length - 1 ? lastItemRef : null}>
                 <ProductCard product={product} priority />
               </div>
             ))}

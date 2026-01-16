@@ -22,10 +22,10 @@ export interface Product {
   title: string;
   titleFr?: string;
   size?: string;
-  dimensions?: string;
   price: number;
-  image: string;
-  category: 'Sculpture' | 'Painting' | 'Home & Garden';
+  image: string;           // toujours la version full
+  imageThumbnail: string;  // toujours générée par le script
+  category: string;
   material?: string;
   materialFr?: string;
   inStock: boolean;

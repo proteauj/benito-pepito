@@ -5,22 +5,7 @@ import Link from "next/link";
 import { useCart } from './contexts/CartContext';
 import CategorySlideshow from './components/CategorySlideshow';
 import { useI18n } from './i18n/I18nProvider';
-
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  images: string[];
-  category: string;
-  inStock: boolean;
-  artist: string;
-  medium: string;
-  year: number;
-}
+import { Product } from '../lib/db/types';
 
 type ProductsByCategory = Record<string, Product[]>;
 

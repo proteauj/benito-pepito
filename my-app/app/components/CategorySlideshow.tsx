@@ -7,22 +7,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useProductTranslations } from '../hooks/useProductTranslations';
 import ArtworkSquare from './ArtworkSquare';
 import SafeImage from './SafeImage';
-
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  images: string[];
-  category: string;
-  inStock: boolean;
-  artist: string;
-  medium: string;
-  year: number;
-}
+import { Product } from '../../lib/db/types';
 
 interface CategorySlideshowProps {
   category: string;

@@ -3,22 +3,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/i18n/I18nProvider';
-import { Product } from '@/types';
+import { Product } from '../../lib/db/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-/* ================= CONFIG ================= */
-const VISIBLE = 12;       // Nombre de produits visibles à l'écran
-const BUFFER = 12;        // Buffer avant/après
-const ITEM_HEIGHT = 420;  // Hauteur approximative d'une carte
-/* ========================================== */
+const VISIBLE = 12;
+const BUFFER = 12;
+const ITEM_HEIGHT = 420;
 
 export default function ProductsPage() {
   const { t } = useI18n();
 
   const [data, setData] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);          // Chargement initial
-  const [filterLoading, setFilterLoading] = useState(false); // Chargement après filtre/tri
+  const [loading, setLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
@@ -69,7 +67,7 @@ export default function ProductsPage() {
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  /* ---------------- LOADING IMAGES ---------------- */
+  /* ---------------- PRELOAD THUMBNAILS ---------------- */
   useEffect(() => {
     if (!windowProducts.length) return;
     setFilterLoading(true);
@@ -77,7 +75,7 @@ export default function ProductsPage() {
     let loadedCount = 0;
     windowProducts.forEach(p => {
       const img = new Image();
-      img.src = p.image;
+      img.src = p.imageThumbnail; // uniquement les miniatures
       img.onload = img.onerror = () => {
         loadedCount++;
         if (loadedCount === windowProducts.length) setFilterLoading(false);

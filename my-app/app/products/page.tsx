@@ -17,7 +17,8 @@ export default function ProductsPage() {
   const { t } = useI18n();
 
   const [data, setData] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // chargement initial
+  const [filterLoading, setFilterLoading] = useState(false); // chargement après filtre/tri
   const [error, setError] = useState<string | null>(null);
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
@@ -25,6 +26,7 @@ export default function ProductsPage() {
   const [start, setStart] = useState(0);
 
   const lastItemRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -71,13 +73,40 @@ export default function ProductsPage() {
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  /* ---------------- PRELOAD IMAGES ---------------- */
+  /* ---------------- PRELOAD IMAGES AVEC LOADING ---------------- */
   useEffect(() => {
+    if (!windowProducts.length) return;
+    setFilterLoading(true);
+
+    let loadedCount = 0;
     windowProducts.forEach(p => {
       const img = new Image();
       img.src = p.image;
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === windowProducts.length) {
+          setFilterLoading(false);
+        }
+      };
+      img.onerror = () => {
+        loadedCount++;
+        if (loadedCount === windowProducts.length) {
+          setFilterLoading(false);
+        }
+      };
     });
   }, [windowProducts]);
+
+  /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
+  const resetStart = () => {
+    if (!containerRef.current) {
+      setStart(0);
+      return;
+    }
+    const scrollTop = containerRef.current.scrollTop;
+    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
+    setStart(newStart);
+  };
 
   /* ---------------- INFINITE SCROLL ---------------- */
   useEffect(() => {
@@ -120,7 +149,6 @@ export default function ProductsPage() {
 
   /* ---------------- RENDER ---------------- */
   const totalHeight = filteredProducts.length * ITEM_HEIGHT;
-  // Scroll garanti même si peu de produits
   const containerHeight = Math.max(totalHeight, window.innerHeight + 1);
   const paddingTop = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
 
@@ -137,7 +165,7 @@ export default function ProductsPage() {
             value={sizeFilter}
             onChange={e => {
               setSizeFilter(e.target.value as any);
-              setStart(0);
+              resetStart();
             }}
             className="p-3 border bg-white text-black"
           >
@@ -152,7 +180,7 @@ export default function ProductsPage() {
             value={sortBy}
             onChange={e => {
               setSortBy(e.target.value as any);
-              setStart(0);
+              resetStart();
             }}
             className="p-3 border bg-white text-black"
           >
@@ -163,7 +191,18 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID VIRTUELLE */}
-        <div style={{ position: 'relative', height: containerHeight }}>
+        <div
+          ref={containerRef}
+          style={{ position: 'relative', height: containerHeight, overflowY: 'auto' }}
+        >
+          {filterLoading && (
+            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-white/50 z-10">
+              <span className="text-xl font-semibold animate-pulse">
+                {t('loading')}
+              </span>
+            </div>
+          )}
+
           <div style={{ position: 'absolute', top: paddingTop, width: '100%' }}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {windowProducts.map((product, idx) => {

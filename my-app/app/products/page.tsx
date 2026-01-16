@@ -8,9 +8,9 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE_ROWS = 3; // nombre de lignes visibles
-const BUFFER_ROWS = 3;  // lignes avant + après pour buffer
-const ROW_HEIGHT = 420; // hauteur approximative d’une ligne
+const VISIBLE_ROWS = 3; // lignes visibles
+const BUFFER_ROWS = 3;  // lignes avant/après
+const ROW_HEIGHT = 420; // hauteur moyenne d'une ligne
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -24,7 +24,6 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
   const containerRef = useRef<HTMLDivElement>(null);
-
   const [scrollTop, setScrollTop] = useState(0);
   const [columns, setColumns] = useState(4);
 
@@ -35,8 +34,7 @@ export default function ProductsPage() {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
         const result = (await res.json()) as Record<string, Product[]> | Product[];
-        const products = Array.isArray(result) ? result : Object.values(result).flat();
-        setData(products);
+        setData(Array.isArray(result) ? result : Object.values(result).flat());
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -45,20 +43,18 @@ export default function ProductsPage() {
     })();
   }, []);
 
-  /* ---------------- SORT ---------------- */
-  const sortedProducts = data.slice().sort((a, b) => {
-    if (sortBy === 'price-asc') return a.price - b.price;
-    if (sortBy === 'price-desc') return b.price - a.price;
-    return 0;
-  });
-
-  /* ---------------- FILTER ---------------- */
-  const filteredProducts = sortedProducts.filter(
-    p => sizeFilter === 'All' || p.size === sizeFilter
-  );
+  /* ---------------- SORT & FILTER ---------------- */
+  const filteredProducts = data
+    .slice()
+    .sort((a, b) => {
+      if (sortBy === 'price-asc') return a.price - b.price;
+      if (sortBy === 'price-desc') return b.price - a.price;
+      return 0;
+    })
+    .filter(p => sizeFilter === 'All' || p.size === sizeFilter);
 
   /* ---------------- COLUMNS RESPONSIVE ---------------- */
-  const calculateColumns = () => {
+  const getColumns = () => {
     if (typeof window === 'undefined') return 1;
     if (window.innerWidth >= 1024) return 4;
     if (window.innerWidth >= 768) return 3;
@@ -67,32 +63,29 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    const updateColumns = () => setColumns(calculateColumns());
-    updateColumns();
-    window.addEventListener('resize', updateColumns);
-    return () => window.removeEventListener('resize', updateColumns);
+    const onResize = () => setColumns(getColumns());
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  /* ---------------- SCROLL HANDLER ---------------- */
+  /* ---------------- SCROLL ---------------- */
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-
     const onScroll = () => setScrollTop(el.scrollTop);
-
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
   /* ---------------- WINDOW PRODUCTS ---------------- */
-  const startRow = Math.floor(scrollTop / ROW_HEIGHT);
   const totalRows = Math.ceil(filteredProducts.length / columns);
-
+  const startRow = Math.floor(scrollTop / ROW_HEIGHT);
   const fromRow = Math.max(0, startRow - BUFFER_ROWS);
   const toRow = Math.min(totalRows, startRow + VISIBLE_ROWS + BUFFER_ROWS);
 
   const fromIndex = fromRow * columns;
-  const toIndex = toRow * columns;
+  const toIndex = Math.min(toRow * columns, filteredProducts.length);
 
   const windowProducts = filteredProducts.slice(fromIndex, toIndex);
 
@@ -101,15 +94,12 @@ export default function ProductsPage() {
 
   /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
-    windowProducts.forEach(p => {
-      const img = new Image();
-      img.src = p.image;
-    });
+    windowProducts.forEach(p => new Image().src = p.image);
   }, [windowProducts]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
-  if (error) {
+  if (error)
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -123,16 +113,15 @@ export default function ProductsPage() {
         </div>
       </div>
     );
-  }
 
   /* ---------------- RENDER ---------------- */
   return (
     <div className="h-screen stoneBg text-[var(--foreground)] flex flex-col">
-      {/* HEADER + FILTERS */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <h1 className="text-4xl font-bold mb-4 md:mb-0">{t('headings.allArtworks')}</h1>
+      {/* HEADER & FILTERS */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col items-start gap-4">
+        <h1 className="text-4xl font-bold">{t('headings.allArtworks')}</h1>
 
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <select
             value={sizeFilter}
             onChange={e => setSizeFilter(e.target.value as any)}
@@ -160,7 +149,7 @@ export default function ProductsPage() {
       {/* GRID SCROLLABLE */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto w-full"
         style={{ position: 'relative' }}
       >
         <div style={{ paddingTop, paddingBottom }}>

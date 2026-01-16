@@ -8,8 +8,8 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12; // nombre de produits visibles
-const BUFFER = 12;  // 12 avant + 12 après → 36 max
+const VISIBLE = 12; // produits visibles
+const BUFFER = 12;  // buffer avant + après → max DOM 36
 const ROW_HEIGHT = 420; // hauteur approximative d’une ligne
 /* ========================================== */
 
@@ -23,7 +23,7 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
-  const [start, setStart] = useState(0); // index du premier produit visible
+  const [start, setStart] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
@@ -103,24 +103,19 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
-  /* ---------------- ON SCROLL ---------------- */
+  /* ---------------- SCROLL INFINI ---------------- */
   const onScroll = () => {
     if (!containerRef.current) return;
+
     const scrollBottom = containerRef.current.scrollTop + containerRef.current.clientHeight;
     const scrollHeight = containerRef.current.scrollHeight;
 
     // si proche du bas → charger suivants
-    if (scrollBottom + 200 >= scrollHeight) {
+    if (scrollBottom + 100 >= scrollHeight) {
       setStart(prev => Math.min(prev + VISIBLE, Math.max(0, filteredProducts.length - VISIBLE)));
-    }
-
-    // si proche du haut → charger précédents
-    if (containerRef.current.scrollTop < 200) {
-      setStart(prev => Math.max(0, prev - VISIBLE));
     }
   };
 
-  /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
 
   if (error) {
@@ -139,7 +134,6 @@ export default function ProductsPage() {
     );
   }
 
-  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)] min-h-screen flex flex-col">
 

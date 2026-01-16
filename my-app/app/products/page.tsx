@@ -22,6 +22,7 @@ export default function ProductsPage() {
   const [start, setStart] = useState(0);
   const isTicking = useRef(false);
 
+  // ---------------- FETCH PRODUCTS ----------------
   useEffect(() => {
     (async () => {
       try {
@@ -42,6 +43,7 @@ export default function ProductsPage() {
     })();
   }, []);
 
+  // ---------------- FILTER + SORT ----------------
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(data)) return [];
     return data
@@ -53,12 +55,14 @@ export default function ProductsPage() {
       });
   }, [data, sizeFilter, sortBy]);
 
+  // ---------------- WINDOW PRODUCTS ----------------
   const windowProducts = useMemo(() => {
     const from = Math.max(0, start - BUFFER);
     const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
+  // ---------------- PRELOAD IMAGES ----------------
   useEffect(() => {
     windowProducts.forEach(p => {
       if (p.imageThumbnail) {
@@ -68,6 +72,7 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
+  // ---------------- SCROLL HANDLER ----------------
   useEffect(() => {
     const onScroll = () => {
       if (isTicking.current) return;
@@ -87,6 +92,7 @@ export default function ProductsPage() {
   }, [start, filteredProducts.length]);
 
   if (loading) return <ProductsLoading />;
+
   if (error)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -102,6 +108,7 @@ export default function ProductsPage() {
       </div>
     );
 
+  // ---------------- RENDER ----------------
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -135,27 +142,32 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-min">
           {windowProducts.map(product => (
             <div key={product.id} className="bg-white rounded shadow flex flex-col overflow-hidden">
-              {/* Image auto-adjust */}
-              <div className="w-full flex justify-center items-center">
+              
+              {/* IMAGE */}
+              <div className="w-full flex justify-center items-start">
                 <Image
                   src={product.imageThumbnail || product.image}
                   alt={product.title}
                   width={300}
                   height={300}
-                  style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    objectFit: 'contain',
+                  }}
                   placeholder="blur"
                   blurDataURL={product.imageThumbnail || product.image}
                   loading="lazy"
                 />
               </div>
 
-              {/* Titre + prix */}
+              {/* TITRE + PRIX */}
               <div className="p-2 flex flex-col">
                 <h2 className="text-lg font-semibold line-clamp-2">{product.title}</h2>
-                <p className="text-sm mt-1">{product.price}</p>
+                <p className="text-sm mt-1">{product.price} €</p>
               </div>
             </div>
           ))}

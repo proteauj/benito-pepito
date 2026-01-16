@@ -2,49 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
+import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-interface ProductCardProps {
-  product: Product;
-  priority?: boolean;
-  className?: string;
-}
-
-function ProductCard({ product, priority = false, className = '' }: ProductCardProps) {
-  const { t } = useI18n();
-
-  return (
-    <div className={`group relative bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}>
-      <Link href={`/product/${product.slug}`} className="group block">
-        <div className="relative w-full bg-gray-50 overflow-hidden">
-          <div className="relative w-full aspect-[4/5] sm:aspect-square">
-            <Image
-              src={product.image}
-              alt={product.title}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="object-contain sm:object-cover transition-transform duration-300 group-hover:scale-105"
-              loading={priority ? 'eager' : 'lazy'}
-              quality={50}
-            />
-          </div>
-        </div>
-        <div className="p-3">
-          <h3 className="text-sm font-medium line-clamp-2">{product.id} - {product.title}</h3>
-          <p className="font-semibold mt-1">${product.price}</p>
-        </div>
-      </Link>
-    </div>
-  );
-}
-
 /* ================= CONFIG ================= */
-const VISIBLE = 12; // produits visibles
-const BUFFER = 24;  // préchargés avant/après = max 36 dans le DOM
-const ROW_HEIGHT = 420; // hauteur approximative d'une ligne pour padding
+const VISIBLE = 12; // nombre de produits visibles
+const BUFFER = 12;  // 12 avant + 12 après → 36 max
+const ROW_HEIGHT = 420; // hauteur approximative d’une ligne
+/* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -112,8 +79,11 @@ export default function ProductsPage() {
   const startRow = Math.floor(start / columns);
 
   const windowProducts = useMemo(() => {
-    const fromRow = Math.max(0, startRow - Math.floor(BUFFER / columns));
-    const toRow = Math.min(totalRows, startRow + Math.ceil(VISIBLE / columns) + Math.floor(BUFFER / columns));
+    const bufferRows = Math.ceil(BUFFER / columns);
+    const visibleRows = Math.ceil(VISIBLE / columns);
+
+    const fromRow = Math.max(0, startRow - bufferRows);
+    const toRow = Math.min(totalRows, startRow + visibleRows + bufferRows);
 
     const from = fromRow * columns;
     const to = toRow * columns;
@@ -127,8 +97,8 @@ export default function ProductsPage() {
 
   /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
-    windowProducts.forEach(p => {
-      const img = new window.Image();
+    windowProducts.forEach((p, idx) => {
+      const img = new Image();
       img.src = p.image;
     });
   }, [windowProducts]);
@@ -136,15 +106,24 @@ export default function ProductsPage() {
   /* ---------------- ON SCROLL ---------------- */
   const onScroll = () => {
     if (!containerRef.current) return;
-    const scrollTop = containerRef.current.scrollTop;
-    const row = Math.floor(scrollTop / ROW_HEIGHT);
-    const newStart = row * columns;
-    if (newStart !== start) setStart(newStart);
+    const scrollBottom = containerRef.current.scrollTop + containerRef.current.clientHeight;
+    const scrollHeight = containerRef.current.scrollHeight;
+
+    // si proche du bas → charger suivants
+    if (scrollBottom + 200 >= scrollHeight) {
+      setStart(prev => Math.min(prev + VISIBLE, Math.max(0, filteredProducts.length - VISIBLE)));
+    }
+
+    // si proche du haut → charger précédents
+    if (containerRef.current.scrollTop < 200) {
+      setStart(prev => Math.max(0, prev - VISIBLE));
+    }
   };
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
-  if (error)
+
+  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -158,16 +137,17 @@ export default function ProductsPage() {
         </div>
       </div>
     );
+  }
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="h-screen stoneBg text-[var(--foreground)] flex flex-col">
+    <div className="stoneBg text-[var(--foreground)] min-h-screen flex flex-col">
+
+      {/* HEADER + FILTERS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-shrink-0">
-        {/* HEADER */}
         <h1 className="text-4xl font-bold mb-6 text-left">{t('headings.allArtworks')}</h1>
 
-        {/* FILTERS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 justify-start">
           <select
             value={sizeFilter}
             onChange={e => setSizeFilter(e.target.value as any)}
@@ -192,19 +172,19 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* GRID VIRTUALISÉE */}
+      {/* GRID SCROLLABLE */}
       <div
         ref={containerRef}
         onScroll={onScroll}
         className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8"
         style={{ paddingTop, paddingBottom }}
       >
-        <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {windowProducts.map((product, idx) => (
             <ProductCard
               key={product.id}
               product={product}
-              priority={start === 0 && idx < VISIBLE} // premières images priorité
+              priority={start === 0 && idx < VISIBLE}
             />
           ))}
         </div>

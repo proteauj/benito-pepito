@@ -2,16 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
-
-/* ================= CONFIG ================= */
-const VISIBLE_ROWS = 3; // 3 lignes visibles
-const BUFFER_ROWS = 2;  // 2 lignes avant + 2 après = max 20-24 items
-const ROW_HEIGHT = 420; // hauteur approximative d’une ligne
-/* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -22,8 +17,7 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [scrollTop, setScrollTop] = useState(0);
+  const parentRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -72,42 +66,46 @@ export default function ProductsPage() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  /* ---------------- WINDOW PRODUCTS ---------------- */
-  const { windowProducts, paddingTop, paddingBottom } = useMemo(() => {
-    const totalRows = Math.ceil(filteredProducts.length / columns);
-    const currentRow = Math.floor(scrollTop / ROW_HEIGHT);
+  /* ---------------- VIRTUALIZER ---------------- */
+  const rowVirtualizer = useVirtualizer({
+    count: Math.ceil(filteredProducts.length / columns),
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 420, // hauteur approximative d’une ligne
+    overscan: 3, // lignes supplémentaires à rendre pour éviter le clignotement
+  });
 
-    const fromRow = Math.max(0, currentRow - BUFFER_ROWS);
-    const toRow = Math.min(totalRows, currentRow + VISIBLE_ROWS + BUFFER_ROWS);
+  const rows = rowVirtualizer.getVirtualItems().map(virtualRow => {
+    const start = virtualRow.index * columns;
+    const end = Math.min(start + columns, filteredProducts.length);
+    const items = filteredProducts.slice(start, end);
 
-    const from = fromRow * columns;
-    const to = Math.min(filteredProducts.length, toRow * columns);
-
-    const paddingTop = fromRow * ROW_HEIGHT;
-    const paddingBottom = (totalRows - toRow) * ROW_HEIGHT;
-
-    return {
-      windowProducts: filteredProducts.slice(from, to),
-      paddingTop,
-      paddingBottom,
-    };
-  }, [filteredProducts, scrollTop, columns]);
+    return (
+      <div
+        key={virtualRow.index}
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          transform: `translateY(${virtualRow.start}px)`,
+        }}
+      >
+        {items.map(p => (
+          <ProductCard key={p.id} product={p} priority />
+        ))}
+      </div>
+    );
+  });
 
   /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
-    windowProducts.forEach(p => {
+    filteredProducts.forEach(p => {
       const img = new Image();
       img.src = p.image;
     });
-  }, [windowProducts]);
+  }, [filteredProducts]);
 
-  /* ---------------- SCROLL HANDLER ---------------- */
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    setScrollTop(scrollRef.current.scrollTop);
-  };
-
-  /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
 
   if (error) {
@@ -126,7 +124,6 @@ export default function ProductsPage() {
     );
   }
 
-  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)] h-screen flex flex-col">
       {/* HEADER + FILTERS */}
@@ -159,17 +156,9 @@ export default function ProductsPage() {
       </div>
 
       {/* GRID VIRTUALISÉE */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto"
-        onScroll={handleScroll}
-      >
-        <div style={{ paddingTop, paddingBottom }}>
-          <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6`}>
-            {windowProducts.map(p => (
-              <ProductCard key={p.id} product={p} priority />
-            ))}
-          </div>
+      <div ref={parentRef} className="flex-1 overflow-y-auto relative">
+        <div style={{ height: rowVirtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
+          {rows}
         </div>
       </div>
     </div>

@@ -8,17 +8,17 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12;       // Nombre de produits visibles à l'écran
-const BUFFER = 12;        // Buffer avant/après
-const ITEM_HEIGHT = 420;  // Hauteur approximative d'une carte
+const VISIBLE = 12;
+const BUFFER = 12;
+const ITEM_HEIGHT = 420;
 /* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
 
   const [data, setData] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true); // chargement initial
-  const [filterLoading, setFilterLoading] = useState(false); // chargement après filtre/tri
+  const [loading, setLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
@@ -34,7 +34,6 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-
         const result = (await res.json()) as Product[] | Record<string, Product[]>;
 
         if (Array.isArray(result)) setData(result);
@@ -69,7 +68,7 @@ export default function ProductsPage() {
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  /* ---------------- PRELOAD IMAGES AVEC LOADING ---------------- */
+  /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
     if (!windowProducts.length) return;
     setFilterLoading(true);
@@ -142,7 +141,6 @@ export default function ProductsPage() {
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        {/* HEADER */}
         <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
         {/* FILTERS */}
@@ -181,9 +179,11 @@ export default function ProductsPage() {
           ref={containerRef}
           style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
         >
-          {/* Overlay de loading */}
+          {/* Overlay de loading non bloquant */}
           {filterLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
+            <div
+              className="absolute inset-0 flex items-center justify-center bg-white/50 z-10 pointer-events-none"
+            >
               <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
             </div>
           )}

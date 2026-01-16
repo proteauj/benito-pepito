@@ -69,7 +69,7 @@ export default function ProductsPage() {
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  /* ---------------- PRELOAD IMAGES ---------------- */
+  /* ---------------- LOADING IMAGES ---------------- */
   useEffect(() => {
     if (!windowProducts.length) return;
     setFilterLoading(true);
@@ -200,7 +200,7 @@ export default function ProductsPage() {
               const isLastVisible = idx === windowProducts.length - 1;
               return (
                 <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
-                  <ProductCard product={product} priority />
+                  <ProductCard product={product} priority={start === 0} />
                 </div>
               );
             })}

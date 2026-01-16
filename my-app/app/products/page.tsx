@@ -6,7 +6,6 @@ import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
-import { Virtuoso } from 'react-virtuoso';
 
 /* ================= CONFIG ================= */
 const VISIBLE_COUNT = 12;  // Nombre de produits visibles
@@ -34,8 +33,17 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-        const result = (await res.json()) as Product[];
-        setData(result);
+        
+        const result = (await res.json()) as Product[] | Record<string, Product[]>;
+        
+        // Ajout de la vérification ici
+        if (Array.isArray(result)) {
+          setData(result); // Si result est un tableau
+        } else if (result && Object.values(result).length > 0) {
+          setData(Object.values(result).flat()); // Si result est un objet contenant des tableaux
+        } else {
+          setError('No products found');
+        }
       } catch (e: any) {
         setError(e.message);
       } finally {

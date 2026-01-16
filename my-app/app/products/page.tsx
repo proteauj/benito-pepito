@@ -8,8 +8,8 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE_COUNT = 12;  // Nombre de produits visibles
-const BUFFER = 12;         // Buffer de produits pour préchargement
+const VISIBLE_COUNT = 12;  // Nombre de produits visibles à l'écran
+const BUFFER = 12;         // Buffer de produits avant + après
 const ITEM_HEIGHT = 420;   // Hauteur approximative d’une carte
 /* ========================================== */
 
@@ -23,9 +23,9 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [start, setStart] = useState(0); // Index du premier produit visible
-  const [scrollTop, setScrollTop] = useState(0);
 
   const lastItemRef = useRef<HTMLDivElement>(null);
+  const isTicking = useRef(false); // Pour éviter les appels multiples du `setStart`
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function ProductsPage() {
         
         const result = (await res.json()) as Product[] | Record<string, Product[]>;
         
-        // Ajout de la vérification ici
+        // Gestion des produits en fonction de la réponse API
         if (Array.isArray(result)) {
           setData(result); // Si result est un tableau
         } else if (result && Object.values(result).length > 0) {
@@ -84,20 +84,25 @@ export default function ProductsPage() {
   /* ---------------- SCROLL HANDLER ---------------- */
   useEffect(() => {
     const onScroll = () => {
-      if (scrollTop === undefined) return;
-      const totalHeight = lastItemRef.current?.offsetTop || 0;
-      const clientHeight = document.documentElement.clientHeight;
+      if (isTicking.current) return;
 
-      if (window.scrollY + clientHeight >= totalHeight - 200) {
-        setStart(prevStart => Math.min(prevStart + VISIBLE_COUNT, filteredProducts.length));
-      }
-      setScrollTop(window.scrollY);
+      window.requestAnimationFrame(() => {
+        const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+
+        // Charger les éléments suivants si l'on est proche du bas de la page
+        if (scrollTop + clientHeight >= scrollHeight - 200 && start + VISIBLE_COUNT < filteredProducts.length) {
+          setStart(prevStart => Math.min(prevStart + VISIBLE_COUNT, filteredProducts.length));
+        }
+
+        isTicking.current = false;
+      });
+
+      isTicking.current = true;
     };
 
     window.addEventListener('scroll', onScroll);
-
     return () => window.removeEventListener('scroll', onScroll);
-  }, [scrollTop, filteredProducts.length]);
+  }, [start, filteredProducts.length]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -151,15 +156,16 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* GRID VIRTUALISÉE */}
-        <div className="overflow-auto h-[70vh]" style={{ paddingTop: start * ITEM_HEIGHT }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {windowProducts.map((product, idx) => (
-              <div key={product.id} ref={idx === windowProducts.length - 1 ? lastItemRef : null}>
+        {/* GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {windowProducts.map((product, idx) => {
+            const isLastVisible = idx === windowProducts.length - 1;
+            return (
+              <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
                 <ProductCard product={product} priority />
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

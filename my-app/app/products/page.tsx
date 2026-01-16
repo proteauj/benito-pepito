@@ -1,39 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Product } from '../../lib/db/types';
+import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Grid, Virtual } from 'swiper/modules';
+import { Virtual, Grid } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/grid';
 import 'swiper/css/virtual';
+import { Product } from '../../lib/db/types';
 
-export default function ProductsPage() {
+interface ProductsPageProps {
+  products: Product[];
+}
+
+export default function ProductsPage({ products }: ProductsPageProps) {
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/products');
-        if (!res.ok) throw new Error('Failed to fetch products');
-        const data = await res.json();
-        setProducts(Array.isArray(data) ? data : Object.values(data).flat());
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  const swiperParams = {
+  const swiperParams = useMemo(() => ({
     direction: 'vertical' as const,
     slidesPerView: 4,
     spaceBetween: 20,
@@ -41,26 +25,28 @@ export default function ProductsPage() {
     virtual: true,
     modules: [Grid, Virtual],
     style: { height: '80vh' },
-  };
+  }), []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="stoneBg text-[var(--foreground)] px-4 py-10 max-w-7xl mx-auto">
       <h1 className="text-4xl font-bold mb-6">Toutes les œuvres</h1>
 
       <Swiper {...swiperParams}>
         {products.map((product, index) => (
           <SwiperSlide key={product.id} virtualIndex={index}>
             <div
-              className="cursor-pointer bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-200"
+              className="cursor-pointer"
               onClick={() => router.push(`/products/${product.id}`)}
             >
               <div className="relative w-full h-[420px]">
-                <img
-                  data-src={product.imageThumbnail}
+                <Image
+                  src={product.imageThumbnail}
                   alt={product.title}
-                  className="swiper-lazy object-contain w-full h-full"
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  sizes="(max-width: 768px) 100vw, 25vw"
+                  priority={index < 4} // précharge les premières images
                 />
-                <div className="swiper-lazy-preloader"></div>
               </div>
               <div className="p-4">
                 <h2 className="font-semibold text-lg">{product.title}</h2>

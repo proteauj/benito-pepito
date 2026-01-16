@@ -5,7 +5,8 @@
     "scripts": {
         "dev": "next dev",
         "start": "next start",
-        "build": "next build --webpack"
+        "build": "next build --webpack",
+        "generate-thumbs": "ts-node thumbnail.ts"
     },
     "dependencies": {
         "@tanstack/react-virtual": "^3.13.18",

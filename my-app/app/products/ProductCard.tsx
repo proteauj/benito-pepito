@@ -24,7 +24,7 @@ export default function ProductCard({ product, priority }: Props) {
             src={product.imageThumbnail}
             alt={product.title}
             fill
-            className="object-contain"
+            className="object-cover" // plein espace, plus de blanc
             sizes="(max-width: 768px) 100vw, 25vw"
             placeholder="blur"
             blurDataURL={product.imageThumbnail} 

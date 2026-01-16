@@ -6,7 +6,7 @@ import { Product } from '../../lib/db/types';
 
 interface Props {
   product: Product;
-  priority?: boolean; // précharge seulement pour le viewport initial
+  priority?: boolean;
 }
 
 export default function ProductCard({ product, priority }: Props) {
@@ -17,24 +17,22 @@ export default function ProductCard({ product, priority }: Props) {
       className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 cursor-pointer"
       onClick={() => setShowFull(true)}
     >
-      <div className="relative w-full h-[420px]">
-        {/* Miniature rapide */}
-        <div className="relative w-full h-[420px]">
-          <Image
-            src={product.imageThumbnail}
-            alt={product.title}
-            fill
-            className="object-cover" // plein espace, plus de blanc
-            sizes="(max-width: 768px) 100vw, 25vw"
-            placeholder="blur"
-            blurDataURL={product.imageThumbnail} 
-          />
-        </div>
+      {/* Image */}
+      <div className="relative w-full h-[420px] bg-white">
+        <Image
+          src={product.imageThumbnail}
+          alt={product.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 25vw"
+          placeholder="blur"
+          blurDataURL={product.imageThumbnail}
+        />
 
-        {/* Full-size seulement au clic */}
+        {/* Full-size au clic */}
         {showFull && (
           <Image
-            src={product.image} 
+            src={product.image}
             alt={product.title}
             fill
             style={{ objectFit: 'cover' }}
@@ -43,6 +41,7 @@ export default function ProductCard({ product, priority }: Props) {
         )}
       </div>
 
+      {/* Texte */}
       <div className="p-4">
         <h2 className="font-semibold text-lg">{product.title}</h2>
         <p className="text-gray-600">{product.size}</p>

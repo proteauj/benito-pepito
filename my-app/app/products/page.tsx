@@ -7,9 +7,9 @@ import { Product } from '../../lib/db/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const VISIBLE = 12;
-const BUFFER = 12;
-const ITEM_HEIGHT = 420;
+const VISIBLE = 12; // nombre de produits visibles
+const BUFFER = 12;  // nombre de produits tampon avant/après
+const ITEM_HEIGHT = 420; // hauteur fixe de chaque ProductCard
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -23,7 +23,6 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [start, setStart] = useState(0);
 
-  const lastItemRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- FETCH ---------------- */
@@ -75,7 +74,7 @@ export default function ProductsPage() {
     let loadedCount = 0;
     windowProducts.forEach(p => {
       const img = new Image();
-      img.src = p.imageThumbnail; // uniquement les miniatures
+      img.src = p.imageThumbnail;
       img.onload = img.onerror = () => {
         loadedCount++;
         if (loadedCount === windowProducts.length) setFilterLoading(false);
@@ -83,36 +82,30 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
+  /* ---------------- SCROLL BIDIRECTIONNEL ---------------- */
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onScroll = () => {
+      const scrollTop = container.scrollTop;
+      const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
+      setStart(newStart);
+    };
+
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
+  }, []);
+
   /* ---------------- RESET START SUR FILTRE/TRI ---------------- */
   const resetStart = () => {
     if (!containerRef.current) {
       setStart(0);
       return;
     }
-    const scrollTop = containerRef.current.scrollTop;
-    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
-    setStart(newStart);
+    containerRef.current.scrollTop = 0; // revient au début
+    setStart(0);
   };
-
-  /* ---------------- INFINITE SCROLL ---------------- */
-  useEffect(() => {
-    if (!lastItemRef.current) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setStart(prev => {
-            const nextStart = prev + VISIBLE;
-            return Math.min(nextStart, Math.max(0, filteredProducts.length - VISIBLE));
-          });
-        }
-      },
-      { rootMargin: '200px' }
-    );
-
-    observer.observe(lastItemRef.current);
-    return () => observer.disconnect();
-  }, [windowProducts, filteredProducts.length]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -133,10 +126,14 @@ export default function ProductsPage() {
     );
   }
 
-  /* ---------------- RENDER ---------------- */
+  /* ---------------- SPACERS ---------------- */
   const topSpacerHeight = start * ITEM_HEIGHT;
-  const bottomSpacerHeight = Math.max(0, (filteredProducts.length - (start + windowProducts.length)) * ITEM_HEIGHT);
+  const bottomSpacerHeight = Math.max(
+    0,
+    (filteredProducts.length - (start + windowProducts.length)) * ITEM_HEIGHT
+  );
 
+  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -180,11 +177,9 @@ export default function ProductsPage() {
           ref={containerRef}
           style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
         >
-          {/* Overlay loading non bloquant */}
+          {/* Overlay loading */}
           {filterLoading && (
-            <div
-              className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none"
-            >
+            <div className="fixed inset-0 flex items-center justify-center bg-white/50 z-50 pointer-events-none">
               <span className="text-xl font-semibold animate-pulse">{t('loading')}</span>
             </div>
           )}
@@ -194,14 +189,11 @@ export default function ProductsPage() {
 
           {/* Produits visibles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {windowProducts.map((product, idx) => {
-              const isLastVisible = idx === windowProducts.length - 1;
-              return (
-                <div key={product.id} ref={isLastVisible ? lastItemRef : null}>
-                  <ProductCard product={product} priority={start === 0} />
-                </div>
-              );
-            })}
+            {windowProducts.map(product => (
+              <div key={product.id}>
+                <ProductCard product={product} priority={start === 0} />
+              </div>
+            ))}
           </div>
 
           {/* Spacer après */}

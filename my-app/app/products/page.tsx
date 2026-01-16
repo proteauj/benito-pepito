@@ -8,14 +8,13 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE_ROWS = 3; // 3 lignes visibles (ex: 4 cols → 12 items)
-const BUFFER_ROWS = 3;  // 3 lignes avant + 3 lignes après = 36 max
-const ROW_HEIGHT = 420; // hauteur moyenne d’une card
+const VISIBLE_ROWS = 3; // 3 lignes visibles
+const BUFFER_ROWS = 2;  // 2 lignes avant + 2 après = max 20-24 items
+const ROW_HEIGHT = 420; // hauteur approximative d’une ligne
 /* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
-
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +22,7 @@ export default function ProductsPage() {
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
 
   /* ---------------- FETCH ---------------- */
@@ -67,18 +66,11 @@ export default function ProductsPage() {
     return 1;
   };
   const [columns, setColumns] = useState(getColumns());
-
   useEffect(() => {
     const onResize = () => setColumns(getColumns());
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
-
-  /* ---------------- ON SCROLL ---------------- */
-  const onScroll = () => {
-    if (!containerRef.current) return;
-    setScrollTop(containerRef.current.scrollTop);
-  };
 
   /* ---------------- WINDOW PRODUCTS ---------------- */
   const { windowProducts, paddingTop, paddingBottom } = useMemo(() => {
@@ -108,6 +100,12 @@ export default function ProductsPage() {
       img.src = p.image;
     });
   }, [windowProducts]);
+
+  /* ---------------- SCROLL HANDLER ---------------- */
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    setScrollTop(scrollRef.current.scrollTop);
+  };
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
@@ -162,17 +160,15 @@ export default function ProductsPage() {
 
       {/* GRID VIRTUALISÉE */}
       <div
-        ref={containerRef}
+        ref={scrollRef}
         className="flex-1 overflow-y-auto"
-        onScroll={onScroll}
+        onScroll={handleScroll}
       >
-        <div style={{ height: filteredProducts.length / columns * ROW_HEIGHT }}>
-          <div style={{ transform: `translateY(${paddingTop}px)` }}>
-            <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6`}>
-              {windowProducts.map(p => (
-                <ProductCard key={p.id} product={p} priority />
-              ))}
-            </div>
+        <div style={{ paddingTop, paddingBottom }}>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6`}>
+            {windowProducts.map(p => (
+              <ProductCard key={p.id} product={p} priority />
+            ))}
           </div>
         </div>
       </div>

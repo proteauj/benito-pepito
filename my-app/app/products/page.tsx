@@ -7,8 +7,10 @@ import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '../../lib/db/types';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const VISIBLE = 12;
-const BUFFER = 12;
+/* ================= CONFIG ================= */
+const VISIBLE = 12;  // Nombre de produits visibles à l'écran
+const BUFFER = 12;   // Buffer avant + après
+/* ========================================== */
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -19,10 +21,10 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-  const [start, setStart] = useState(0);
+  const [start, setStart] = useState(0); // Index du premier produit visible
   const isTicking = useRef(false);
 
-  // ---------------- FETCH PRODUCTS ----------------
+  /* ---------------- FETCH PRODUCTS ---------------- */
   useEffect(() => {
     (async () => {
       try {
@@ -43,7 +45,7 @@ export default function ProductsPage() {
     })();
   }, []);
 
-  // ---------------- FILTER + SORT ----------------
+  /* ---------------- FILTER + SORT ---------------- */
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(data)) return [];
     return data
@@ -55,14 +57,14 @@ export default function ProductsPage() {
       });
   }, [data, sizeFilter, sortBy]);
 
-  // ---------------- WINDOW PRODUCTS ----------------
+  /* ---------------- WINDOW PRODUCTS ---------------- */
   const windowProducts = useMemo(() => {
     const from = Math.max(0, start - BUFFER);
     const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
 
-  // ---------------- PRELOAD IMAGES ----------------
+  /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
     windowProducts.forEach(p => {
       if (p.imageThumbnail) {
@@ -72,7 +74,7 @@ export default function ProductsPage() {
     });
   }, [windowProducts]);
 
-  // ---------------- SCROLL HANDLER ----------------
+  /* ---------------- SCROLL HANDLER ---------------- */
   useEffect(() => {
     const onScroll = () => {
       if (isTicking.current) return;
@@ -87,15 +89,17 @@ export default function ProductsPage() {
 
       isTicking.current = true;
     };
+
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, [start, filteredProducts.length]);
 
+  /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
 
-  if (error)
+  if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-xl text-red-600">{error}</p>
           <Link
@@ -107,8 +111,9 @@ export default function ProductsPage() {
         </div>
       </div>
     );
+  }
 
-  // ---------------- RENDER ----------------
+  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -142,12 +147,14 @@ export default function ProductsPage() {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-min">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {windowProducts.map(product => (
-            <div key={product.id} className="bg-white rounded shadow flex flex-col overflow-hidden">
-              
+            <div
+              key={product.id}
+              className="bg-white rounded shadow flex flex-col overflow-hidden"
+            >
               {/* IMAGE */}
-              <div className="w-full flex justify-center items-start">
+              <div className="w-full flex justify-center">
                 <Image
                   src={product.imageThumbnail || product.image}
                   alt={product.title}
@@ -167,7 +174,7 @@ export default function ProductsPage() {
               {/* TITRE + PRIX */}
               <div className="p-2 flex flex-col">
                 <h2 className="text-lg font-semibold line-clamp-2">{product.title}</h2>
-                <p className="text-sm mt-1">{product.price} €</p>
+                <p className="text-sm mt-1">{product.price}</p>
               </div>
             </div>
           ))}

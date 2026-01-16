@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useI18n } from '@/i18n/I18nProvider';
-import { Product } from '@/types';
+import { Product } from '../../lib/db/types';
 import ProductsLoading from '@/components/ProductsLoading';
 
 export default function ProductsPage() {

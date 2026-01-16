@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useI18n } from '@/i18n/I18nProvider';
 import { Product } from '@/types';
@@ -8,9 +8,9 @@ import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE_ROWS = 3; // lignes visibles
-const BUFFER_ROWS = 3;  // lignes avant/après
-const ROW_HEIGHT = 420; // hauteur moyenne d'une ligne
+const VISIBLE_ROWS = 3; // 3 lignes visibles (ex: 4 cols → 12 items)
+const BUFFER_ROWS = 3;  // 3 lignes avant + 3 lignes après = 36 max
+const ROW_HEIGHT = 420; // hauteur moyenne d’une card
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -25,7 +25,6 @@ export default function ProductsPage() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
-  const [columns, setColumns] = useState(4);
 
   /* ---------------- FETCH ---------------- */
   useEffect(() => {
@@ -33,8 +32,10 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
+
         const result = (await res.json()) as Record<string, Product[]> | Product[];
-        setData(Array.isArray(result) ? result : Object.values(result).flat());
+        const products = Array.isArray(result) ? result : Object.values(result).flat();
+        setData(products);
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -43,17 +44,21 @@ export default function ProductsPage() {
     })();
   }, []);
 
-  /* ---------------- SORT & FILTER ---------------- */
-  const filteredProducts = data
-    .slice()
-    .sort((a, b) => {
+  /* ---------------- SORT ---------------- */
+  const sortedProducts = useMemo(() => {
+    return [...data].sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
       if (sortBy === 'price-desc') return b.price - a.price;
       return 0;
-    })
-    .filter(p => sizeFilter === 'All' || p.size === sizeFilter);
+    });
+  }, [data, sortBy]);
 
-  /* ---------------- COLUMNS RESPONSIVE ---------------- */
+  /* ---------------- FILTER ---------------- */
+  const filteredProducts = useMemo(() => {
+    return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
+  }, [sortedProducts, sizeFilter]);
+
+  /* ---------------- COLUMNS ---------------- */
   const getColumns = () => {
     if (typeof window === 'undefined') return 1;
     if (window.innerWidth >= 1024) return 4;
@@ -61,45 +66,53 @@ export default function ProductsPage() {
     if (window.innerWidth >= 640) return 2;
     return 1;
   };
+  const [columns, setColumns] = useState(getColumns());
 
   useEffect(() => {
     const onResize = () => setColumns(getColumns());
-    onResize();
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  /* ---------------- SCROLL ---------------- */
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onScroll = () => setScrollTop(el.scrollTop);
-    el.addEventListener('scroll', onScroll);
-    return () => el.removeEventListener('scroll', onScroll);
-  }, []);
+  /* ---------------- ON SCROLL ---------------- */
+  const onScroll = () => {
+    if (!containerRef.current) return;
+    setScrollTop(containerRef.current.scrollTop);
+  };
 
   /* ---------------- WINDOW PRODUCTS ---------------- */
-  const totalRows = Math.ceil(filteredProducts.length / columns);
-  const startRow = Math.floor(scrollTop / ROW_HEIGHT);
-  const fromRow = Math.max(0, startRow - BUFFER_ROWS);
-  const toRow = Math.min(totalRows, startRow + VISIBLE_ROWS + BUFFER_ROWS);
+  const { windowProducts, paddingTop, paddingBottom } = useMemo(() => {
+    const totalRows = Math.ceil(filteredProducts.length / columns);
+    const currentRow = Math.floor(scrollTop / ROW_HEIGHT);
 
-  const fromIndex = fromRow * columns;
-  const toIndex = Math.min(toRow * columns, filteredProducts.length);
+    const fromRow = Math.max(0, currentRow - BUFFER_ROWS);
+    const toRow = Math.min(totalRows, currentRow + VISIBLE_ROWS + BUFFER_ROWS);
 
-  const windowProducts = filteredProducts.slice(fromIndex, toIndex);
+    const from = fromRow * columns;
+    const to = Math.min(filteredProducts.length, toRow * columns);
 
-  const paddingTop = fromRow * ROW_HEIGHT;
-  const paddingBottom = (totalRows - toRow) * ROW_HEIGHT;
+    const paddingTop = fromRow * ROW_HEIGHT;
+    const paddingBottom = (totalRows - toRow) * ROW_HEIGHT;
+
+    return {
+      windowProducts: filteredProducts.slice(from, to),
+      paddingTop,
+      paddingBottom,
+    };
+  }, [filteredProducts, scrollTop, columns]);
 
   /* ---------------- PRELOAD IMAGES ---------------- */
   useEffect(() => {
-    windowProducts.forEach(p => new Image().src = p.image);
+    windowProducts.forEach(p => {
+      const img = new Image();
+      img.src = p.image;
+    });
   }, [windowProducts]);
 
   /* ---------------- STATES ---------------- */
   if (loading) return <ProductsLoading />;
-  if (error)
+
+  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -113,15 +126,16 @@ export default function ProductsPage() {
         </div>
       </div>
     );
+  }
 
   /* ---------------- RENDER ---------------- */
   return (
-    <div className="h-screen stoneBg text-[var(--foreground)] flex flex-col">
-      {/* HEADER & FILTERS */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col items-start gap-4">
-        <h1 className="text-4xl font-bold">{t('headings.allArtworks')}</h1>
+    <div className="stoneBg text-[var(--foreground)] h-screen flex flex-col">
+      {/* HEADER + FILTERS */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-shrink-0">
+        <h1 className="text-4xl font-bold mb-4 text-left">{t('headings.allArtworks')}</h1>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <select
             value={sizeFilter}
             onChange={e => setSizeFilter(e.target.value as any)}
@@ -146,17 +160,19 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* GRID SCROLLABLE */}
+      {/* GRID VIRTUALISÉE */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto w-full"
-        style={{ position: 'relative' }}
+        className="flex-1 overflow-y-auto"
+        onScroll={onScroll}
       >
-        <div style={{ paddingTop, paddingBottom }}>
-          <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6`}>
-            {windowProducts.map(p => (
-              <ProductCard key={p.id} product={p} priority />
-            ))}
+        <div style={{ height: filteredProducts.length / columns * ROW_HEIGHT }}>
+          <div style={{ transform: `translateY(${paddingTop}px)` }}>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6`}>
+              {windowProducts.map(p => (
+                <ProductCard key={p.id} product={p} priority />
+              ))}
+            </div>
           </div>
         </div>
       </div>

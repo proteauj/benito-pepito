@@ -24,7 +24,7 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
   const [start, setStart] = useState(0); // Index du premier produit visible
 
-  const lastItemRef = useRef<HTMLDivElement>(null);
+  const lastItemRef = useRef<HTMLDivElement>(null); // Pour observer le dernier élément
   const isTicking = useRef(false); // Pour éviter les appels multiples du `setStart`
 
   /* ---------------- FETCH ---------------- */

@@ -22,7 +22,7 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-  const [start, setStart] = useState(0); // Index du premier produit visible
+  const [start, setStart] = useState(0);
 
   const lastItemRef = useRef<HTMLDivElement>(null);
 
@@ -86,14 +86,16 @@ export default function ProductsPage() {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          setStart(prev => Math.min(prev + VISIBLE, filteredProducts.length));
+          setStart(prev => {
+            const nextStart = prev + VISIBLE;
+            return Math.min(nextStart, Math.max(0, filteredProducts.length - VISIBLE));
+          });
         }
       },
       { rootMargin: '200px' }
     );
 
     observer.observe(lastItemRef.current);
-
     return () => observer.disconnect();
   }, [windowProducts, filteredProducts.length]);
 
@@ -118,6 +120,8 @@ export default function ProductsPage() {
 
   /* ---------------- RENDER ---------------- */
   const totalHeight = filteredProducts.length * ITEM_HEIGHT;
+  // Scroll garanti même si peu de produits
+  const containerHeight = Math.max(totalHeight, window.innerHeight + 1);
   const paddingTop = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
 
   return (
@@ -133,7 +137,7 @@ export default function ProductsPage() {
             value={sizeFilter}
             onChange={e => {
               setSizeFilter(e.target.value as any);
-              setStart(0); // reset scroll
+              setStart(0);
             }}
             className="p-3 border bg-white text-black"
           >
@@ -148,7 +152,7 @@ export default function ProductsPage() {
             value={sortBy}
             onChange={e => {
               setSortBy(e.target.value as any);
-              setStart(0); // reset scroll
+              setStart(0);
             }}
             className="p-3 border bg-white text-black"
           >
@@ -158,8 +162,8 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* GRID */}
-        <div style={{ position: 'relative', height: totalHeight }}>
+        {/* GRID VIRTUELLE */}
+        <div style={{ position: 'relative', height: containerHeight }}>
           <div style={{ position: 'absolute', top: paddingTop, width: '100%' }}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {windowProducts.map((product, idx) => {

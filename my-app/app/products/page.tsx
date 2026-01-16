@@ -8,8 +8,8 @@ import { Product } from '../../lib/db/types';
 import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
-const VISIBLE = 12;  // Nombre de produits visibles à l'écran
-const BUFFER = 12;   // Buffer avant + après
+const VISIBLE = 12; // Nombre de produits visibles à l'écran
+const BUFFER = 12;  // Buffer avant + après
 /* ========================================== */
 
 export default function ProductsPage() {
@@ -30,13 +30,21 @@ export default function ProductsPage() {
       try {
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error('Failed to fetch products');
-        const result = await res.json();
 
+        const result = await res.json(); // result: unknown
+
+        // On transforme result en Product[]
         let products: Product[] = [];
-        if (Array.isArray(result)) products = result;
-        else if (result && typeof result === 'object') products = Object.values(result).flat() as Product[];
 
-        setData(products);
+        if (Array.isArray(result)) {
+          products = result as Product[];
+        } else if (result && typeof result === 'object') {
+          products = Object.values(result).flat() as Product[];
+        } else {
+          throw new Error('Invalid products response');
+        }
+
+        setData(products); // ✅ TypeScript est content
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -44,6 +52,7 @@ export default function ProductsPage() {
       }
     })();
   }, []);
+
 
   /* ---------------- FILTER + SORT ---------------- */
   const filteredProducts = useMemo(() => {
@@ -63,6 +72,14 @@ export default function ProductsPage() {
     const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
     return filteredProducts.slice(from, to);
   }, [filteredProducts, start]);
+
+  /* ---------------- PRELOAD IMAGES ---------------- */
+  useEffect(() => {
+    windowProducts.forEach(p => {
+      const img = new (window as any).Image();
+      img.src = p.imageThumbnail || p.image;
+    });
+  }, [windowProducts]);
 
   /* ---------------- SCROLL HANDLER ---------------- */
   useEffect(() => {
@@ -144,7 +161,11 @@ export default function ProductsPage() {
                   alt={product.title}
                   width={300}
                   height={300}
-                  style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    objectFit: 'contain',
+                  }}
                   placeholder="blur"
                   blurDataURL={product.imageThumbnail || product.image}
                   loading="lazy"
@@ -164,7 +185,7 @@ export default function ProductsPage() {
         <div className="mt-6 p-4 bg-white rounded">
           <h2 className="text-2xl font-bold mb-2">Description</h2>
           <p>
-            Cette section s’ajuste automatiquement à la hauteur de son contenu et au nombre de produits affichés.
+            Cette section s’adapte automatiquement à la hauteur de son contenu et au nombre de produits affichés.
           </p>
         </div>
 

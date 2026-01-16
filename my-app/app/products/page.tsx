@@ -6,7 +6,7 @@ import { Product } from '../../lib/db/types';
 import { useRouter } from 'next/navigation';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Grid, Virtual, Lazy } from 'swiper/modules';
+import { Lazy, Grid, Virtual } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/grid';
 import 'swiper/css/lazy';

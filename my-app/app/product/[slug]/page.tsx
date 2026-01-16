@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useCart } from '../../contexts/CartContext';
 import { useProductTranslations } from '../../hooks/useProductTranslations';
-import { Product } from '@/types';
+import { Product } from '../../../lib/db/types';
 
 export default function ProductPage() {
   const params = useParams();

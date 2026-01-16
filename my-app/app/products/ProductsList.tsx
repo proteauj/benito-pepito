@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useI18n } from '@/i18n/I18nProvider';
-import { Product } from '@/types';
+import { Product } from '../../lib/db/types';
 import ProductCard from './ProductCard';
 
 interface ApiResponse {

@@ -1,6 +1,6 @@
 'use server';
 
-import { Product } from '../../app/types';
+import { Product } from '../../lib/db/types';
 
 export async function getProducts(): Promise<Product[]> {
   try {

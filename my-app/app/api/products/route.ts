@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { products } from '../../data/products';
-import { Product } from '@/types';
+import { Product } from '../../../lib/db/types';
 
 let DatabaseService: any = null;
 try {

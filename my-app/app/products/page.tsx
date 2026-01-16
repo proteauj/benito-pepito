@@ -7,9 +7,10 @@ import { Product } from '../../lib/db/types';
 import ProductCard from './ProductCard';
 import ProductsLoading from '@/components/ProductsLoading';
 
-const VISIBLE = 12;   // nombre de produits visibles
-const BUFFER = 12;    // buffer avant et après
-const ITEM_HEIGHT = 420; // hauteur approximative d'une carte
+const VISIBLE_ROWS = 3; // nombre de lignes visibles
+const COLS = 4;          // nombre de colonnes
+const BUFFER_ROWS = 2;   // lignes tampon
+const GAP = 24;          // gap en px
 
 export default function ProductsPage() {
   const { t } = useI18n();
@@ -21,7 +22,7 @@ export default function ProductsPage() {
 
   const [sizeFilter, setSizeFilter] = useState<Product['size'] | 'All'>('All');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc'>('default');
-  const [start, setStart] = useState(0);
+  const [startRow, setStartRow] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +37,7 @@ export default function ProductsPage() {
 
         if (Array.isArray(result)) setData(result);
         else if (result && Object.values(result).length > 0)
-          setData(Object.values(result).flat() as Product[]);
+          setData(Object.values(result).flat());
         else setError('No products found');
       } catch (e: any) {
         setError(e.message);
@@ -60,39 +61,32 @@ export default function ProductsPage() {
     return sortedProducts.filter(p => sizeFilter === 'All' || p.size === sizeFilter);
   }, [sortedProducts, sizeFilter]);
 
-  /* ---------------- WINDOW PRODUCTS ---------------- */
-  const windowProducts = useMemo(() => {
-    const from = Math.max(0, start - BUFFER);
-    const to = Math.min(filteredProducts.length, start + VISIBLE + BUFFER);
-    return filteredProducts.slice(from, to);
-  }, [filteredProducts, start]);
+  /* ---------------- VIRTUALIZATION ---------------- */
+  const rowHeight = 420 + GAP; // hauteur approximative d'une ligne (image + gap)
+  const totalRows = Math.ceil(filteredProducts.length / COLS);
 
-  /* ---------------- PRELOAD THUMBNAILS ---------------- */
-  useEffect(() => {
-    if (!windowProducts.length) return;
-    setFilterLoading(true);
-
-    let loadedCount = 0;
-    windowProducts.forEach(p => {
-      const img = new Image();
-      img.src = p.imageThumbnail;
-      img.onload = img.onerror = () => {
-        loadedCount++;
-        if (loadedCount === windowProducts.length) setFilterLoading(false);
-      };
-    });
-  }, [windowProducts]);
+  const visibleRows = useMemo(() => {
+    const from = Math.max(0, startRow - BUFFER_ROWS);
+    const to = Math.min(totalRows, startRow + VISIBLE_ROWS + BUFFER_ROWS);
+    const startIdx = from * COLS;
+    const endIdx = Math.min(filteredProducts.length, to * COLS);
+    return filteredProducts.slice(startIdx, endIdx);
+  }, [filteredProducts, startRow, totalRows]);
 
   /* ---------------- SCROLL HANDLER ---------------- */
-  const handleScroll = () => {
-    if (!containerRef.current) return;
-    const scrollTop = containerRef.current.scrollTop;
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
 
-    const newStart = Math.floor(scrollTop / ITEM_HEIGHT);
-    setStart(prev => (prev !== newStart ? newStart : prev));
-  };
+    const onScroll = () => {
+      const newStartRow = Math.floor(container.scrollTop / rowHeight);
+      setStartRow(newStartRow);
+    };
 
-  /* ---------------- STATES ---------------- */
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [rowHeight]);
+
   if (loading) return <ProductsLoading />;
 
   if (error) {
@@ -111,19 +105,13 @@ export default function ProductsPage() {
     );
   }
 
-  /* ---------------- SPACERS ---------------- */
-  const topSpacerHeight = Math.max(0, (start - BUFFER) * ITEM_HEIGHT);
-  const bottomSpacerHeight = Math.max(
-    0,
-    (filteredProducts.length - (start + VISIBLE + BUFFER)) * ITEM_HEIGHT
-  );
+  const topSpacerHeight = startRow * rowHeight;
+  const bottomSpacerHeight = Math.max(0, (totalRows - (startRow + VISIBLE_ROWS + BUFFER_ROWS)) * rowHeight);
 
-  /* ---------------- RENDER ---------------- */
   return (
     <div className="stoneBg text-[var(--foreground)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-        {/* HEADER */}
         <h1 className="text-4xl font-bold mb-6">{t('headings.allArtworks')}</h1>
 
         {/* FILTERS */}
@@ -151,10 +139,8 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* GRID VIRTUELLE */}
         <div
           ref={containerRef}
-          onScroll={handleScroll}
           style={{ maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}
         >
           {filterLoading && (
@@ -163,19 +149,17 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {/* Spacer avant */}
           <div style={{ height: topSpacerHeight }} />
 
-          {/* Produits visibles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {windowProducts.map(product => (
-              <ProductCard key={product.id} product={product} priority={start === 0} />
+            {visibleRows.map(product => (
+              <ProductCard key={product.id} product={product} priority={false} />
             ))}
           </div>
 
-          {/* Spacer après */}
           <div style={{ height: bottomSpacerHeight }} />
         </div>
+
       </div>
     </div>
   );

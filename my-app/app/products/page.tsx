@@ -9,7 +9,7 @@ import ProductsLoading from '@/components/ProductsLoading';
 
 /* ================= CONFIG ================= */
 const VISIBLE_COUNT = 12;  // Nombre de produits visibles à l'écran
-const BUFFER = 12;         // Buffer de produits avant + après
+const BUFFER = 12;         // Buffer avant + après (36 max)
 const ITEM_HEIGHT = 420;   // Hauteur approximative d’une carte
 /* ========================================== */
 

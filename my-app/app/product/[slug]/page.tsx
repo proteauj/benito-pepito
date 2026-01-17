@@ -1,92 +1,58 @@
-'use client'; // directive nécessaire pour le rendu côté client uniquement
+// app/product/[slug]/page.tsx
+
+'use client';
 
 import { useEffect, useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Virtual, Grid } from 'swiper/modules';
-import { useRouter } from 'next/navigation';
-import 'swiper/css';
-import 'swiper/css/grid';
-import 'swiper/css/virtual';
+import { useRouter } from 'next/navigation';  // on utilise 'next/navigation' pour la redirection
 
 interface Product {
   id: string;
   title: string;
-  imageThumbnail: string;
+  description: string;
   price: number;
+  imageThumbnail: string;
 }
 
-export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[] | null>(null);
-  const router = useRouter();
+interface ProductPageProps {
+  params: { slug: string }; // on récupère 'slug' dans params
+}
+
+export default function ProductPage({ params }: ProductPageProps) {
+  const { slug } = params;  // récupération du slug à partir de params
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchProduct() {
       try {
-        const response = await fetch('/api/products');
-        if (response.ok) {
-          const data = await response.json();
-          setProducts(data); // Assure-toi que `data` est un tableau valide
-        } else {
-          console.error('Failed to fetch products');
+        const res = await fetch(`/api/products?slug=${slug}`);
+        if (!res.ok) {
+          throw new Error('Produit introuvable');
         }
-      } catch (error) {
-        console.error('Error fetching products:', error);
+        const data = await res.json();
+        setProduct(data);
+      } catch (err) {
+        setError('Produit introuvable');
+      } finally {
+        setLoading(false);
       }
     }
 
-    fetchProducts();
-  }, []);
+    if (slug) {
+      fetchProduct();
+    }
+  }, [slug]);
 
-  // Si les produits ne sont pas encore chargés, affiche un message de chargement
-  if (products === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Chargement des produits...
-      </div>
-    );
-  }
-
-  if (products.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Aucun produit trouvé.
-      </div>
-    );
-  }
+  if (loading) return <div>Chargement...</div>;
+  if (error || !product) return <div>{error || 'Produit introuvable'}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Swiper
-        direction="vertical"
-        slidesPerView={4}
-        spaceBetween={20}
-        grid={{ rows: 1, fill: 'row' }}
-        virtual
-        modules={[Grid, Virtual]}
-        style={{ height: 'calc(100vh - 80px)' }}
-      >
-        {products.map((product, index) => (
-          <SwiperSlide key={product.id} virtualIndex={index}>
-            <div
-              className="cursor-pointer"
-              onClick={() => router.push(`/products/${product.id}`)}
-            >
-              <div className="relative w-full h-[300px]">
-                <img
-                  src={product.imageThumbnail}
-                  alt={product.title}
-                  className="object-contain w-full h-full"
-                  loading="lazy"
-                />
-              </div>
-              <div className="p-4">
-                <h2 className="font-semibold text-lg">{product.title}</h2>
-                <p className="font-bold">${product.price}</p>
-              </div>
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div>
+      <h1>{product.title}</h1>
+      <img src={product.imageThumbnail} alt={product.title} />
+      <p>{product.description}</p>
+      <p>Prix: ${product.price}</p>
     </div>
   );
 }

@@ -26,8 +26,6 @@
     "prisma": "^6.16.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-virtualized": "^9.22.6",
-    "react-virtualized-auto-sizer": "^2.0.2",
     "react-window": "^2.2.5",
     "resend": "^6.1.0",
     "stripe": "^18.5.0",

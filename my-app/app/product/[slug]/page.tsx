@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Important pour App Router + composants clients
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -78,16 +78,6 @@ export default function ProductPage() {
     });
   };
 
-  function slugify(input: string) {
-    return input
-      .toLowerCase()
-      .replace(/&/g, 'and')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
   useEffect(() => {
     async function fetchProduct() {
       if (!params.slug) return;
@@ -164,8 +154,7 @@ export default function ProductPage() {
       {/* Product Details */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */
-          }
+          {/* Product Images */}
           <div>
             <div className="mb-4 relative">
               <ArtworkSquare
@@ -196,8 +185,6 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Rating removed per request */}
-
             {/* Stock Status */}
             <div className="mb-6">
               {product.inStock ? (
@@ -214,7 +201,7 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Add to Cart (single-quantity artworks) */}
+            {/* Add to Cart */}
             <div className="flex items-center space-x-4 mb-8">
               <button
                 onClick={() => product && addToCart(product, 1)}
@@ -225,7 +212,7 @@ export default function ProductPage() {
               </button>
             </div>
 
-            {/* Additional Actions */}
+            {/* Wishlist & Share */}
             <div className="flex space-x-4">
               <button
                 onClick={toggleWishlist}

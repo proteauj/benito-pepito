@@ -1,5 +1,5 @@
 // app/products/ProductsClient.tsx
-'use client';
+'use client'; // Important pour activer le rendu côté client
 
 import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -17,9 +17,10 @@ interface Product {
 }
 
 export default function ProductsClient() {
-  const [products, setProducts] = useState<Product[]>([]);  // Produits dans l'état
+  const [products, setProducts] = useState<Product[]>([]); // Produits dans l'état
   const router = useRouter();
 
+  // Charge les produits depuis l'API
   useEffect(() => {
     async function loadProducts() {
       const response = await fetch('/api/products');
@@ -29,17 +30,19 @@ export default function ProductsClient() {
     loadProducts();
   }, []);
 
+  // Afficher un message de chargement si les produits ne sont pas encore disponibles
   if (products.length === 0) {
     return <div className="min-h-screen flex items-center justify-center">Chargement...</div>;
   }
 
+  // Retourner la présentation avec Swiper une fois les produits chargés
   return (
     <div className="container mx-auto px-4 py-8">
       <Swiper
         direction="vertical"
         slidesPerView={4}
         spaceBetween={20}
-        grid={{ rows: 1, fill: 'row' }}
+        grid={{ rows: 1 }}
         virtual
         modules={[Grid, Virtual]}
         style={{ height: 'calc(100vh - 80px)' }}

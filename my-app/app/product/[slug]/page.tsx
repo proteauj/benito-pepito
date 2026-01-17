@@ -1,6 +1,5 @@
 // app/products/page.tsx
-
-export const dynamic = 'force-dynamic'; // Important pour forcer le côté client, et désactiver le prerender
+export const dynamic = 'force-dynamic'; // Désactive le prerendering pour cette page
 
 import ProductsClient from './ProductsClient';
 

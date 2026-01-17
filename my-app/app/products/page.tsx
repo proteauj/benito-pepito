@@ -40,7 +40,7 @@ export default function ProductsPage({ products }: ProductsPageProps) {
           <SwiperSlide key={product.id} virtualIndex={index}>
             <div
               className="cursor-pointer"
-              onClick={() => router.push(`/product/${product.slug}`)}  // Redirection vers la page produit avec le slug
+              onClick={() => router.push(`/product/${product.id}`)}  // Redirection vers la page produit avec le slug
             >
               <div className="relative w-full h-[300px]">
                 <img
